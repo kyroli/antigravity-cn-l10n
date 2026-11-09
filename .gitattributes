@@ -1,0 +1,2 @@
+*.bat text eol=crlf
+dicts/*.json text eol=crlf

@@ -1,0 +1,818 @@
+[
+    {
+        "pattern": "^\\(Recommended\\)\\s*(.*)$",
+        "replacement": "(推荐) $1"
+    },
+    {
+        "pattern": "^You have used some of your (\\d+)-hour limit, it will fully refresh in (.+?)\\.?$",
+        "replacement": "您已使用部分 $1 小时限制，将在 $2 后完全刷新。"
+    },
+    {
+        "pattern": "^You have used some of your weekly limit, it will fully refresh in (.+?)\\.?$",
+        "replacement": "您已使用部分周度限制，将在 $1 后完全刷新。"
+    },
+    {
+        "pattern": "^(.+?)\\s+Weekly Limit$",
+        "replacement": "$1 周度限制"
+    },
+    {
+        "pattern": "^(.+?)\\s+5-Hour Limit$",
+        "replacement": "$1 5 小时限制"
+    },
+    {
+        "pattern": "^Refreshes in (.+?)$",
+        "replacement": "$1 后刷新"
+    },
+    {
+        "pattern": "^Resets in <1m$",
+        "replacement": "1 分钟内重置"
+    },
+    {
+        "pattern": "^Resets in (\\d+)d\\s+(\\d+)h$",
+        "replacement": "$1 天 $2 小时后重置"
+    },
+    {
+        "pattern": "^Resets in (\\d+)d$",
+        "replacement": "$1 天后重置"
+    },
+    {
+        "pattern": "^Resets in (\\d+)h\\s+(\\d+)m$",
+        "replacement": "$1 小时 $2 分钟后重置"
+    },
+    {
+        "pattern": "^Resets in (\\d+)h$",
+        "replacement": "$1 小时后重置"
+    },
+    {
+        "pattern": "^Resets in (\\d+)m$",
+        "replacement": "$1 分钟后重置"
+    },
+    {
+        "pattern": "^Resets in (.+)$",
+        "replacement": "$1 后重置"
+    },
+    {
+        "pattern": "^You can upgrade to a (.+?) plan to receive higher rate limits\\.?$",
+        "replacement": "您可以升级至 $1 计划以获取更高的速率限制。"
+    },
+    {
+        "pattern": "^Learn more about (.+)$",
+        "replacement": "了解更多关于 $1 的信息"
+    },
+    {
+        "pattern": "^Yes, and always allow '(.+)' in this project$",
+        "replacement": "是，且在此项目中始终允许运行 '$1'"
+    },
+    {
+        "pattern": "^Yes, and always allow '(.+)'$",
+        "replacement": "是，且始终允许运行 '$1'"
+    },
+    {
+        "pattern": "^(\\d+) tools? enabled$",
+        "replacement": "$1 个工具已启用"
+    },
+    {
+        "pattern": "^Show (\\d+) more(\\.\\.\\.|…)?$",
+        "replacement": "显示另外 $1 个..."
+    },
+    {
+        "pattern": "^See all \\((\\d+)\\)$",
+        "replacement": "显示全部 ($1)"
+    },
+    {
+        "pattern": "^Available AI Credits: (\\d+)$",
+        "replacement": "可用 AI 额度: $1"
+    },
+    {
+        "pattern": "^Version\\s+([\\d\\.]+)$",
+        "replacement": "版本 $1"
+    },
+    {
+        "pattern": "^(\\d+)s$",
+        "replacement": "$1 秒前"
+    },
+    {
+        "pattern": "^(\\d+)m$",
+        "replacement": "$1 分钟前"
+    },
+    {
+        "pattern": "^(\\d+)h$",
+        "replacement": "$1 小时前"
+    },
+    {
+        "pattern": "^(\\d+)d$",
+        "replacement": "$1 天前"
+    },
+    {
+        "pattern": "^(\\d+)w$",
+        "replacement": "$1 周前"
+    },
+    {
+        "pattern": "^(\\d+)mo$",
+        "replacement": "$1 个月前"
+    },
+    {
+        "pattern": "^(\\d+)yr$",
+        "replacement": "$1 年前"
+    },
+    {
+        "pattern": "^(.+?): context deadline exceeded$",
+        "replacement": "$1: 请求超时 (context deadline exceeded)"
+    },
+    {
+        "pattern": "^(.+?): i\\/o timeout$",
+        "replacement": "$1: I\\/O 超时 (i\\/o timeout)"
+    },
+    {
+        "pattern": "^Are you sure you want to delete (the |this )?project (.+?)\\??$",
+        "replacement": "您确定要删除项目 $2 吗？"
+    },
+    {
+        "pattern": "^failed to remove worktree: fatal: '(.+)' is a main working tree(: exit status (\\d+))?$",
+        "replacement": "移除工作树失败：fatal: '$1' 是主工作区 (main working tree)$2"
+    },
+    {
+        "pattern": "^failed to remove worktree: (.+)$",
+        "replacement": "移除工作树失败：$1"
+    },
+    {
+        "pattern": "^Models within this group: (.+)$",
+        "replacement": "该分组中的模型：$1"
+    },
+    {
+        "pattern": "^Work locally on (.+?)$",
+        "replacement": "在本地开发 $1"
+    },
+    {
+        "pattern": "^Worktree from (.+?), and reuse (.+?)$",
+        "replacement": "从 $1 创建工作树，并复用 $2"
+    },
+    {
+        "pattern": "^(\\d+) archived conversations?\\.?$",
+        "replacement": "$1 个归档会话"
+    },
+    {
+        "pattern": "\\((\\d+) image attachments?\\)",
+        "replacement": "($1 个图片附件)"
+    },
+    {
+        "pattern": "^Your (\\d+)-hour limit will refresh in (.+?)\\.?$",
+        "replacement": "您的 $1 小时限制将在 $2 后刷新。"
+    },
+    {
+        "pattern": "^You have hit your (\\d+)-hour limit, it will refresh in (.+?)\\. If on a supported paid plan, you can use AI credits in the interim\\.?$",
+        "replacement": "您已达到 $1 小时限制，将在 $2 后刷新。如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
+    },
+    {
+        "pattern": "^This will permanently delete (.+?) and (\\d+) active conversations? and (\\d+) archived conversations? within it\\. This action cannot be undone\\.$",
+        "replacement": "这将永久删除 $1 及其中的 $2 个活跃会话和 $3 个归档会话。此操作无法撤销。"
+    },
+    {
+        "pattern": "^(Post|Get|Put|Delete) \"(https?://.+?)\": (.+)$",
+        "replacement": "向 \"$2\" 发送 $1 请求失败：$3"
+    },
+    {
+        "pattern": "^(.+?) does not exist\\.?$",
+        "replacement": "$1 不存在。"
+    },
+    {
+        "pattern": "^Used MCP tool: (.+)$",
+        "replacement": "已调用 MCP 工具：$1"
+    },
+    {
+        "pattern": "^No MCP servers found for (.+)$",
+        "replacement": "未找到匹配 '$1' 的 MCP 服务器"
+    },
+    {
+        "pattern": "^Error installing MCP server: (.+)$",
+        "replacement": "安装 MCP 服务器失败：$1"
+    },
+    {
+        "pattern": "^Error toggling MCP server: (.+)$",
+        "replacement": "切换 MCP 服务器状态失败：$1"
+    },
+    {
+        "pattern": "^Error deleting MCP server: (.+)$",
+        "replacement": "删除 MCP 服务器失败：$1"
+    },
+    {
+        "pattern": "^Don't show this for (\\d+) days?$",
+        "replacement": "$1 天内不再显示此提示"
+    },
+    {
+        "pattern": "^Last (\\d+) days?$",
+        "replacement": "最近 $1 天"
+    },
+    {
+        "pattern": "^Mark (\\d+) conversations? as read$",
+        "replacement": "将 $1 个会话标记为已读"
+    },
+    {
+        "pattern": "^Setup may take over (\\d+) minutes?\\. Please keep this screen open during setup\\.$",
+        "replacement": "设置可能需要超过 $1 分钟，请在此期间保持当前界面开启。"
+    },
+    {
+        "pattern": "^Media upload failed after (\\d+) attempts?\\.$",
+        "replacement": "媒体文件在尝试 $1 次后上传失败。"
+    },
+    {
+        "pattern": "^(\\d+) files? selected$",
+        "replacement": "已选择 $1 个文件"
+    },
+    {
+        "pattern": "^(\\d+) items? selected$",
+        "replacement": "已选择 $1 个项目"
+    },
+    {
+        "pattern": "^(\\d+) running agents?$",
+        "replacement": "$1 个正在运行的 Agent"
+    },
+    {
+        "pattern": "^(\\d+) active tasks?$",
+        "replacement": "$1 个活跃任务"
+    },
+    {
+        "pattern": "^Task \"(.+)\"\\.?$",
+        "replacement": "任务 \"$1\""
+    },
+    {
+        "pattern": "^The language \"(.+)\"\\.?$",
+        "replacement": "语言 \"$1\""
+    },
+    {
+        "pattern": "^All changes since (.+)$",
+        "replacement": "自 $1 以来的所有变更"
+    },
+    {
+        "pattern": "^Push (\\d+) commits? to (.+)$",
+        "replacement": "Push $1 个 Commit 至 $2"
+    },
+    {
+        "pattern": "^Publish (.+) to origin$",
+        "replacement": "将 $1 发布至 origin"
+    },
+    {
+        "pattern": "^No commits to push( to .+)?$",
+        "replacement": "没有需要 Push 的 Commit"
+    },
+    {
+        "pattern": "^Committed to (.+?)\\.?$",
+        "replacement": "已 Commit 至 $1。"
+    },
+    {
+        "pattern": "^Thinking for\\s+(.+)$",
+        "replacement": "正在思考 $1"
+    },
+    {
+        "pattern": "^Thought for\\s+(.+)$",
+        "replacement": "已思考 $1"
+    },
+    {
+        "pattern": "^Worked for\\s+(.+)$",
+        "replacement": "已工作 $1"
+    },
+    {
+        "pattern": "^No more older messages,\\s*showing\\s+(\\d+)\\s+of\\s+(\\d+)$",
+        "replacement": "没有更多历史消息，当前显示 $1 / $2 条"
+    },
+    {
+        "pattern": "^Delete (.+?), including (\\d+) active conversations?([.。])?$",
+        "replacement": "删除 $1（包含 $2 个活跃会话）"
+    },
+    {
+        "pattern": "^including (\\d+) active conversations?([.。])?$",
+        "replacement": "包含 $1 个活跃会话"
+    },
+    {
+        "pattern": "^(\\d+) active conversations?([.。])?$",
+        "replacement": "$1 个活跃会话"
+    },
+    {
+        "pattern": "^Send feedback as\\s+(.+)$",
+        "replacement": "以 $1 身份发送反馈"
+    },
+    {
+        "pattern": "^Show (\\d+) breakdowns?$",
+        "replacement": "显示 $1 项细目"
+    },
+    {
+        "pattern": "^Show breakdowns?$",
+        "replacement": "显示细目"
+    },
+    {
+        "pattern": "^Hide breakdowns?$",
+        "replacement": "收起细目"
+    },
+    {
+        "pattern": "^See more in (.+)$",
+        "replacement": "查看更多 $1"
+    },
+    {
+        "pattern": "^See less in (.+)$",
+        "replacement": "收起 $1"
+    },
+    {
+        "pattern": "^Inherits your Global Permissions when working in this project\\.?$",
+        "replacement": "在此项目中工作时继承您的全局权限。"
+    },
+    {
+        "pattern": "^Inherits your Global Permissions when working in these conversations\\.?$",
+        "replacement": "在这些会话中工作时继承您的全局权限。"
+    },
+    {
+        "pattern": "^Inherits your Global Permissions when working (.+?)\\.?$",
+        "replacement": "在 $1 工作时继承您的全局权限。"
+    },
+    {
+        "pattern": "^The server could not find the requested (.+)$",
+        "replacement": "服务器无法找到所请求的 $1"
+    },
+    {
+        "pattern": "^(\\d+) agents? running$",
+        "replacement": "$1 个 Agent 运行中"
+    },
+    {
+        "pattern": "^Opening\\s+([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(?::\\d+)?)$",
+        "replacement": "正在打开 $1"
+    },
+    {
+        "pattern": "^Pressing\\s+(?!key\\b)([A-Za-z0-9_]+|Arrow(?:Up|Down|Left|Right)|Enter|Tab|Escape|Backspace|Delete|Space)$",
+        "replacement": "正在按下 $1 键"
+    },
+    {
+        "pattern": "^Scrolling\\s+(up|left|right)$",
+        "replacement": "正在向 $1 滚动"
+    },
+    {
+        "pattern": "^Back to (?!chat\\b|reference\\b)(.+)$",
+        "replacement": "返回到 $1"
+    },
+    {
+        "pattern": "^Couldn't (delete|archive|load|rename|find|open) conversation$",
+        "replacement": "无法 $1 对话"
+    },
+    {
+        "pattern": "^Sign in to ([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$",
+        "replacement": "登录到 $1"
+    },
+    {
+        "pattern": "^Your quota for (?:this model|此模型) will reset on (.+?)\\. Switch to another available model to continue\\.$",
+        "replacement": "您此模型的配额将于 $1 重置。请切换到其他可用模型以继续。"
+    },
+    {
+        "pattern": "^Your quota for (.+?) will reset on (.+?)\\. Switch to another available model to continue\\.$",
+        "replacement": "您 $1 的配额将于 $2 重置。请切换到其他可用模型以继续。"
+    },
+    {
+        "pattern": "^Your quota for (?:this model|此模型) has been reached\\. Switch to another available model to continue\\.$",
+        "replacement": "您已达到此模型的配额上限。请切换到其他可用模型以继续。"
+    },
+    {
+        "pattern": "^Your quota for (.+?) has been reached\\. Switch to another available model to continue\\.$",
+        "replacement": "您已达到 $1 的配额上限。请切换到其他可用模型以继续。"
+    },
+    {
+        "pattern": "^Yes, save rule for '(.+)' (?:when not in a project|未在项目中时)$",
+        "replacement": "是，且在未处于项目中时保存针对 '$1' 的规则"
+    },
+    {
+        "pattern": "^Yes, save rule for '(.+)' (?:in this project|在此项目中)$",
+        "replacement": "是，且在此项目中保存针对 '$1' 的规则"
+    },
+    {
+        "pattern": "^Yes, save rule (?:when not in a project|未在项目中时)$",
+        "replacement": "是，且在未处于项目中时保存规则"
+    },
+    {
+        "pattern": "^Yes, save rule (?:in this project|在此项目中)$",
+        "replacement": "是，且在此项目中保存规则"
+    },
+    {
+        "pattern": "^Yes, always allow (.+) (?:when not in a project|未在项目中时)$",
+        "replacement": "是，且在未处于项目中时始终允许 $1"
+    },
+    {
+        "pattern": "^Yes, always allow (.+) (?:in this project|在此项目中)$",
+        "replacement": "是，且在此项目中始终允许 $1"
+    },
+    {
+        "pattern": "^Yes, and always allow '(.+)' (?:when not in a project|未在项目中时)$",
+        "replacement": "是，且在未处于项目中时始终允许运行 '$1'"
+    },
+    {
+        "pattern": "^Yes, and always allow (?:when not in a project|未在项目中时)$",
+        "replacement": "是，且在未处于项目中时始终允许"
+    },
+    {
+        "pattern": "^Yes, and always allow (?:in this project|在此项目中)$",
+        "replacement": "是，且在此项目中始终允许"
+    },
+    {
+        "pattern": "^Show (\\d+) earlier steps?$",
+        "replacement": "显示较早的 $1 个步骤"
+    },
+    {
+        "pattern": "^Hi (.+?), what can we get done today\\?$",
+        "replacement": "您好 $1，今天我们能一起完成些什么？"
+    },
+    {
+        "pattern": "^Choose (Antigravity|Jetski)'s Voice$",
+        "replacement": "选择 $1 的音色"
+    },
+    {
+        "pattern": "^(\\d+) tasks? running$",
+        "replacement": "$1 个任务运行中"
+    },
+    {
+        "pattern": "^Updated (.*\\d.*)$",
+        "replacement": "更新于 $1"
+    },
+    {
+        "pattern": "^Forked from (.+)$",
+        "replacement": "复刻自 $1"
+    },
+    {
+        "pattern": "^Turn (\\d+) of (\\d+)$",
+        "replacement": "第 $1 / $2 轮"
+    },
+    {
+        "pattern": "^Step (\\d+) of (\\d+)$",
+        "replacement": "第 $1 / $2 步"
+    },
+    {
+        "pattern": "^Show (\\d+) more subagents?$",
+        "replacement": "显示另外 $1 个子 Agent"
+    },
+    {
+        "pattern": "^View (\\d+) side questions?$",
+        "replacement": "查看 $1 个旁支问题"
+    },
+    {
+        "pattern": "^Side Question: (.+)$",
+        "replacement": "旁支提问：$1"
+    },
+    {
+        "pattern": "^Edit side question title: (.+)$",
+        "replacement": "编辑旁支提问标题：$1"
+    },
+    {
+        "pattern": "^Still thinking, (\\d+) seconds$",
+        "replacement": "仍在思考，已用时 $1 秒"
+    },
+    {
+        "pattern": "^Running for (\\d.+)$",
+        "replacement": "已运行 $1"
+    },
+    {
+        "pattern": "^Using browser \\((.+)\\)$",
+        "replacement": "正在使用浏览器 ($1)"
+    },
+    {
+        "pattern": "^(\\d+) browser steps$",
+        "replacement": "$1 个浏览器步骤"
+    },
+    {
+        "pattern": "^Sort and filter conversations \\((\\d+) active\\)$",
+        "replacement": "排序与筛选会话（$1 个活跃）"
+    },
+    {
+        "pattern": "^Load older messages, showing (\\d+) of (\\d+)$",
+        "replacement": "加载更早的消息，当前显示 $1 / $2 条"
+    },
+    {
+        "pattern": "^Proceed with implementation plan and (\\d+) comments?$",
+        "replacement": "携带 $1 条评论继续执行实现计划"
+    },
+    {
+        "pattern": "^(\\d+) comments? in (.+)$",
+        "replacement": "$2 中有 $1 条评论"
+    },
+    {
+        "pattern": "^Comment \\((\\d+)\\)$",
+        "replacement": "评论 ($1)"
+    },
+    {
+        "pattern": "^Send all \\((\\d+)\\)$",
+        "replacement": "全部发送 ($1)"
+    },
+    {
+        "pattern": "^Stop (\\d+) selected$",
+        "replacement": "停止所选的 $1 项"
+    },
+    {
+        "pattern": "^\\+(\\d+) more \\(Show all\\)$",
+        "replacement": "+$1 项更多（显示全部）"
+    },
+    {
+        "pattern": "^Your plan's baseline quota will refresh on (.+?)\\.?$",
+        "replacement": "您订阅方案的基础配额将于 $1 刷新。"
+    },
+    {
+        "pattern": "^You need at least (\\d+) AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.$",
+        "replacement": "您需要至少 $1 AI 额度才能发送消息。如需立即继续使用 $2，请购买更多 AI 额度。"
+    },
+    {
+        "pattern": "^You need more AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.$",
+        "replacement": "您需要更多 AI 额度才能发送消息。如需立即继续使用 $1，请购买更多 AI 额度。"
+    },
+    {
+        "pattern": "^(\\d+) models? selected$",
+        "replacement": "已选择 $1 个模型"
+    },
+    {
+        "pattern": "^Model unavailable, retrying in (\\d+)s(.*)$",
+        "replacement": "模型暂不可用，$1 秒后重试$2"
+    },
+    {
+        "pattern": "^Reset (\\d+) overrides?$",
+        "replacement": "重置 $1 项覆盖配置"
+    },
+    {
+        "pattern": "^Reset (.+) to default$",
+        "replacement": "将 $1 重置为默认值"
+    },
+    {
+        "pattern": "^Recording shortcut for (.+)\\. Press keys to bind, Enter to save, Escape to cancel\\.$",
+        "replacement": "正在为 $1 录制快捷键。请按下按键进行绑定，按 Enter 保存，按 Escape 取消。"
+    },
+    {
+        "pattern": "^Add shortcut for (.+)$",
+        "replacement": "为 $1 添加快捷键"
+    },
+    {
+        "pattern": "^Conflicts with \"(.+)\" \\(press Enter to replace\\)$",
+        "replacement": "与 \"$1\" 冲突（按 Enter 替换）"
+    },
+    {
+        "pattern": "^Allow (.+)\\?$",
+        "replacement": "允许 $1？"
+    },
+    {
+        "pattern": "^Save rule to always allow (.+)\\?$",
+        "replacement": "保存规则以始终允许 $1？"
+    },
+    {
+        "pattern": "^Yes, allow (.+) in this conversation$",
+        "replacement": "是，在此会话中允许 $1"
+    },
+    {
+        "pattern": "^Yes, always allow (.+)$",
+        "replacement": "是，始终允许 $1"
+    },
+    {
+        "pattern": "^Yes, and always allow '(.+)' in this conversation$",
+        "replacement": "是，且在此会话中始终允许运行 '$1'"
+    },
+    {
+        "pattern": "^Yes, save rule for '(.+)' globally$",
+        "replacement": "是，全局保存针对 '$1' 的规则"
+    },
+    {
+        "pattern": "^Yes, save rule for '(.+)' in this conversation$",
+        "replacement": "是，在此会话中保存针对 '$1' 的规则"
+    },
+    {
+        "pattern": "^Agent needs permission to act on (.+)$",
+        "replacement": "智能体需要权限以操作 $1"
+    },
+    {
+        "pattern": "^Open ([a-zA-Z0-9.+-]+) link\\?$",
+        "replacement": "打开 $1 链接？"
+    },
+    {
+        "pattern": "^Downloads, (\\d+)% complete$",
+        "replacement": "下载进度：$1%"
+    },
+    {
+        "pattern": "^Check if there is a typo in (.+?), or open the page in your external browser\\.$",
+        "replacement": "请检查 $1 是否有拼写错误，或在外部浏览器中打开该页面。"
+    },
+    {
+        "pattern": "^Pushed (\\d+) commits? to (.+?)\\.?$",
+        "replacement": "已将 $1 个 Commit 推送至 $2。"
+    },
+    {
+        "pattern": "^Pushed to (.+?)\\.?$",
+        "replacement": "已推送至 $1。"
+    },
+    {
+        "pattern": "^Amended commit on (.+?)\\.?$",
+        "replacement": "已在 $1 上追加修改提交 (Amend)。"
+    },
+    {
+        "pattern": "^Published (.+) to origin\\.?$",
+        "replacement": "已将 $1 发布至 origin。"
+    },
+    {
+        "pattern": "^(\\d+) Files? With Changes$",
+        "replacement": "$1 个文件有更改"
+    },
+    {
+        "pattern": "^The folder [\"“](.+?)[\"”] does not exist\\. Would you like to create it\\?$",
+        "replacement": "文件夹 \"$1\" 不存在。您要创建它吗？"
+    },
+    {
+        "pattern": "^Are you sure you want to delete the hook \"(.+)\"\\?$",
+        "replacement": "确定要删除 Hook \"$1\" 吗？"
+    },
+    {
+        "pattern": "^Created automation \"(.+)\"\\.$",
+        "replacement": "已创建自动化任务 \"$1\"。"
+    },
+    {
+        "pattern": "^Credentials expire in (.+)\\. Refresh credentials to keep this automation running$",
+        "replacement": "凭据将在 $1 后过期。请刷新凭据以保持此自动化任务持续运行"
+    },
+    {
+        "pattern": "^Daily at (.+)$",
+        "replacement": "每天 $1"
+    },
+    {
+        "pattern": "^Every (\\d+) minutes(.*)$",
+        "replacement": "每 $1 分钟$2"
+    },
+    {
+        "pattern": "^Every (\\d+) hours(.*)$",
+        "replacement": "每 $1 小时$2"
+    },
+    {
+        "pattern": "^Add (\\d+) plugins? from (.+)$",
+        "replacement": "从 $2 添加 $1 个插件"
+    },
+    {
+        "pattern": "^Adding plugins from (.+)$",
+        "replacement": "正在从 $1 添加插件"
+    },
+    {
+        "pattern": "^No plugins found for \"(.+)\"\\.$",
+        "replacement": "未找到匹配 \"$1\" 的插件。"
+    },
+    {
+        "pattern": "^Setting up WSL: (.+)$",
+        "replacement": "正在配置 WSL：$1"
+    },
+    {
+        "pattern": "^See (\\d+) more$",
+        "replacement": "查看另外 $1 项"
+    },
+    {
+        "pattern": "^\\+\\s*See (\\d+) more$",
+        "replacement": "+ 查看另外 $1 项"
+    },
+    {
+        "pattern": "^\\+(\\d+) more$",
+        "replacement": "+$1 项更多"
+    },
+    {
+        "pattern": "^\\+(\\d+) attachments?$",
+        "replacement": "+$1 个附件"
+    },
+    {
+        "pattern": "^System default \\((.+)\\)$",
+        "replacement": "系统默认 ($1)"
+    },
+    {
+        "pattern": "^(.+), voice (\\d+) of (\\d+)$",
+        "replacement": "$1，第 $2 / $3 个音色"
+    },
+    {
+        "pattern": "^Voice [Ss]peed, ([\\d.]+)x$",
+        "replacement": "语速：$1x"
+    },
+    {
+        "pattern": "^Playback speed ([\\d.]+)x$",
+        "replacement": "播放速度 $1x"
+    },
+    {
+        "pattern": "^Started voice chat · (.+)$",
+        "replacement": "已开始语音聊天 · $1"
+    },
+    {
+        "pattern": "^Stopped voice chat · (.+)$",
+        "replacement": "已结束语音聊天 · $1"
+    },
+    {
+        "pattern": "^Voice chat · (.+) · (.+)$",
+        "replacement": "语音聊天 · $1 · $2"
+    },
+    {
+        "pattern": "^Deleted (\\d+) recordings? \\((.+?)\\)$",
+        "replacement": "已删除 $1 条录音 ($2)"
+    },
+    {
+        "pattern": "^(\\d+) calls? · (.+ MB)$",
+        "replacement": "$1 次通话 · $2"
+    },
+    {
+        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter) Sends immediately$",
+        "replacement": "$1 立即发送"
+    },
+    {
+        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter) Queues after the turn$",
+        "replacement": "$1 在当前轮次后排队"
+    },
+    {
+        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter) On empty prompt, sends next in queue$",
+        "replacement": "$1 输入为空时，发送队列中的下一条"
+    },
+    {
+        "pattern": "^No apps found for \"(.+)\"\\.$",
+        "replacement": "未找到匹配 \"$1\" 的应用。"
+    },
+    {
+        "pattern": "^Managed by the (.+) automation$",
+        "replacement": "由 $1 自动化任务管理"
+    },
+    {
+        "pattern": "^Managed by the (.+) plugin$",
+        "replacement": "由 $1 插件管理"
+    },
+    {
+        "pattern": "^Open the (.+) plugin$",
+        "replacement": "打开 $1 插件"
+    },
+    {
+        "pattern": "^Open (.+) skill$",
+        "replacement": "打开 $1 技能"
+    },
+    {
+        "pattern": "^Plugins in (.+)$",
+        "replacement": "$1 中的插件"
+    },
+    {
+        "pattern": "^(\\d+) matching bundles?$",
+        "replacement": "$1 个匹配的捆绑包"
+    },
+    {
+        "pattern": "^Account this MCP server uses: (.+)$",
+        "replacement": "此 MCP 服务器使用的账号：$1"
+    },
+    {
+        "pattern": "^Make (.+) the default (.+) account$",
+        "replacement": "将 $1 设为默认 $2 账号"
+    },
+    {
+        "pattern": "^Secret for a new (.+) account$",
+        "replacement": "新 $1 账号的密钥"
+    },
+    {
+        "pattern": "^Sign in to (.+) on this computer$",
+        "replacement": "在此电脑上登录 $1"
+    },
+    {
+        "pattern": "^Sign in to (.+) remotely$",
+        "replacement": "远程登录 $1"
+    },
+    {
+        "pattern": "^Sign in from the (.+) panel\\.$",
+        "replacement": "请从 $1 面板登录。"
+    },
+    {
+        "pattern": "^Context window (\\d+)% full$",
+        "replacement": "上下文窗口已使用 $1%"
+    },
+    {
+        "pattern": "^Context window about (\\d+)% full, compacted since the last response$",
+        "replacement": "上下文窗口已使用约 $1%（自上次回复后已压缩）"
+    },
+    {
+        "pattern": "^(\\d+)% of the context window used$",
+        "replacement": "已使用 $1% 的上下文窗口"
+    },
+    {
+        "pattern": "^Exceeded the customization token budget \\((\\d+) tokens\\) and was excluded from context\\.$",
+        "replacement": "超出自定义项 Token 预算（$1 Token），已从上下文中排除。"
+    },
+    {
+        "pattern": "^All tools in this MCP server \\((\\d+) tokens\\) exceeded the customization budget and were excluded from context\\.$",
+        "replacement": "此 MCP 服务器中的所有工具（$1 Token）超出自定义项预算，已从上下文中排除。"
+    },
+    {
+        "pattern": "^Marked (\\d+) conversations? as read$",
+        "replacement": "已将 $1 个会话标记为已读"
+    },
+    {
+        "pattern": "^You have (\\d+) conversations? in progress\\. Updating will cancel them and you'll need to manually restart them\\.$",
+        "replacement": "您有 $1 个正在进行的会话。更新将取消这些会话，之后您需要手动重新启动它们。"
+    },
+    {
+        "pattern": "^Where the agent runs, current: (.+)$",
+        "replacement": "智能体运行位置，当前：$1"
+    },
+    {
+        "pattern": "^Agent permissions preset selector, current: (.+)$",
+        "replacement": "智能体权限预设选择器，当前：$1"
+    },
+    {
+        "pattern": "^Select project, current: (.+)$",
+        "replacement": "选择项目，当前：$1"
+    },
+    {
+        "pattern": "^Select model, current: (.+)$",
+        "replacement": "选择模型，当前：$1"
+    },
+    {
+        "pattern": "^Zoom (\\d+)%, reset to fit$",
+        "replacement": "缩放 $1%，点击重置以适应屏幕"
+    }
+]

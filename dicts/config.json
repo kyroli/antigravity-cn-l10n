@@ -1,0 +1,204 @@
+{
+    "blockedTags": [
+        "SCRIPT",
+        "STYLE",
+        "CODE",
+        "PRE",
+        "SVG",
+        "CANVAS",
+        "SYMBOL",
+        "PATH",
+        "NOSCRIPT",
+        "TEMPLATE",
+        "INPUT",
+        "TEXTAREA"
+    ],
+    "blockedClasses": [
+        "monaco-editor",
+        "terminal",
+        "code",
+        "suggest",
+        "artifact",
+        "chat",
+        "conversation",
+        "message",
+        "interactive",
+        "history",
+        "session",
+        "user-input-step",
+        "sr-only",
+        "webview"
+    ],
+    "blockedClassSubstrings": [
+        "fuzzy-match",
+        "md-divider-spacing",
+        "cursor-edit",
+        "user-message",
+        "user-input",
+        "user-bubble",
+        "user-content"
+    ],
+    "blockedTestIds": [
+        "planner-response-text",
+        "user-input-step",
+        "user-message-bubble",
+        "user-message-content",
+        "live-user-turn",
+        "automation-instructions-markdown"
+    ],
+    "blockedTestIdSubstrings": [
+        "fuzzy-match",
+        "highlight",
+        "menu-option-label",
+        "commentable-content",
+        "code-block"
+    ],
+    "blockedDataAttrs": [
+        "data-lexical-editor",
+        "data-file-uri",
+        "data-uri"
+    ],
+    "bypassClasses": [
+        "dialog",
+        "modal",
+        "popup",
+        "popover",
+        "tooltip",
+        "notification",
+        "message-box",
+        "button",
+        "btn",
+        "menu",
+        "dropdown",
+        "select"
+    ],
+    "bypassRoles": [
+        "dialog",
+        "alertdialog",
+        "tooltip",
+        "button",
+        "menu",
+        "menuitem",
+        "option",
+        "listbox"
+    ],
+    "protectedFiles": [
+        "LICENSE",
+        "LICENCE",
+        "CHANGELOG",
+        "AUTHORS",
+        "CONTRIBUTING",
+        "SECURITY",
+        "CODE_OF_CONDUCT",
+        "COPYING",
+        "NOTICE",
+        "PATENTS",
+        "Makefile",
+        "Dockerfile",
+        "Vagrantfile",
+        "Gemfile",
+        "Procfile",
+        "Rakefile",
+        "CMakeLists.txt"
+    ],
+    "codeEditorKeywords": [
+        "editor",
+        "terminal",
+        "xterm",
+        "monaco",
+        "prism",
+        "code-block",
+        "code-line"
+    ],
+    "lowerWordsExclude": [
+        "on",
+        "in",
+        "to",
+        "at",
+        "by",
+        "for",
+        "with",
+        "as",
+        "system",
+        "review",
+        "active",
+        "browser",
+        "global",
+        "including",
+        "and",
+        "or",
+        "file",
+        "files",
+        "help",
+        "app",
+        "plan",
+        "search",
+        "folder",
+        "folders"
+    ],
+    "conversationRowAllowedTexts": [
+        "Outside of Project",
+        "项目之外"
+    ],
+    "toolStatVerbs": {
+        "exploring": "正在探索",
+        "explored": "已探索",
+        "editing": "正在编辑",
+        "edited": "已编辑",
+        "running": "正在运行",
+        "ran": "已运行"
+    },
+    "toolStatNouns": {
+        "file": "个文件",
+        "files": "个文件",
+        "folder": "个文件夹",
+        "folders": "个文件夹",
+        "search": "次搜索",
+        "searches": "次搜索",
+        "command": "个命令",
+        "commands": "个命令",
+        "task": "个任务",
+        "tasks": "个任务",
+        "page": "个网页",
+        "pages": "个网页",
+        "browser": "次浏览器操作",
+        "browsers": "次浏览器操作",
+        "image": "张图片",
+        "images": "张图片",
+        "action": "项操作",
+        "actions": "项操作",
+        "artifact": "个工件",
+        "artifacts": "个工件"
+    },
+    "fragmentPatterns": [
+        {
+            "containerPattern": "^(?:Show|显示另外)\\s+\\d+\\s+(?:more|个)(?:\\.\\.\\.|…)?$",
+            "nodeReplacements": [
+                { "match": "^Show\\s*$", "replace": "显示另外 " },
+                { "match": "^more(\\.\\.\\.|…)?$", "replace": " 个$1", "normalizeEllipsis": true }
+            ]
+        },
+        {
+            "containerPattern": "^(?:No\\s+|暂无).+\\s+yet$",
+            "nodeReplacements": [
+                { "match": "^No\\s*$", "replace": "暂无" },
+                { "match": "^\\s*yet\\s*$", "replace": "" }
+            ]
+        },
+        {
+            "containerPattern": "^(?:No\\s+|没有).+(?:\\s+match\\s+|匹配\\s*)[“\"].+[”\"]\\.?$",
+            "nodeReplacements": [
+                { "match": "^No\\s*$", "replace": "没有" },
+                { "match": "^\\s*match\\s+[“\"]$", "replace": "匹配 “" },
+                { "match": "^\\s*[”\"]\\.\\s*$", "replace": "”。" }
+            ]
+        },
+        {
+            "containerPattern": "^(?:No\\s+|未找到\\s*).+\\s+found$",
+            "nodeReplacements": [
+                { "match": "^No\\s*$", "replace": "未找到 " },
+                { "match": "^\\s*found\\s*$", "replace": "" }
+            ]
+        }
+    ]
+}

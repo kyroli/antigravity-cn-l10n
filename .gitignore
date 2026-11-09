@@ -1,0 +1,5 @@
+node_modules/
+_inspect_app/
+dicts/state.json
+dicts/new_to_translate.json
+*.tmp
