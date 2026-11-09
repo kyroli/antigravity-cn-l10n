@@ -81,7 +81,7 @@
     },
     {
         "pattern": "^Available AI Credits: (\\d+)$",
-        "replacement": "可用 AI 额度: $1"
+        "replacement": "可用 AI 额度：$1"
     },
     {
         "pattern": "^Version\\s+([\\d\\.]+)$",
@@ -129,11 +129,11 @@
     },
     {
         "pattern": "^failed to remove worktree: fatal: '(.+)' is a main working tree(: exit status (\\d+))?$",
-        "replacement": "移除工作树失败：fatal: '$1' 是主工作区 (main working tree)$2"
+        "replacement": "移除 Worktree 失败：fatal: '$1' 是主工作树 (main working tree)$2"
     },
     {
         "pattern": "^failed to remove worktree: (.+)$",
-        "replacement": "移除工作树失败：$1"
+        "replacement": "移除 Worktree 失败：$1"
     },
     {
         "pattern": "^Models within this group: (.+)$",
@@ -145,7 +145,7 @@
     },
     {
         "pattern": "^Worktree from (.+?), and reuse (.+?)$",
-        "replacement": "从 $1 创建工作树，并复用 $2"
+        "replacement": "从 $1 创建 Worktree，并复用 $2"
     },
     {
         "pattern": "^(\\d+) archived conversations?\\.?$",
@@ -429,7 +429,7 @@
     },
     {
         "pattern": "^Forked from (.+)$",
-        "replacement": "复刻自 $1"
+        "replacement": "Fork 自 $1"
     },
     {
         "pattern": "^Turn (\\d+) of (\\d+)$",
@@ -573,7 +573,7 @@
     },
     {
         "pattern": "^Agent needs permission to act on (.+)$",
-        "replacement": "智能体需要权限以操作 $1"
+        "replacement": "Agent 需要权限以操作 $1"
     },
     {
         "pattern": "^Open ([a-zA-Z0-9.+-]+) link\\?$",
@@ -589,15 +589,15 @@
     },
     {
         "pattern": "^Pushed (\\d+) commits? to (.+?)\\.?$",
-        "replacement": "已将 $1 个 Commit 推送至 $2。"
+        "replacement": "已将 $1 个 Commit Push 至 $2。"
     },
     {
         "pattern": "^Pushed to (.+?)\\.?$",
-        "replacement": "已推送至 $1。"
+        "replacement": "已 Push 至 $1。"
     },
     {
         "pattern": "^Amended commit on (.+?)\\.?$",
-        "replacement": "已在 $1 上追加修改提交 (Amend)。"
+        "replacement": "已在 $1 上执行 Amend。"
     },
     {
         "pattern": "^Published (.+) to origin\\.?$",
@@ -797,11 +797,11 @@
     },
     {
         "pattern": "^Where the agent runs, current: (.+)$",
-        "replacement": "智能体运行位置，当前：$1"
+        "replacement": "Agent 运行位置，当前：$1"
     },
     {
         "pattern": "^Agent permissions preset selector, current: (.+)$",
-        "replacement": "智能体权限预设选择器，当前：$1"
+        "replacement": "Agent 权限预设选择器，当前：$1"
     },
     {
         "pattern": "^Select project, current: (.+)$",

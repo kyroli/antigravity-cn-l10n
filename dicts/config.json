@@ -167,8 +167,8 @@
         "images": "张图片",
         "action": "项操作",
         "actions": "项操作",
-        "artifact": "个工件",
-        "artifacts": "个工件"
+        "artifact": "个 Artifact",
+        "artifacts": "个 Artifact"
     },
     "fragmentPatterns": [
         {

@@ -9,7 +9,7 @@
     "Installed MCP Servers": "已安装的 MCP 服务器",
     "Interact with documents stored in a Firestore database using natural language.": "使用自然语言与 Firestore 云数据库中文档资源直接交互。",
     "Knowledge": "知识库",
-    "Let your agents talk to your Splunk data. Ask what broke, why, and what changed -- in plain English -- and agents search your events, surface the saved searches and lookups that matter, and write the SPL for you.": "让您的智能体与 Splunk 数据对话。用简单明了的语言询问出了什么问题、原因以及有哪些变动，智能体将搜索您的事件，调出相关的已保存搜索和查找，并为您编写 SPL。",
+    "Let your agents talk to your Splunk data. Ask what broke, why, and what changed -- in plain English -- and agents search your events, surface the saved searches and lookups that matter, and write the SPL for you.": "让您的 Agent 与 Splunk 数据对话。用简单明了的语言询问出了什么问题、原因以及有哪些变动，Agent 将搜索您的事件，调出相关的已保存搜索和查找，并为您编写 SPL。",
     "Loading MCP servers...": "正在加载 MCP 服务器...",
     "Manage clusters for Managed Service for Apache Kafka and Kafka Connect using natural language.": "使用自然语言管理 Google Managed Service for Apache Kafka 及 Kafka Connect 消息集群。",
     "Manage Pub/Sub resources and publish messages. Create, list, get, update, and delete Pub/Sub topics, subscriptions, and snapshots, as well as publish messages to topics.": "管理 Pub/Sub 消息订阅发布资源。支持创建、查询、更新和删除主题及订阅，并发布消息。",
@@ -19,7 +19,7 @@
     "Netlify MCP Server enables AI assistants to interact with Netlify's platform for managing sites, deployments, domains, and other web development workflows.": "Netlify MCP 服务器允许 AI 助手与 Netlify 平台进行交互，以管理站点、部署、域名及其他 Web 开发工作流。",
     "No MCP Servers": "暂无 MCP 服务器",
     "Official Linear.app MCP Server for interacting with Linear projects, issues, and workflows.": "官方 Linear.app MCP 服务器，用于访问和管理 Linear 项目、工单及研发迭代工作流。",
-    "Official Notion MCP Server that allows interaction with Notion workspaces, pages, databases, and comments via the Notion API.": "官方 Notion MCP 服务器，支持通过 Notion API 访问和交互 Notion 工作空间、页面、数据库以及评论。",
+    "Official Notion MCP Server that allows interaction with Notion workspaces, pages, databases, and comments via the Notion API.": "官方 Notion MCP 服务器，支持通过 Notion API 访问和交互 Notion 工作区、页面、数据库以及评论。",
     "Official PayPal MCP Server that allows integration with PayPal APIs for payment processing, transaction management, and account operations.": "官方 PayPal MCP 服务器，可集成 PayPal API 以进行支付处理、交易订单管理及账户相关业务操作。",
     "Perform searches on ingested data in Google-owned data stores.": "基于 Google 数据存储库中的数据执行智能检索与问答搜索。",
     "Search for MCP servers": "搜索 MCP 服务器",
@@ -33,7 +33,7 @@
     "The Genkit Model Context Protocol (MCP) Server gives AI-powered development tools the ability to build, debug and inspect your Genkit app.": "Genkit MCP 服务器赋予 AI 开发工具构建、调试以及检查您的 Genkit AI 应用程序的能力。",
     "The gopls Model Context Protocol (MCP) server provides tools for semantic code analysis, live diagnostics, and transformation of your Go codebase.": "gopls MCP 服务器为您的 Go 语言代码库提供语义代码分析、实时错误诊断及代码重构转换的工具集。",
     "The Locofy MCP Server enables Locofy.ai code to be integrated and extended with your IDE.": "Locofy MCP 服务器可将 Locofy.ai 代码无缝集成并扩展到您的 IDE 中。",
-    "The MCP Toolbox for Databases is an open-source MCP server designed to simplify and secure the development of tools for interacting with databases.": "数据库 MCP 工具箱 (MCP Toolbox for Databases) 是一款开源 MCP 服务器，旨在安全、高效地简化各类数据库交互工具的开发与操作。",
+    "The MCP Toolbox for Databases is an open-source MCP server designed to simplify and secure the development of tools for interacting with databases.": "MCP Toolbox for Databases 是一款开源 MCP 服务器，旨在安全、高效地简化各类数据库交互工具的开发与操作。",
     "The Prisma MCP Server enables AI tools to interact with Prisma for creating and managing Postgres databases easily.": "Prisma MCP 服务器可让 AI 工具通过 Prisma 轻松创建、操作并管理 Postgres 数据库。",
     "The Unified Maintenance MCP server allows you to discover and query planned disruptive maintenance events across Google Cloud resources.": "Unified Maintenance MCP 服务器允许您发现并查询 Google Cloud 资源中计划的破坏性维护事件。"
 }
