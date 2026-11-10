@@ -146,3 +146,25 @@ test('auditor verifies dictionary health and rule shadowing integrity', () => {
     assert.ok(extractor.isLikelyUserFacingText('Pending · WIP or no reviewers assigned'));
     assert.ok(extractor.isLikelyUserFacingText('Cannot promote during Battle Mode — end the battle first'));
 });
+
+test('dictionary files strictly conform to naturalCompare sorting and CRLF line endings', () => {
+    const fs = require('fs');
+    const path = require('path');
+    for (const df of utils.DICT_FILES) {
+        const dictPath = path.join(utils.DICTS_DIR, df);
+        if (!fs.existsSync(dictPath)) continue;
+        const raw = fs.readFileSync(dictPath, 'utf8');
+        assert.ok(raw.includes('\r\n'), `${df} 必须使用 CRLF 换行`);
+        assert.ok(!raw.replace(/\r\n/g, '').includes('\n'), `${df} 禁止存在单独的 LF 换行`);
+
+        const data = JSON.parse(raw);
+        const keys = Object.keys(data);
+        for (let i = 0; i < keys.length - 1; i++) {
+            const cmp = utils.naturalCompare(keys[i], keys[i + 1]);
+            assert.ok(
+                cmp <= 0,
+                `${df} 键未按 utils.naturalCompare 排序 (索引 ${i}): "${keys[i]}" 应排在 "${keys[i + 1]}" 之前`
+            );
+        }
+    }
+});

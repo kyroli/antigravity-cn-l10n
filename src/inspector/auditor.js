@@ -156,6 +156,18 @@ function auditAndCleanDictionaries(currentGlobalCorpus, oldGlobalCorpus) {
         }
     }
 
+    const sortingViolations = [];
+    for (const df of DICT_FILES) {
+        if (!dictData[df]) continue;
+        const keys = Object.keys(dictData[df]);
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (utils.naturalCompare(keys[i], keys[i + 1]) > 0) {
+                sortingViolations.push({ file: df, keyA: keys[i], keyB: keys[i + 1] });
+                break;
+            }
+        }
+    }
+
     const { shadowedRules } = auditDynamicRules(ruleEntries, currentGlobalCorpus);
 
     if (encodingAnomalies.length > 0) {
@@ -163,6 +175,13 @@ function auditAndCleanDictionaries(currentGlobalCorpus, oldGlobalCorpus) {
         encodingAnomalies.forEach(ea => console.log(`      - [${ea.file}] "${ea.key}" -> "${ea.value}"`));
     } else {
         console.log(`\x1b[32m  [√] 词典编码检查通过\x1b[0m`);
+    }
+
+    if (sortingViolations.length > 0) {
+        console.log(`\x1b[31m  [×] 发现 ${sortingViolations.length} 个词典文件存在键排序乱序:\x1b[0m`);
+        sortingViolations.forEach(sv => console.log(`      - [${sv.file}] "${sv.keyA}" 应排在 "${sv.keyB}" 之后`));
+    } else {
+        console.log(`\x1b[32m  [√] 词典键严格排序检查通过\x1b[0m`);
     }
 
     if (redundancies.length > 0) {
@@ -214,7 +233,8 @@ function auditAndCleanDictionaries(currentGlobalCorpus, oldGlobalCorpus) {
         redundancies,
         regexCovered,
         shadowedRules,
-        dictHits
+        dictHits,
+        sortingViolations
     };
 }
 
