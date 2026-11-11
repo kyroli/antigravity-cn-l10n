@@ -1,246 +1,113 @@
 const fs = require('fs');
 const path = require('path');
 const utils = require('../utils');
-const { DICT_FILES } = utils;
+
+function loadRawDictionaries() {
+    const rawByFile = {};
+    for (const df of utils.DICT_FILES) {
+        const fp = path.join(utils.DICTS_DIR, df);
+        if (!fs.existsSync(fp)) continue;
+        try { rawByFile[df] = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch (e) {}
+    }
+    return rawByFile;
+}
 
 function loadExistingTranslations() {
-    const dict = utils.loadDictionary();
+    const rawByFile = loadRawDictionaries();
     const translated = new Set();
-    for (const k of Object.keys(dict)) {
-        const normK = utils.normalizeText(k);
-        if (normK) translated.add(normK.toLowerCase());
-    }
-
-    const rawRules = utils.loadRules();
-    const rules = rawRules.map((r, index) => {
-        try {
-            return { index, pattern: r.pattern, replacement: r.replacement, regex: new RegExp(r.pattern, 'i') };
-        } catch (e) {
-            return null;
+    for (const dict of Object.values(rawByFile)) {
+        for (const k of Object.keys(dict)) {
+            const normK = utils.normalizeText(k);
+            if (normK) translated.add(normK.toLowerCase());
         }
+    }
+    const ruleEntries = utils.loadRules().map((r, index) => {
+        try { return { index, pattern: r.pattern, replacement: r.replacement, regex: new RegExp(r.pattern, 'i') }; }
+        catch (e) { return null; }
     }).filter(Boolean);
 
-    return {
-        translated,
-        rules: rules.map(r => r.regex),
-        ruleEntries: rules
-    };
+    return { rawByFile, translated, rules: ruleEntries.map(r => r.regex), ruleEntries };
 }
 
 /**
- * 检查 rules.json 中的正则遮蔽冲突
+ * 审计静态词典（重复、恒等死键、失效候选）；默认严格只读，仅在 prune: true 时写回清理。
+ * 契约：允许静态词条精准覆盖通用正则，不将静态词条命中 rules.json 视为冲突。
  */
-function auditDynamicRules(ruleEntries, currentGlobalCorpus) {
-    const shadowedRules = [];
-    const hitByRule = new Map();
+function auditAndCleanDictionaries(currentGlobalCorpus, oldGlobalCorpus, options = {}) {
+    const { prune = false, loaded = null } = options;
+    const state = loaded || loadExistingTranslations();
+    const dictData = state.rawByFile || loadRawDictionaries();
 
-    for (const entry of ruleEntries) {
-        hitByRule.set(entry.index, { firstHits: 0, totalMatches: 0, shadowedBy: new Set() });
-    }
+    const toLowerSet = col => new Set(Array.from(col || [], s => utils.normalizeText(s).toLowerCase()).filter(Boolean));
+    const currentLower = toLowerSet(currentGlobalCorpus);
+    const oldLower = toLowerSet(oldGlobalCorpus);
 
-    for (const str of currentGlobalCorpus) {
-        let firstIdx = -1;
-        for (let i = 0; i < ruleEntries.length; i++) {
-            const entry = ruleEntries[i];
-            if (entry.regex.test(str)) {
-                const stat = hitByRule.get(entry.index);
-                stat.totalMatches++;
-                if (firstIdx === -1) {
-                    firstIdx = entry.index;
-                    stat.firstHits++;
-                } else {
-                    stat.shadowedBy.add(firstIdx);
-                }
-            }
-        }
-    }
-
-    for (const entry of ruleEntries) {
-        const stat = hitByRule.get(entry.index);
-        if (stat.totalMatches > 0 && stat.firstHits === 0) {
-            shadowedRules.push({
-                index: entry.index,
-                pattern: entry.pattern,
-                shadowedBy: Array.from(stat.shadowedBy)
-            });
-        }
-    }
-
-    return { shadowedRules };
-}
-
-function auditAndCleanDictionaries(currentGlobalCorpus, oldGlobalCorpus) {
-    const dictHits = [];
     const globalLowerMap = new Map();
-    const redundancies = [];
-    const dictData = {};
+    const redundancies = [], deadKeys = [], dictHits = [];
+    let totalEntries = 0, coveredInCorpus = 0;
 
-    for (const df of DICT_FILES) {
-        const dictPath = path.join(utils.DICTS_DIR, df);
-        if (!fs.existsSync(dictPath)) continue;
-        try {
-            dictData[df] = JSON.parse(fs.readFileSync(dictPath, 'utf8'));
-        } catch (e) {}
-    }
-
-    const currentCorpusLower = new Set();
-    for (const s of currentGlobalCorpus) {
-        currentCorpusLower.add(s.toLowerCase());
-    }
-
-    const oldCorpusLower = new Set();
-    for (const s of oldGlobalCorpus) {
-        oldCorpusLower.add(s.toLowerCase());
-    }
-
-    // 仅当词条曾存在于旧版快照语料、且在当前版本语料中已不存在时，判定为废弃
-    for (const df of DICT_FILES) {
+    for (const df of utils.DICT_FILES) {
         if (!dictData[df]) continue;
         for (const [k, v] of Object.entries(dictData[df])) {
-            const normK = utils.normalizeText(k);
-            const lowerK = normK.toLowerCase();
-            if (currentCorpusLower.has(lowerK)) continue;
-            if (oldCorpusLower.has(lowerK)) {
-                dictHits.push({ file: df, key: k, val: v, reason: '当前版本语料中已移除' });
-            }
-        }
-    }
+            totalEntries++;
+            const lowerK = utils.normalizeText(k).toLowerCase();
+            if (!lowerK) continue;
 
-    // 跨文件与大小写重复检查
-    if (dictData['common.json']) {
-        for (const [k] of Object.entries(dictData['common.json'])) {
-            const normK = utils.normalizeText(k);
-            const lowerK = normK.toLowerCase();
+            if (typeof v === 'string' && v === k) deadKeys.push({ file: df, key: k });
             if (globalLowerMap.has(lowerK)) {
                 const prev = globalLowerMap.get(lowerK);
-                redundancies.push({ file: 'common.json', key: k, reason: `与 "${prev.originalKey}" 重复` });
-            } else {
-                globalLowerMap.set(lowerK, { file: 'common.json', originalKey: k });
-            }
-        }
-    }
-
-    for (const df of DICT_FILES) {
-        if (df === 'common.json' || !dictData[df]) continue;
-        for (const [k] of Object.entries(dictData[df])) {
-            const normK = utils.normalizeText(k);
-            const lowerK = normK.toLowerCase();
-            if (globalLowerMap.has(lowerK)) {
-                const prev = globalLowerMap.get(lowerK);
-                redundancies.push({ file: df, key: k, reason: `已在 ${prev.file} 中存在对应项 "${prev.originalKey}"` });
+                redundancies.push({ file: df, key: k, reason: `已在 ${prev.file} 中存在 "${prev.originalKey}"` });
             } else {
                 globalLowerMap.set(lowerK, { file: df, originalKey: k });
             }
+
+            if (currentLower.has(lowerK)) coveredInCorpus++;
+            else if (oldLower.has(lowerK)) dictHits.push({ file: df, key: k, val: v, reason: '当前版本语料中已移除' });
         }
     }
 
-    const { rules, ruleEntries } = loadExistingTranslations();
-    const regexCovered = [];
-    const encodingAnomalies = [];
-
-    for (const df of DICT_FILES) {
-        if (!dictData[df]) continue;
-        for (const [k, v] of Object.entries(dictData[df])) {
-            const normK = utils.normalizeText(k);
-            for (const r of rules) {
-                if (r.test(normK)) {
-                    regexCovered.push({ file: df, key: k, pattern: r.toString() });
-                    break;
-                }
-            }
-            if (typeof v === 'string') {
-                if (v.includes('??') || (v.includes('?') && !k.includes('?')) || v.includes('\ufffd') || v.includes('锟斤拷')) {
-                    encodingAnomalies.push({ file: df, key: k, value: v });
-                }
-            }
+    const logList = (items, warnMsg, okMsg, fmt) => {
+        if (items.length > 0) {
+            console.log(`\x1b[33m  [!] 发现 ${items.length} 个${warnMsg}:\x1b[0m`);
+            items.slice(0, 15).forEach(item => console.log(`      - ${fmt(item)}`));
+        } else {
+            console.log(`\x1b[32m  [√] ${okMsg}\x1b[0m`);
         }
-    }
+    };
+    logList(redundancies, '大小写或跨文件重复词条', '词典无大小写或跨文件重复', r => `[${r.file}] "${r.key}" (${r.reason})`);
+    logList(deadKeys, '恒等空转死键 (key === value)', '词典无恒等死键', d => `[${d.file}] "${d.key}"`);
+    console.log(`  [统计] 静态词条总数 ${totalEntries} 条（命中当前提取语料 ${coveredInCorpus} 条），正则规则 ${state.ruleEntries.length} 条`);
 
-    const sortingViolations = [];
-    for (const df of DICT_FILES) {
-        if (!dictData[df]) continue;
-        const keys = Object.keys(dictData[df]);
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (utils.naturalCompare(keys[i], keys[i + 1]) > 0) {
-                sortingViolations.push({ file: df, keyA: keys[i], keyB: keys[i + 1] });
-                break;
-            }
-        }
-    }
-
-    const { shadowedRules } = auditDynamicRules(ruleEntries, currentGlobalCorpus);
-
-    if (encodingAnomalies.length > 0) {
-        console.log(`\x1b[31m  [×] 发现 ${encodingAnomalies.length} 个疑似乱码或异常问号词条:\x1b[0m`);
-        encodingAnomalies.forEach(ea => console.log(`      - [${ea.file}] "${ea.key}" -> "${ea.value}"`));
-    } else {
-        console.log(`\x1b[32m  [√] 词典编码检查通过\x1b[0m`);
-    }
-
-    if (sortingViolations.length > 0) {
-        console.log(`\x1b[31m  [×] 发现 ${sortingViolations.length} 个词典文件存在键排序乱序:\x1b[0m`);
-        sortingViolations.forEach(sv => console.log(`      - [${sv.file}] "${sv.keyA}" 应排在 "${sv.keyB}" 之后`));
-    } else {
-        console.log(`\x1b[32m  [√] 词典键严格排序检查通过\x1b[0m`);
-    }
-
-    if (redundancies.length > 0) {
-        console.log(`\x1b[33m  [!] 发现 ${redundancies.length} 个大小写或跨文件重复词条:\x1b[0m`);
-        redundancies.forEach(r => console.log(`      - [${r.file}] "${r.key}" (${r.reason})`));
-    } else {
-        console.log(`\x1b[32m  [√] 词典无大小写或跨文件重复\x1b[0m`);
-    }
-
-    if (regexCovered.length > 0) {
-        console.log(`\x1b[33m  [!] 发现 ${regexCovered.length} 个已被 rules.json 覆盖的静态词条:\x1b[0m`);
-        regexCovered.forEach(rc => console.log(`      - [${rc.file}] "${rc.key}" -> 匹配正则 ${rc.pattern}`));
-    } else {
-        console.log(`\x1b[32m  [√] 词典无被 rules.json 覆盖的冗余词条\x1b[0m`);
-    }
-
-    if (shadowedRules.length > 0) {
-        console.log(`\x1b[33m  [!] 发现 ${shadowedRules.length} 条被前置规则遮蔽的正则规则:\x1b[0m`);
-        shadowedRules.forEach(sr => console.log(`      - [rules.json #${sr.index}] ${sr.pattern} (被规则 #${sr.shadowedBy.join(', #')} 遮蔽)`));
-    } else {
-        console.log(`\x1b[32m  [√] rules.json 无规则遮蔽冲突\x1b[0m`);
-    }
-
+    let pruned = false;
     if (dictHits.length > 0) {
-        console.log(`\x1b[33m  [!] 发现 ${dictHits.length} 个已废弃词条:\x1b[0m`);
-        dictHits.forEach(dh => console.log(`      - [${dh.file}] "${dh.key}" (${dh.reason})`));
-
-        console.log(`\n  [清理] 正在移除已废弃词条...`);
-        const touchedFiles = new Set();
-        for (const dh of dictHits) {
-            if (dictData[dh.file] && dictData[dh.file][dh.key]) {
-                delete dictData[dh.file][dh.key];
-                touchedFiles.add(dh.file);
+        logList(dictHits, '疑似已废弃词条', '', dh => `[${dh.file}] "${dh.key}" (${dh.reason})`);
+        if (prune) {
+            const touched = new Set();
+            for (const dh of dictHits) {
+                if (dictData[dh.file] && Object.prototype.hasOwnProperty.call(dictData[dh.file], dh.key)) {
+                    delete dictData[dh.file][dh.key];
+                    touched.add(dh.file);
+                }
             }
+            for (const df of touched) {
+                const sorted = {};
+                Object.keys(dictData[df]).sort(utils.naturalCompare).forEach(k => { sorted[k] = dictData[df][k]; });
+                fs.writeFileSync(path.join(utils.DICTS_DIR, df), JSON.stringify(sorted, null, 4).replace(/\n/g, '\r\n') + '\r\n', 'utf8');
+            }
+            pruned = touched.size > 0;
+            console.log(`\x1b[32m  [√] 已清理 ${dictHits.length} 个废弃词条\x1b[0m`);
+        } else {
+            console.log(`  [提示] 默认只读模式未修改词典；如需删除请显式传入 --prune`);
         }
-        for (const df of touchedFiles) {
-            const dictPath = path.join(utils.DICTS_DIR, df);
-            const sorted = {};
-            Object.keys(dictData[df]).sort(utils.naturalCompare).forEach(k => sorted[k] = dictData[df][k]);
-            fs.writeFileSync(dictPath, JSON.stringify(sorted, null, 4).replace(/\n/g, '\r\n') + '\r\n', 'utf8');
-        }
-        console.log(`\x1b[32m  [√] 已清理 ${dictHits.length} 个废弃词条\x1b[0m`);
     } else {
         console.log(`\x1b[32m  [√] 未发现已废弃词条\x1b[0m`);
     }
 
-    return {
-        encodingAnomalies,
-        redundancies,
-        regexCovered,
-        shadowedRules,
-        dictHits,
-        sortingViolations
-    };
+    return { redundancies, deadKeys, dictHits, totalEntries, coveredInCorpus, pruned };
 }
 
 module.exports = {
-    DICT_FILES,
+    DICT_FILES: utils.DICT_FILES,
     loadExistingTranslations,
-    auditDynamicRules,
     auditAndCleanDictionaries
 };

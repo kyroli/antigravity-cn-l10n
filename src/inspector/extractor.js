@@ -1,104 +1,53 @@
 const utils = require('../utils');
-const patcher = require('../patcher');
 
-// 允许基础 ASCII 与标准西文排版标点（破折号 — –、圆点 • ·、箭头 → ←、快捷键符号 ⌘ ⌥ ⇧ ⌃、版权 ©、度数 ° 等）
-const DISALLOWED_CHAR_RE = /[^\x20-\x7E\u00A0\u00A9\u00B0\u00B7\u2013\u2014\u2018-\u201D\u2022\u2026\u2190-\u2193\u2318\u2325\u21E7\u2303]/;
-
-const TEXT_REJECT_RULES = [
-    // 1. 代码符号、运算符、关键字与标识符
-    /^(?:use strict|utf-8)$/i,
-    /[\[\]\*\{\}\<\>\#\\\|\^`~]/,
-    /[&|]{2}|={2,3}|!==?/,
-    /\b(const|let|var|function|return|class|extends|throw|catch|async|await|require|typeof|instanceof)\b|\bimport\s+[\w*{'"]|\bexport\s+(?:default|const|let|var|function|class|\*)\b|\bswitch\s*\(|\bcase\s+['"\d]/,
-    s => s.includes('__') || s.includes('$$') || s.includes('//') || s.includes('/*'),
-    /^[a-zA-Z0-9_$]+$/,
-    /^['"][a-zA-Z0-9_-]+['"]$/,
-    /^['"]?[:;,\)\(]/,
-    /^[A-Za-z0-9_\-\s]+:$/,
-    /^[a-z0-9_]+-$/,
-    s => s.startsWith('Symbol(') || (s.startsWith('create(') && s.endsWith(')')),
-
-    // 2. 字符串拼接与模板截断碎片
-    /(?:['"]\s*\+|\+\s*['"])|^['"]?\+|\+['"]?$/,
-    /^(in\s+[a-zA-Z]|s\s+["']\+)/,
-    /^(?:t|s|d|ll|re|ve)\s+[a-z]/i,
-    /^(?:with\s+a|in\s+a|of\s+a|for\s+a)$/i,
-    s => (s.includes('"') && (s.split('"').length - 1) % 2 !== 0),
-    s => s.includes('),content:') || s.includes('.describe('),
-
-    // 3. 属性访问、URL、路径、模块标识与 MIME/CSP
-    /^[a-zA-Z]+\.[a-zA-Z]/,
-    /^(http|https):\/\//,
-    /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+/,
-    /^[a-zA-Z0-9_/-]+\.(js|json|exe|log|app|ts|png|svg|md)$/i,
-    /^[a-zA-Z0-9@_-]+\/[a-zA-Z0-9@_-]+$/,
-    /^[a-zA-Z0-9@_.-]+(?:\/[a-zA-Z0-9@_.-]+){2,}$/,
-    /^[a-zA-Z0-9_-]+\/$/,
-    /^(?:video|audio|text|application)\/[a-z0-9._+-]*(?:;.*)?$/i,
-    /^(?:(?:video|audio|text|application)\/[a-z0-9._+-]+(?:;[a-z0-9._+-=]+)?\s*)+$/i,
-    /^(?:base-uri|frame-src|script-src|style-src|img-src|connect-src|font-src|object-src|media-src|manifest-src|worker-src|form-action|default-src)\s+/i,
-    /^(?:clipboard-read|clipboard-write|microphone|camera|geolocation)(?:;\s*(?:clipboard-read|clipboard-write|microphone|camera|geolocation))*$/i,
-    /^[a-z0-9_ -]+(?:;[a-z0-9_ -]+){2,}$/,
-    /^[A-Za-z0-9_]+(;[A-Za-z0-9_ ]*)+;?$/,
-
-    // 4. CSS 样式、选择器、函数与类名列表
-    /^(?:[a-z0-9_\-\/]+:)*!?[a-z0-9]+(-+[a-z0-9.]+)+$/i,
-    /^(?:font-size|width=|color:|display:|margin|padding|opacity|background:)/i,
-    /^(?:color|rgba?|translate[XYZ23dD]?|rotate[XYZ]?|scale[XYZ]?|min|max|calc|var|repeat|(?:repeating-)?(?:linear|radial|conic)-gradient)\(/i,
-    /^(?:tbody|thead|tfoot|table)\s+(?:tr|td|th)\b|^iframe,\s*webview$/i,
-    /cubic-bezier\(|(?:\b\d+(\.\d+)?m?s\s+(?:linear|ease|cubic-bezier))/,
-    /^(?:top|bottom|left|right|center)(?:\s+(?:top|bottom|left|right|center))+$/i,
-    /,\s*(?:Menlo|Monaco|Consolas|SFMono-Regular|Liberation Mono|Courier New|monospace)\b/i,
-    /@container\//,
-    s => {
-        if (!s.includes(' ')) return false;
-        const tokens = s.trim().split(/\s+/);
-        if (tokens.length >= 2 && tokens.every(t => /^!?[a-z0-9]+(?:-+[a-z0-9]+)+$/.test(t))) {
-            return true;
-        }
-        if (tokens.length >= 2) {
-            const hasCssTrait = tokens.some(t => /^(?:[a-z0-9_\-\/]+:)*!?(?:flex|bg-|text-|border|items-|justify-|p-|px-|py-|pl-|pr-|pt-|pb-|m-|mt-|mb-|ml-|mr-|w-|h-|overflow-|rounded|gap-|shrink-|relative|absolute|transition|animate|shadow|group|cursor-|font-|hover:|focus:|select-|tabular-|z-|top-|bottom-|left-|right-|line-|opacity-|duration-|bleed|truncate|break-|inline-|md-|table-|space-|ring-|stroke-|object-)/.test(t));
-            const allTokenLike = tokens.every(t => /^(?:[a-z0-9_\-\/]+:)*!?[a-z0-9_\-\.\/]+$/i.test(t));
-            if (hasCssTrait && allTokenLike) return true;
-        }
-        return false;
-    },
-
-    // 5. 快捷键、Shell 指令与底层类型标识
-    /^(CmdOrCtrl|Ctrl|Alt|Shift)\+/i,
-    /^[A-Za-z0-9]+(\+[A-Za-z0-9]+)+$/,
-    /^(?:chmod|mv|rm|trap|cp|mkdir|touch)\s+|EXIT$/i,
-    /\$(?:tmp|dir)\b/,
-    /^(?:bigint|number)\s+\((?:int64|uint64|float32|float64|int32|uint32)\)$/,
-    /^use[A-Z][a-zA-Z0-9]*\s+must be used within/i
+// 允许基础 ASCII 与标准西文排版/警示符号
+const DISALLOWED_CHAR_RE = /[^\x20-\x7E\u00A0\u00A9\u00B0\u00B7\u2013\u2014\u2018-\u201D\u2022\u2026\u2190-\u2193\u2318\u2325\u21E7\u2303\u23CE\u26A0\uFE0F]/;
+const TAILWIND_TOKEN_RE = /^(?:[a-z0-9_-]+:)*!?(?:flex|grid|bg|text|border|items|justify|p|px|py|pl|pr|pt|pb|m|mx|my|mt|mb|ml|mr|w|h|min-w|max-w|min-h|max-h|overflow|rounded|gap|shrink|grow|font|leading|tracking|opacity|shadow|ring|stroke|fill|transition|duration|animate|cursor|select|tabular|z|top|bottom|left|right|line|space|divide|col|row|aspect|object|o2)-(?:\d|px|auto|full|screen|min|max|fit|none|sm|md|lg|xl|2xl|center|start|end|between|around|evenly|col|row|wrap|nowrap|hidden|scroll|clip|ellipsis|solid|dashed|dotted|transparent|current|inherit|white|black|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|muted|primary|secondary|destructive|accent|ti|tile|wchip)/;
+const CODE_SYNTAX_RE = /\b(?:const|let|var)\s+[a-zA-Z_$][\w$]*\s*=|\bfunction\s*[a-zA-Z_$]*\s*\(|\b(?:import\s+[\w*{'"]|export\s+(?:default|const|let|var|function|class|\*)\b)|\bswitch\s*\(|\bcase\s+['"\d]|=>|[&|]{2}|={2,3}|!==?/;
+const REJECT_PATTERNS = [
+    /^(?:use strict|utf-?8|true|false|null|undefined|NaN|Infinity)$/i,
+    /[\{\}\\]/,
+    /^['"]?[:;)\}=]/,
+    /['"]\s*\+|\+\s*['"]/,
+    /^(?:https?|file|vscode|plugin):\/\/\S+$/i,
+    /^data:[a-z]+\/[a-z0-9.+-]+/i,
+    /^mailto:\S+$/i,
+    /^[\w@./\\-]+\.(?:js|mjs|cjs|ts|tsx|jsx|json|exe|log|app|png|svg|md|html|htm|css|map|wasm|dll)$/i,
+    /^[a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)+$/,
+    /^[a-zA-Z0-9@_.-]+(?:\/[a-zA-Z0-9@_.-]+)+$/,
+    /^[a-z0-9_-]+(?:,[a-z0-9_-]+)+$/i,
+    /^[a-z0-9_-]+;[a-z0-9_= -]+/i,
+    /^(?:CmdOrCtrl|Ctrl|Alt|Shift|Meta)(?:\+[A-Za-z0-9]+)+$/i,
+    /^[a-zA-Z0-9$]+_[a-zA-Z0-9_$]+$/,
+    /^use[A-Z][a-zA-Z0-9]*\s+must be used within/i,
+    CODE_SYNTAX_RE,
+    TAILWIND_TOKEN_RE
 ];
 
 function isLikelyUserFacingText(str) {
-    if (!str) return false;
-    const trimmed = str.trim();
+    if (!str || typeof str !== 'string') return false;
+    const s = str.trim();
+    if (s.length < 2 || s.length > 500 || !/\b[a-zA-Z]{2,}\b/.test(s) || DISALLOWED_CHAR_RE.test(s)) return false;
+    if (s.includes('__') || s.includes('$$') || s.includes('/*') || /(?:^|\s)\/\//.test(s)) return false;
+    if (s.includes('),content:') || s.includes('.describe(')) return false;
+    if (s.includes('"') && (s.split('"').length - 1) % 2 !== 0) return false;
+    if (REJECT_PATTERNS.some(re => re.test(s))) return false;
 
-    if (trimmed.length < 2 || trimmed.length > 250) return false;
-    if (!/[a-zA-Z]/.test(trimmed)) return false;
-    if (DISALLOWED_CHAR_RE.test(trimmed)) return false;
-    if (/^[^a-zA-Z"'(•]/.test(trimmed)) return false;
-    if (!/\b[a-zA-Z]{2,}\b/.test(trimmed)) return false;
-
-    for (const rule of TEXT_REJECT_RULES) {
-        if (typeof rule === 'function') {
-            if (rule(trimmed)) return false;
-        } else if (rule.test(trimmed)) {
-            return false;
-        }
+    if (!/\s/.test(s)) return /^(?:OK|[A-Z][a-z]+:?)$/.test(s);
+    const tokens = s.split(/\s+/);
+    if (tokens.length >= 2 &&
+        tokens.every(t => /^(?:[a-z0-9_-]+:)*!?[a-z0-9_.-]+$/.test(t) && !/[.,!?]$/.test(t)) &&
+        tokens.some(t => TAILWIND_TOKEN_RE.test(t) || /^[a-z0-9_-]+:/.test(t))) {
+        return false;
     }
-
     return true;
 }
 
 function unescapeJsString(rawStr) {
     try {
         return rawStr
-            .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-            .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+            .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+            .replace(/\\x([0-9a-fA-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
             .replace(/\\(.)/g, '$1');
     } catch (e) {
         return rawStr.replace(/\\(.)/g, '$1');
@@ -107,10 +56,9 @@ function unescapeJsString(rawStr) {
 
 function stripBundledNoiseBlocks(content) {
     if (!content) return '';
-    content = patcher.cleanInjectedPatches(content);
-    content = content.replace(/\/\*[\s\S]{0,600}?Kiel University[\s\S]*?\.ELK\.default;/g, '');
-    content = content.replace(/"vscode:\/\/schemas\/workbench-colors"[\s\S]*?"vscode:\/\/schemas\/token-styling"[\s\S]{0,1500}?terminal\."\+[a-zA-Z0-9_$]+\);/g, '');
-    return content;
+    return utils.cleanInjectedPatches(content)
+        .replace(/\/\*[\s\S]{0,600}?Kiel University[\s\S]*?\.ELK\.default;/g, '')
+        .replace(/"vscode:\/\/schemas\/workbench-colors"[\s\S]*?"vscode:\/\/schemas\/token-styling"[\s\S]{0,1500}?terminal\."\+[a-zA-Z0-9_$]+\);/g, '');
 }
 
 function extractStringsFromJs(content) {
@@ -119,48 +67,17 @@ function extractStringsFromJs(content) {
     content = stripBundledNoiseBlocks(content);
 
     const len = content.length;
-    let i = 0;
-    let inQuote = null;
-    let strStart = -1;
-    let inRegex = false;
-    let inCharClass = false;
-    let inLineComment = false;
-    let inBlockComment = false;
+    let i = 0, inQuote = null, strStart = -1, inRegex = false, inCharClass = false, inLineComment = false, inBlockComment = false;
 
     while (i < len) {
         const ch = content[i];
-
-        if (ch === '\\' && (inQuote || inRegex)) {
-            if (content[i + 1] === '\r' && content[i + 2] === '\n') {
-                i += 3;
-            } else {
-                i += 2;
-            }
-            continue;
-        }
-
-        if (inLineComment) {
-            if (ch === '\n') inLineComment = false;
-            i++;
-            continue;
-        }
-        if (inBlockComment) {
-            if (ch === '*' && content[i + 1] === '/') {
-                inBlockComment = false;
-                i += 2;
-                continue;
-            }
-            i++;
-            continue;
-        }
-
+        if (ch === '\\' && (inQuote || inRegex)) { i += (content[i + 1] === '\r' && content[i + 2] === '\n') ? 3 : 2; continue; }
+        if (inLineComment) { if (ch === '\n') inLineComment = false; i++; continue; }
+        if (inBlockComment) { if (ch === '*' && content[i + 1] === '/') { inBlockComment = false; i += 2; continue; } i++; continue; }
         if (inQuote) {
             if (ch === inQuote) {
-                const rawStr = unescapeJsString(content.slice(strStart, i));
-                const normStr = utils.normalizeText(rawStr);
-                if (isLikelyUserFacingText(normStr)) {
-                    strings.add(normStr);
-                }
+                const normStr = utils.normalizeText(unescapeJsString(content.slice(strStart, i)));
+                if (isLikelyUserFacingText(normStr)) strings.add(normStr);
                 inQuote = null;
             } else if (inQuote !== '`' && ch === '\n') {
                 inQuote = null;
@@ -168,66 +85,33 @@ function extractStringsFromJs(content) {
             i++;
             continue;
         }
-
         if (inRegex) {
-            if (ch === '[' && !inCharClass) {
-                inCharClass = true;
-            } else if (ch === ']' && inCharClass) {
-                inCharClass = false;
-            } else if (ch === '/' && !inCharClass) {
-                inRegex = false;
-            } else if (ch === '\n') {
-                inRegex = false;
-                inCharClass = false;
-            }
+            if (ch === '[' && !inCharClass) inCharClass = true;
+            else if (ch === ']' && inCharClass) inCharClass = false;
+            else if (ch === '/' && !inCharClass) inRegex = false;
+            else if (ch === '\n') { inRegex = false; inCharClass = false; }
             i++;
             continue;
         }
-
-        if (ch === '/' && content[i + 1] === '/') {
-            inLineComment = true;
-            i += 2;
-            continue;
-        }
-        if (ch === '/' && content[i + 1] === '*') {
-            inBlockComment = true;
-            i += 2;
-            continue;
-        }
-
-        if (ch === '"' || ch === "'" || ch === '`') {
-            inQuote = ch;
-            strStart = i + 1;
-            i++;
-            continue;
-        }
-
+        if (ch === '/' && content[i + 1] === '/') { inLineComment = true; i += 2; continue; }
+        if (ch === '/' && content[i + 1] === '*') { inBlockComment = true; i += 2; continue; }
+        if (ch === '"' || ch === "'" || ch === '`') { inQuote = ch; strStart = i + 1; i++; continue; }
         if (ch === '/') {
-            let prevIdx = i - 1;
-            while (prevIdx >= 0 && /\s/.test(content[prevIdx])) prevIdx--;
-            if (prevIdx >= 0) {
-                const prevChar = content[prevIdx];
-                let isRegex = '(=:[!&|?{};\n,+-*<>~^%'.includes(prevChar);
-                if (!isRegex && /[a-zA-Z]/.test(prevChar)) {
-                    let wordStart = prevIdx;
-                    while (wordStart >= 0 && /[a-zA-Z]/.test(content[wordStart])) wordStart--;
-                    const word = content.slice(wordStart + 1, prevIdx + 1);
-                    if (/^(?:return|case|yield|await|typeof|void|delete|in|instanceof)$/.test(word)) {
-                        isRegex = true;
-                    }
+            let p = i - 1;
+            while (p >= 0 && /\s/.test(content[p])) p--;
+            if (p >= 0) {
+                const pc = content[p];
+                let isRe = '(=:[!&|?{};\n,+-*<>~^%'.includes(pc);
+                if (!isRe && /[a-zA-Z]/.test(pc)) {
+                    let ws = p;
+                    while (ws >= 0 && /[a-zA-Z]/.test(content[ws])) ws--;
+                    if (/^(?:return|case|yield|await|typeof|void|delete|in|instanceof)$/.test(content.slice(ws + 1, p + 1))) isRe = true;
                 }
-                if (isRegex) {
-                    inRegex = true;
-                    inCharClass = false;
-                    i++;
-                    continue;
-                }
+                if (isRe) { inRegex = true; inCharClass = false; }
             }
         }
-
         i++;
     }
-
     return strings;
 }
 
@@ -239,12 +123,11 @@ function extractHighConfidenceUiStrings(content) {
     if (!content) return candidates;
     content = stripBundledNoiseBlocks(content);
 
-    const uiPropRe = /\b(label|title|placeholder|description|message|detail|buttonLabel|emptyMessage|tooltip|subtitle|heading|"aria-label")\s*:\s*(["'])((?:\\.|(?!\2)[^\\\r\n]){2,220})\2/g;
+    const uiPropRe = /(?:\b(label|title|placeholder|description|message|detail|buttonLabel|emptyMessage|tooltip|subtitle|heading)|"aria-label"|'aria-label')\s*:\s*(["'])((?:\\.|(?!\2)[^\\\r\n]){2,400})\2/g;
     let m;
     while ((m = uiPropRe.exec(content))) {
-        const prop = m[1].replace(/"/g, '');
-        const raw = unescapeJsString(m[3]);
-        const norm = utils.normalizeText(raw);
+        const prop = m[1] || 'aria-label';
+        const norm = utils.normalizeText(unescapeJsString(m[3]));
         if (isLikelyUserFacingText(norm)) {
             if (!candidates.has(norm)) candidates.set(norm, new Set());
             candidates.get(norm).add(`prop:${prop}`);
@@ -256,5 +139,6 @@ function extractHighConfidenceUiStrings(content) {
 module.exports = {
     isLikelyUserFacingText,
     extractStringsFromJs,
-    extractHighConfidenceUiStrings
+    extractHighConfidenceUiStrings,
+    stripBundledNoiseBlocks
 };

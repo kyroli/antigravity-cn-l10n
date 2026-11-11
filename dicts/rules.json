@@ -1,51 +1,37 @@
 [
     {
-        "pattern": "^\\(Recommended\\)\\s*(.*)$",
+        "pattern": "^\\(Recommended\\)$",
+        "replacement": "(推荐)"
+    },
+    {
+        "pattern": "^\\(Recommended\\)\\s+(.+)$",
         "replacement": "(推荐) $1"
     },
     {
         "pattern": "^You have used some of your (\\d+)-hour limit, it will fully refresh in (.+?)\\.?$",
-        "replacement": "您已使用部分 $1 小时限制，将在 $2 后完全刷新。"
+        "replacement": "您已使用部分 $1 小时限额，将在 $2 后完全刷新。"
     },
     {
         "pattern": "^You have used some of your weekly limit, it will fully refresh in (.+?)\\.?$",
-        "replacement": "您已使用部分周度限制，将在 $1 后完全刷新。"
+        "replacement": "您已使用部分每周限额，将在 $1 后完全刷新。"
     },
     {
-        "pattern": "^(.+?)\\s+Weekly Limit$",
-        "replacement": "$1 周度限制"
+        "pattern": "^(?!(?:your|the|a|an|my|our|their|this|that|check|reach|reached|hit|use|view|see|you|we|some)\\b)([A-Za-z0-9][A-Za-z0-9 ._+()-]{0,40})\\s+Weekly Limit$",
+        "replacement": "$1 每周限额",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^(.+?)\\s+5-Hour Limit$",
-        "replacement": "$1 5 小时限制"
+        "pattern": "^(?!(?:your|the|a|an|my|our|their|this|that|check|reach|reached|hit|use|view|see|you|we|some)\\b)([A-Za-z0-9][A-Za-z0-9 ._+()-]{0,40})\\s+5-Hour Limit$",
+        "replacement": "$1 5 小时限额",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Refreshes in (.+?)$",
         "replacement": "$1 后刷新"
-    },
-    {
-        "pattern": "^Resets in <1m$",
-        "replacement": "1 分钟内重置"
-    },
-    {
-        "pattern": "^Resets in (\\d+)d\\s+(\\d+)h$",
-        "replacement": "$1 天 $2 小时后重置"
-    },
-    {
-        "pattern": "^Resets in (\\d+)d$",
-        "replacement": "$1 天后重置"
-    },
-    {
-        "pattern": "^Resets in (\\d+)h\\s+(\\d+)m$",
-        "replacement": "$1 小时 $2 分钟后重置"
-    },
-    {
-        "pattern": "^Resets in (\\d+)h$",
-        "replacement": "$1 小时后重置"
-    },
-    {
-        "pattern": "^Resets in (\\d+)m$",
-        "replacement": "$1 分钟后重置"
     },
     {
         "pattern": "^Resets in (.+)$",
@@ -53,7 +39,10 @@
     },
     {
         "pattern": "^You can upgrade to a (.+?) plan to receive higher rate limits\\.?$",
-        "replacement": "您可以升级至 $1 计划以获取更高的速率限制。"
+        "replacement": "您可以升级至 $1 订阅方案以获取更高的速率限制。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Learn more about (.+)$",
@@ -61,19 +50,29 @@
     },
     {
         "pattern": "^Yes, and always allow '(.+)' in this project$",
-        "replacement": "是，且在此项目中始终允许运行 '$1'"
+        "replacement": "是，且在此项目中始终允许运行 '$1'",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Yes, and always allow '(.+)'$",
-        "replacement": "是，且始终允许运行 '$1'"
+        "replacement": "是，且始终允许运行 '$1'",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^(\\d+) tools? enabled$",
         "replacement": "$1 个工具已启用"
     },
     {
-        "pattern": "^Show (\\d+) more(\\.\\.\\.|…)?$",
+        "pattern": "^Show (\\d+) more\\.\\.\\.$",
         "replacement": "显示另外 $1 个..."
+    },
+    {
+        "pattern": "^Show (\\d+) more$",
+        "replacement": "显示另外 $1 个"
     },
     {
         "pattern": "^See all \\((\\d+)\\)$",
@@ -89,99 +88,189 @@
     },
     {
         "pattern": "^(\\d+)s$",
-        "replacement": "$1 秒前"
+        "replacement": "$1 秒前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(\\d+)m$",
-        "replacement": "$1 分钟前"
+        "replacement": "$1 分钟前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(\\d+)h$",
-        "replacement": "$1 小时前"
+        "replacement": "$1 小时前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(\\d+)d$",
-        "replacement": "$1 天前"
+        "replacement": "$1 天前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(\\d+)w$",
-        "replacement": "$1 周前"
+        "replacement": "$1 周前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(\\d+)mo$",
-        "replacement": "$1 个月前"
+        "replacement": "$1 个月前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(\\d+)yr$",
-        "replacement": "$1 年前"
+        "replacement": "$1 年前",
+        "caseSensitive": true
     },
     {
         "pattern": "^(.+?): context deadline exceeded$",
-        "replacement": "$1: 请求超时 (context deadline exceeded)"
+        "replacement": "$1: 请求超时 (context deadline exceeded)",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^(.+?): i\\/o timeout$",
-        "replacement": "$1: I\\/O 超时 (i\\/o timeout)"
+        "replacement": "$1: I/O 超时 (i/o timeout)",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Are you sure you want to delete (the |this )?project (.+?)\\??$",
-        "replacement": "您确定要删除项目 $2 吗？"
+        "pattern": "^failed to remove worktree: fatal: '(.+)' is a main working tree: exit status (\\d+)$",
+        "replacement": "移除 Worktree 失败：fatal: '$1' 是主工作树 (main working tree)（退出状态码：$2）",
+        "rawGroups": [
+            1,
+            2
+        ]
     },
     {
-        "pattern": "^failed to remove worktree: fatal: '(.+)' is a main working tree(: exit status (\\d+))?$",
-        "replacement": "移除 Worktree 失败：fatal: '$1' 是主工作树 (main working tree)$2"
+        "pattern": "^failed to remove worktree: fatal: '(.+)' is a main working tree$",
+        "replacement": "移除 Worktree 失败：fatal: '$1' 是主工作树 (main working tree)",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^failed to remove worktree: (.+)$",
-        "replacement": "移除 Worktree 失败：$1"
+        "replacement": "移除 Worktree 失败：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Models within this group: (.+)$",
-        "replacement": "该分组中的模型：$1"
+        "replacement": "该分组中的模型：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Work locally on (.+?)$",
-        "replacement": "在本地开发 $1"
+        "replacement": "在本地开发 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Worktree from (.+?), and reuse (.+?)$",
-        "replacement": "从 $1 创建 Worktree，并复用 $2"
+        "replacement": "从 $1 创建 Worktree，并复用 $2",
+        "rawGroups": [
+            1,
+            2
+        ]
     },
     {
         "pattern": "^(\\d+) archived conversations?\\.?$",
         "replacement": "$1 个归档会话"
     },
     {
-        "pattern": "\\((\\d+) image attachments?\\)",
+        "pattern": "^\\((\\d+) image attachments?\\)$",
         "replacement": "($1 个图片附件)"
     },
     {
-        "pattern": "^Your (\\d+)-hour limit will refresh in (.+?)\\.?$",
-        "replacement": "您的 $1 小时限制将在 $2 后刷新。"
+        "pattern": "^Your (\\d+)-hour limit will fully refresh in ([^.]+?)\\.?$",
+        "replacement": "您的 $1 小时限额将在 $2 后完全刷新。"
     },
     {
-        "pattern": "^You have hit your (\\d+)-hour limit, it will refresh in (.+?)\\. If on a supported paid plan, you can use AI credits in the interim\\.?$",
-        "replacement": "您已达到 $1 小时限制，将在 $2 后刷新。如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
+        "pattern": "^Your (\\d+)-hour limit will refresh in ([^.]+?)\\.?$",
+        "replacement": "您的 $1 小时限额将在 $2 后刷新。"
     },
     {
-        "pattern": "^This will permanently delete (.+?) and (\\d+) active conversations? and (\\d+) archived conversations? within it\\. This action cannot be undone\\.$",
-        "replacement": "这将永久删除 $1 及其中的 $2 个活跃会话和 $3 个归档会话。此操作无法撤销。"
+        "pattern": "^Your weekly limit will fully refresh in ([^.]+?)\\.?$",
+        "replacement": "您的每周限额将在 $1 后完全刷新。"
+    },
+    {
+        "pattern": "^Your weekly limit will refresh in ([^.]+?)\\.?$",
+        "replacement": "您的每周限额将在 $1 后刷新。"
+    },
+    {
+        "pattern": "^You have hit your (\\d+)-hour limit, (?:so )?the weekly limit does not currently apply\\. Your (?:\\d+)-hour limit will fully refresh in ([^.]+?)\\.?$",
+        "replacement": "您已达到 $1 小时限额，因此每周限额当前不适用。您的 $1 小时限额将在 $2 后完全刷新。"
+    },
+    {
+        "pattern": "^You have hit your (\\d+)-hour limit, (?:so )?the weekly limit does not currently apply\\. Your (?:\\d+)-hour limit will refresh in ([^.]+?)\\.?$",
+        "replacement": "您已达到 $1 小时限额，因此每周限额当前不适用。您的 $1 小时限额将在 $2 后刷新。"
+    },
+    {
+        "pattern": "^You have hit your weekly limit, (?:so )?the (\\d+)-hour limit does not currently apply\\. Your weekly limit will fully refresh in ([^.]+?)\\.?$",
+        "replacement": "您已达到每周限额，因此 $1 小时限额当前不适用。您的每周限额将在 $2 后完全刷新。"
+    },
+    {
+        "pattern": "^You have hit your weekly limit, (?:so )?the (\\d+)-hour limit does not currently apply\\. Your weekly limit will refresh in ([^.]+?)\\.?$",
+        "replacement": "您已达到每周限额，因此 $1 小时限额当前不适用。您的每周限额将在 $2 后刷新。"
+    },
+    {
+        "pattern": "^You have hit your weekly limit, (?:so )?the (\\d+)-hour limit does not currently apply\\.?$",
+        "replacement": "您已达到每周限额，因此 $1 小时限额当前不适用。"
+    },
+    {
+        "pattern": "^You have hit your (\\d+)-hour limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\. If on a supported paid plan, you can use AI credits in the interim\\.?$",
+        "replacement": "您已达到 $1 小时限额，将在 $2 后刷新。如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
+    },
+    {
+        "pattern": "^You have hit your (\\d+)-hour limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\.?$",
+        "replacement": "您已达到 $1 小时限额，将在 $2 后刷新。"
+    },
+    {
+        "pattern": "^You have hit your weekly limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\. If on a supported paid plan, you can use AI credits in the interim\\.?$",
+        "replacement": "您已达到每周限额，将在 $1 后刷新。如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
+    },
+    {
+        "pattern": "^You have hit your weekly limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\.?$",
+        "replacement": "您已达到每周限额，将在 $1 后刷新。"
+    },
+    {
+        "pattern": "^(\\d+) active conversations? and (\\d+) archived conversations?$",
+        "replacement": "$1 个活跃会话和 $2 个归档会话"
     },
     {
         "pattern": "^(Post|Get|Put|Delete) \"(https?://.+?)\": (.+)$",
-        "replacement": "向 \"$2\" 发送 $1 请求失败：$3"
+        "replacement": "向 \"$2\" 发送 $1 请求失败：$3",
+        "rawGroups": [
+            1,
+            2
+        ]
     },
     {
-        "pattern": "^(.+?) does not exist\\.?$",
-        "replacement": "$1 不存在。"
+        "pattern": "^((?:['\"][^'\"]+['\"]|[A-Za-z0-9_./:\\\\-]+)) does not exist\\.?$",
+        "replacement": "$1 不存在。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Used MCP tool: (.+)$",
-        "replacement": "已调用 MCP 工具：$1"
+        "replacement": "已调用 MCP 工具：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^No MCP servers found for (.+)$",
-        "replacement": "未找到匹配 '$1' 的 MCP 服务器"
+        "replacement": "未找到匹配 '$1' 的 MCP 服务器",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Error installing MCP server: (.+)$",
@@ -233,31 +322,49 @@
     },
     {
         "pattern": "^Task \"(.+)\"\\.?$",
-        "replacement": "任务 \"$1\""
+        "replacement": "任务 \"$1\"",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^The language \"(.+)\"\\.?$",
-        "replacement": "语言 \"$1\""
+        "replacement": "语言 \"$1\"",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^All changes since (.+)$",
-        "replacement": "自 $1 以来的所有变更"
+        "replacement": "自 $1 以来的所有变更",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Push (\\d+) commits? to (.+)$",
-        "replacement": "Push $1 个 Commit 至 $2"
+        "replacement": "推送 $1 个提交至 $2",
+        "rawGroups": [
+            2
+        ]
     },
     {
         "pattern": "^Publish (.+) to origin$",
-        "replacement": "将 $1 发布至 origin"
+        "replacement": "将 $1 发布至 origin",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^No commits to push( to .+)?$",
-        "replacement": "没有需要 Push 的 Commit"
+        "pattern": "^No commits to push(?: to .+)?$",
+        "replacement": "没有需要推送的提交"
     },
     {
         "pattern": "^Committed to (.+?)\\.?$",
-        "replacement": "已 Commit 至 $1。"
+        "replacement": "已提交至 $1。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Thinking for\\s+(.+)$",
@@ -276,32 +383,30 @@
         "replacement": "没有更多历史消息，当前显示 $1 / $2 条"
     },
     {
-        "pattern": "^Delete (.+?), including (\\d+) active conversations?([.。])?$",
-        "replacement": "删除 $1（包含 $2 个活跃会话）"
+        "pattern": "^Delete (.+?), (including \\d+ active conversations?\\.?)$",
+        "replacement": "删除 $1（$2）",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^including (\\d+) active conversations?([.。])?$",
+        "pattern": "^including (\\d+) active conversations?\\.?$",
         "replacement": "包含 $1 个活跃会话"
     },
     {
-        "pattern": "^(\\d+) active conversations?([.。])?$",
+        "pattern": "^(\\d+) active conversations?\\.?$",
         "replacement": "$1 个活跃会话"
     },
     {
         "pattern": "^Send feedback as\\s+(.+)$",
-        "replacement": "以 $1 身份发送反馈"
+        "replacement": "以 $1 身份发送反馈",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Show (\\d+) breakdowns?$",
         "replacement": "显示 $1 项细目"
-    },
-    {
-        "pattern": "^Show breakdowns?$",
-        "replacement": "显示细目"
-    },
-    {
-        "pattern": "^Hide breakdowns?$",
-        "replacement": "收起细目"
     },
     {
         "pattern": "^See more in (.+)$",
@@ -310,18 +415,6 @@
     {
         "pattern": "^See less in (.+)$",
         "replacement": "收起 $1"
-    },
-    {
-        "pattern": "^Inherits your Global Permissions when working in this project\\.?$",
-        "replacement": "在此项目中工作时继承您的全局权限。"
-    },
-    {
-        "pattern": "^Inherits your Global Permissions when working in these conversations\\.?$",
-        "replacement": "在这些会话中工作时继承您的全局权限。"
-    },
-    {
-        "pattern": "^Inherits your Global Permissions when working (.+?)\\.?$",
-        "replacement": "在 $1 工作时继承您的全局权限。"
     },
     {
         "pattern": "^The server could not find the requested (.+)$",
@@ -333,79 +426,74 @@
     },
     {
         "pattern": "^Opening\\s+([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(?::\\d+)?)$",
-        "replacement": "正在打开 $1"
+        "replacement": "正在打开 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Pressing\\s+(?!key\\b)([A-Za-z0-9_]+|Arrow(?:Up|Down|Left|Right)|Enter|Tab|Escape|Backspace|Delete|Space)$",
-        "replacement": "正在按下 $1 键"
+        "pattern": "^Pressing\\s+([A-Za-z0-9_]+|Arrow(?:Up|Down|Left|Right)|Enter|Tab|Escape|Backspace|Delete|Space)$",
+        "replacement": "正在按下 $1 键",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Scrolling\\s+(up|left|right)$",
-        "replacement": "正在向 $1 滚动"
-    },
-    {
-        "pattern": "^Back to (?!chat\\b|reference\\b)(.+)$",
+        "pattern": "^Back to (.+)$",
         "replacement": "返回到 $1"
     },
     {
-        "pattern": "^Couldn't (delete|archive|load|rename|find|open) conversation$",
-        "replacement": "无法 $1 对话"
-    },
-    {
-        "pattern": "^Sign in to ([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$",
-        "replacement": "登录到 $1"
-    },
-    {
-        "pattern": "^Your quota for (?:this model|此模型) will reset on (.+?)\\. Switch to another available model to continue\\.$",
+        "pattern": "^Your quota for this model will reset on (.+?)\\. Switch to another available model to continue\\.$",
         "replacement": "您此模型的配额将于 $1 重置。请切换到其他可用模型以继续。"
     },
     {
         "pattern": "^Your quota for (.+?) will reset on (.+?)\\. Switch to another available model to continue\\.$",
-        "replacement": "您 $1 的配额将于 $2 重置。请切换到其他可用模型以继续。"
-    },
-    {
-        "pattern": "^Your quota for (?:this model|此模型) has been reached\\. Switch to another available model to continue\\.$",
-        "replacement": "您已达到此模型的配额上限。请切换到其他可用模型以继续。"
+        "replacement": "您的 $1 配额将于 $2 重置。请切换到其他可用模型以继续。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Your quota for (.+?) has been reached\\. Switch to another available model to continue\\.$",
-        "replacement": "您已达到 $1 的配额上限。请切换到其他可用模型以继续。"
+        "replacement": "您已达到 $1 的配额上限。请切换到其他可用模型以继续。",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Yes, save rule for '(.+)' (?:when not in a project|未在项目中时)$",
-        "replacement": "是，且在未处于项目中时保存针对 '$1' 的规则"
+        "pattern": "^Yes, save rule for '(.+)' when not in a project$",
+        "replacement": "是，且在未处于项目中时保存针对 '$1' 的规则",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Yes, save rule for '(.+)' (?:in this project|在此项目中)$",
-        "replacement": "是，且在此项目中保存针对 '$1' 的规则"
+        "pattern": "^Yes, save rule for '(.+)' in this project$",
+        "replacement": "是，且在此项目中保存针对 '$1' 的规则",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Yes, save rule (?:when not in a project|未在项目中时)$",
-        "replacement": "是，且在未处于项目中时保存规则"
+        "pattern": "^Yes, always allow (.+) when not in a project$",
+        "replacement": "是，且在未处于项目中时始终允许 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Yes, save rule (?:in this project|在此项目中)$",
-        "replacement": "是，且在此项目中保存规则"
+        "pattern": "^Yes, always allow (.+) in this project$",
+        "replacement": "是，且在此项目中始终允许 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Yes, always allow (.+) (?:when not in a project|未在项目中时)$",
-        "replacement": "是，且在未处于项目中时始终允许 $1"
-    },
-    {
-        "pattern": "^Yes, always allow (.+) (?:in this project|在此项目中)$",
-        "replacement": "是，且在此项目中始终允许 $1"
-    },
-    {
-        "pattern": "^Yes, and always allow '(.+)' (?:when not in a project|未在项目中时)$",
-        "replacement": "是，且在未处于项目中时始终允许运行 '$1'"
-    },
-    {
-        "pattern": "^Yes, and always allow (?:when not in a project|未在项目中时)$",
-        "replacement": "是，且在未处于项目中时始终允许"
-    },
-    {
-        "pattern": "^Yes, and always allow (?:in this project|在此项目中)$",
-        "replacement": "是，且在此项目中始终允许"
+        "pattern": "^Yes, and always allow '(.+)' when not in a project$",
+        "replacement": "是，且在未处于项目中时始终允许运行 '$1'",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Show (\\d+) earlier steps?$",
@@ -413,23 +501,56 @@
     },
     {
         "pattern": "^Hi (.+?), what can we get done today\\?$",
-        "replacement": "您好 $1，今天我们能一起完成些什么？"
-    },
-    {
-        "pattern": "^Choose (Antigravity|Jetski)'s Voice$",
-        "replacement": "选择 $1 的音色"
+        "replacement": "您好 $1，今天我们能一起完成些什么？",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^(\\d+) tasks? running$",
         "replacement": "$1 个任务运行中"
     },
     {
-        "pattern": "^Updated (.*\\d.*)$",
-        "replacement": "更新于 $1"
+        "pattern": "^Updated (\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms))\\s+ago$",
+        "replacement": "更新于 $1前"
+    },
+    {
+        "pattern": "^Updated (\\d+)\\s+weeks?\\s+ago$",
+        "replacement": "更新于 $1 周前"
+    },
+    {
+        "pattern": "^Updated (\\d+)\\s+months?\\s+ago$",
+        "replacement": "更新于 $1 个月前"
+    },
+    {
+        "pattern": "^Updated (\\d+)\\s+years?\\s+ago$",
+        "replacement": "更新于 $1 年前"
+    },
+    {
+        "pattern": "^Updated just now$",
+        "replacement": "刚刚更新"
+    },
+    {
+        "pattern": "^Updated today$",
+        "replacement": "今日更新"
+    },
+    {
+        "pattern": "^Updated yesterday$",
+        "replacement": "昨日更新"
+    },
+    {
+        "pattern": "^Updated (?:on\\s+)?((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\\s+\\d{1,2}(?:,\\s*\\d{4})?|\\d{4}-\\d{2}-\\d{2}(?:\\s+\\d{1,2}:\\d{2}(?::\\d{2})?)?|\\d{1,2}\\/\\d{1,2}\\/\\d{2,4})$",
+        "replacement": "更新于 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Forked from (.+)$",
-        "replacement": "Fork 自 $1"
+        "replacement": "Fork 自 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Turn (\\d+) of (\\d+)$",
@@ -449,18 +570,24 @@
     },
     {
         "pattern": "^Side Question: (.+)$",
-        "replacement": "旁支提问：$1"
+        "replacement": "旁支问题：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Edit side question title: (.+)$",
-        "replacement": "编辑旁支提问标题：$1"
+        "replacement": "编辑旁支问题标题：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Still thinking, (\\d+) seconds$",
         "replacement": "仍在思考，已用时 $1 秒"
     },
     {
-        "pattern": "^Running for (\\d.+)$",
+        "pattern": "^Running for (\\d+(?:\\.\\d+)?\\s*(?:ms|seconds?|sec|s|minutes?|min|m|hours?|hr|h|days?|d)(?:\\s*,?\\s*\\d+(?:\\.\\d+)?\\s*(?:ms|seconds?|sec|s|minutes?|min|m|hours?|hr|h|days?|d))*)$",
         "replacement": "已运行 $1"
     },
     {
@@ -468,7 +595,7 @@
         "replacement": "正在使用浏览器 ($1)"
     },
     {
-        "pattern": "^(\\d+) browser steps$",
+        "pattern": "^(\\d+) browser steps?$",
         "replacement": "$1 个浏览器步骤"
     },
     {
@@ -481,11 +608,14 @@
     },
     {
         "pattern": "^Proceed with implementation plan and (\\d+) comments?$",
-        "replacement": "携带 $1 条评论继续执行实现计划"
+        "replacement": "附带 $1 条批注继续执行实现计划"
     },
     {
         "pattern": "^(\\d+) comments? in (.+)$",
-        "replacement": "$2 中有 $1 条评论"
+        "replacement": "$2 中有 $1 条评论",
+        "rawGroups": [
+            2
+        ]
     },
     {
         "pattern": "^Comment \\((\\d+)\\)$",
@@ -501,7 +631,7 @@
     },
     {
         "pattern": "^\\+(\\d+) more \\(Show all\\)$",
-        "replacement": "+$1 项更多（显示全部）"
+        "replacement": "还有 $1 项（显示全部）"
     },
     {
         "pattern": "^Your plan's baseline quota will refresh on (.+?)\\.?$",
@@ -509,11 +639,17 @@
     },
     {
         "pattern": "^You need at least (\\d+) AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.$",
-        "replacement": "您需要至少 $1 AI 额度才能发送消息。如需立即继续使用 $2，请购买更多 AI 额度。"
+        "replacement": "您需要至少 $1 点 AI 额度才能发送消息。如需立即继续使用 $2，请购买更多 AI 额度。",
+        "rawGroups": [
+            2
+        ]
     },
     {
         "pattern": "^You need more AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.$",
-        "replacement": "您需要更多 AI 额度才能发送消息。如需立即继续使用 $1，请购买更多 AI 额度。"
+        "replacement": "您需要更多 AI 额度才能发送消息。如需立即继续使用 $1，请购买更多 AI 额度。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^(\\d+) models? selected$",
@@ -544,40 +680,67 @@
         "replacement": "与 \"$1\" 冲突（按 Enter 替换）"
     },
     {
-        "pattern": "^Allow (.+)\\?$",
-        "replacement": "允许 $1？"
+        "pattern": "^Allow ('[^']+'|\"[^\"]+\"|[^\\s?]+(?:\\s+[^\\s?]+){0,1})\\?$",
+        "replacement": "允许 $1？",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Save rule to always allow (.+)\\?$",
-        "replacement": "保存规则以始终允许 $1？"
+        "replacement": "保存规则以始终允许 $1？",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Yes, allow (.+) in this conversation$",
-        "replacement": "是，在此会话中允许 $1"
+        "replacement": "是，在此会话中允许 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Yes, always allow (.+)$",
-        "replacement": "是，始终允许 $1"
+        "replacement": "是，始终允许 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Yes, and always allow '(.+)' in this conversation$",
-        "replacement": "是，且在此会话中始终允许运行 '$1'"
+        "replacement": "是，且在此会话中始终允许运行 '$1'",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Yes, save rule for '(.+)' globally$",
-        "replacement": "是，全局保存针对 '$1' 的规则"
+        "replacement": "是，全局保存针对 '$1' 的规则",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Yes, save rule for '(.+)' in this conversation$",
-        "replacement": "是，在此会话中保存针对 '$1' 的规则"
+        "replacement": "是，在此会话中保存针对 '$1' 的规则",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Agent needs permission to act on (.+)$",
-        "replacement": "Agent 需要权限以操作 $1"
+        "replacement": "Agent 需要权限才能操作 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Open ([a-zA-Z0-9.+-]+) link\\?$",
-        "replacement": "打开 $1 链接？"
+        "replacement": "打开 $1 链接？",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Downloads, (\\d+)% complete$",
@@ -585,39 +748,63 @@
     },
     {
         "pattern": "^Check if there is a typo in (.+?), or open the page in your external browser\\.$",
-        "replacement": "请检查 $1 是否有拼写错误，或在外部浏览器中打开该页面。"
+        "replacement": "请检查 $1 是否有拼写错误，或在外部浏览器中打开该页面。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Pushed (\\d+) commits? to (.+?)\\.?$",
-        "replacement": "已将 $1 个 Commit Push 至 $2。"
+        "replacement": "已将 $1 个提交推送至 $2。",
+        "rawGroups": [
+            2
+        ]
     },
     {
         "pattern": "^Pushed to (.+?)\\.?$",
-        "replacement": "已 Push 至 $1。"
+        "replacement": "已推送至 $1。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Amended commit on (.+?)\\.?$",
-        "replacement": "已在 $1 上执行 Amend。"
+        "replacement": "已在 $1 上修订提交。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Published (.+) to origin\\.?$",
-        "replacement": "已将 $1 发布至 origin。"
+        "replacement": "已将 $1 发布至 origin。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^(\\d+) Files? With Changes$",
         "replacement": "$1 个文件有更改"
     },
     {
-        "pattern": "^The folder [\"“](.+?)[\"”] does not exist\\. Would you like to create it\\?$",
-        "replacement": "文件夹 \"$1\" 不存在。您要创建它吗？"
+        "pattern": "^The folder \"(.+?)\" does not exist\\. Would you like to create it\\?$",
+        "replacement": "文件夹 \"$1\" 不存在。您要创建它吗？",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Are you sure you want to delete the hook \"(.+)\"\\?$",
-        "replacement": "确定要删除 Hook \"$1\" 吗？"
+        "replacement": "确定要删除 Hook \"$1\" 吗？",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Created automation \"(.+)\"\\.$",
-        "replacement": "已创建自动化任务 \"$1\"。"
+        "replacement": "已创建自动化任务 \"$1\"。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Credentials expire in (.+)\\. Refresh credentials to keep this automation running$",
@@ -628,28 +815,40 @@
         "replacement": "每天 $1"
     },
     {
-        "pattern": "^Every (\\d+) minutes(.*)$",
-        "replacement": "每 $1 分钟$2"
+        "pattern": "^Every (\\d+) minutes?$",
+        "replacement": "每 $1 分钟"
     },
     {
-        "pattern": "^Every (\\d+) hours(.*)$",
-        "replacement": "每 $1 小时$2"
+        "pattern": "^Every (\\d+) hours?$",
+        "replacement": "每 $1 小时"
     },
     {
         "pattern": "^Add (\\d+) plugins? from (.+)$",
-        "replacement": "从 $2 添加 $1 个插件"
+        "replacement": "从 $2 添加 $1 个插件",
+        "rawGroups": [
+            2
+        ]
     },
     {
         "pattern": "^Adding plugins from (.+)$",
-        "replacement": "正在从 $1 添加插件"
+        "replacement": "正在从 $1 添加插件",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^No plugins found for \"(.+)\"\\.$",
-        "replacement": "未找到匹配 \"$1\" 的插件。"
+        "replacement": "未找到匹配 \"$1\" 的插件。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Setting up WSL: (.+)$",
-        "replacement": "正在配置 WSL：$1"
+        "replacement": "正在配置 WSL：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^See (\\d+) more$",
@@ -661,7 +860,7 @@
     },
     {
         "pattern": "^\\+(\\d+) more$",
-        "replacement": "+$1 项更多"
+        "replacement": "还有 $1 项"
     },
     {
         "pattern": "^\\+(\\d+) attachments?$",
@@ -673,10 +872,13 @@
     },
     {
         "pattern": "^(.+), voice (\\d+) of (\\d+)$",
-        "replacement": "$1，第 $2 / $3 个音色"
+        "replacement": "$1，第 $2 / $3 个音色",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Voice [Ss]peed, ([\\d.]+)x$",
+        "pattern": "^Voice speed, ([\\d.]+)x$",
         "replacement": "语速：$1x"
     },
     {
@@ -704,40 +906,46 @@
         "replacement": "$1 次通话 · $2"
     },
     {
-        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter) Sends immediately$",
-        "replacement": "$1 立即发送"
-    },
-    {
-        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter) Queues after the turn$",
-        "replacement": "$1 在当前轮次后排队"
-    },
-    {
-        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter) On empty prompt, sends next in queue$",
-        "replacement": "$1 输入为空时，发送队列中的下一条"
-    },
-    {
         "pattern": "^No apps found for \"(.+)\"\\.$",
-        "replacement": "未找到匹配 \"$1\" 的应用。"
+        "replacement": "未找到匹配 \"$1\" 的应用。",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Managed by the (.+) automation$",
-        "replacement": "由 $1 自动化任务管理"
+        "replacement": "由 $1 自动化任务管理",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Managed by the (.+) plugin$",
-        "replacement": "由 $1 插件管理"
+        "replacement": "由 $1 插件管理",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Open the (.+) plugin$",
-        "replacement": "打开 $1 插件"
+        "replacement": "打开 $1 插件",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Open (.+) skill$",
-        "replacement": "打开 $1 技能"
+        "replacement": "打开 $1 技能",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Plugins in (.+)$",
-        "replacement": "$1 中的插件"
+        "replacement": "$1 中的插件",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^(\\d+) matching bundles?$",
@@ -745,23 +953,39 @@
     },
     {
         "pattern": "^Account this MCP server uses: (.+)$",
-        "replacement": "此 MCP 服务器使用的账号：$1"
+        "replacement": "此 MCP 服务器使用的账号：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Make (.+) the default (.+) account$",
-        "replacement": "将 $1 设为默认 $2 账号"
+        "replacement": "将 $1 设为默认 $2 账号",
+        "rawGroups": [
+            1,
+            2
+        ]
     },
     {
         "pattern": "^Secret for a new (.+) account$",
-        "replacement": "新 $1 账号的密钥"
+        "replacement": "新 $1 账号的密钥",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Sign in to (.+) on this computer$",
-        "replacement": "在此电脑上登录 $1"
+        "replacement": "在此电脑上登录 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Sign in to (.+) remotely$",
-        "replacement": "远程登录 $1"
+        "replacement": "远程登录 $1",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Sign in from the (.+) panel\\.$",
@@ -796,59 +1020,377 @@
         "replacement": "您有 $1 个正在进行的会话。更新将取消这些会话，之后您需要手动重新启动它们。"
     },
     {
-        "pattern": "^Where the agent runs, current: (.+)$",
-        "replacement": "Agent 运行位置，当前：$1"
-    },
-    {
-        "pattern": "^Agent permissions preset selector, current: (.+)$",
-        "replacement": "Agent 权限预设选择器，当前：$1"
-    },
-    {
-        "pattern": "^Select project, current: (.+)$",
-        "replacement": "选择项目，当前：$1"
-    },
-    {
-        "pattern": "^Select model, current: (.+)$",
-        "replacement": "选择模型，当前：$1"
-    },
-    {
         "pattern": "^Zoom (\\d+)%, reset to fit$",
         "replacement": "缩放 $1%，点击重置以适应屏幕"
     },
     {
-        "pattern": "^Attackers might be trying to steal your information from (.+?)(?:\\s*\\(for example.*|\\.?)$",
-        "replacement": "攻击者可能正试图从 $1 窃取您的信息"
-    },
-    {
-        "pattern": "^Clearing cookies and site data for (.+?)(?:\\s+may sign you out.*|\\.?)$",
-        "replacement": "清除 $1 的 Cookie 和网站数据可能会使您退出该网站。"
-    },
-    {
-        "pattern": "^Site data cleared for (.+?)\\.?$",
-        "replacement": "已清除 $1 的网站数据。"
-    },
-    {
-        "pattern": "^Could not clear site data for (.+?)\\.?$",
-        "replacement": "无法清除 $1 的网站数据。"
-    },
-    {
-        "pattern": "^Finish signing in to (.+?) in your browser\\.?$",
-        "replacement": "请在浏览器中完成 $1 的登录。"
-    },
-    {
         "pattern": "^Proceed to (.+?) \\(unsafe\\)$",
-        "replacement": "继续前往 $1 (不安全)"
+        "replacement": "继续前往 $1 (不安全)",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^Download from (.+)$",
-        "replacement": "从 $1 下载"
+        "replacement": "从 $1 下载",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^(.+?)'s agents are powerful and will help you get a lot done better and faster than before, but still make sure to verify the actions taken by the agent\\\\.?$",
-        "replacement": "$1 的 Agent 功能强大，能帮助您比以往更好、更快地完成许多工作，但仍请务必核实 Agent 执行的操作。"
+        "pattern": "^Help us improve (.+?)\\.?$",
+        "replacement": "协助改进 $1。",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^Couldn't start the coordinator:\\s*(.+)$",
-        "replacement": "无法启动协调器：$1"
+        "pattern": "^(\\d+[smhd])\\s+limit$",
+        "replacement": "$1配额上限",
+        "caseSensitive": true
+    },
+    {
+        "pattern": "^#([^\\s]+)\\s+\\(archived\\)$",
+        "replacement": "#$1（已归档）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Opening (.+)'s conversation needs the app\\.$",
+        "replacement": "需在客户端中打开 $1 的对话。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^overview · from the narrator's notes · (.+)$",
+        "replacement": "概览 · 来自旁白记录 · $1"
+    },
+    {
+        "pattern": "^the narrator's view failed \\(no (.+) within (\\d+(?:\\.\\d+)?)s\\)$",
+        "replacement": "旁白视图加载失败（在 $2 秒内未收到 $1）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^the narrator's view failed \\((.+)\\)$",
+        "replacement": "旁白视图加载失败（$1）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^no (.+) within (\\d+(?:\\.\\d+)?)s$",
+        "replacement": "在 $2 秒内未收到 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The narrator's last step failed:\\s*(.+)$",
+        "replacement": "旁白的最近一步失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) posts? since the view was updated$",
+        "replacement": "自视图更新以来已有 $1 条新消息"
+    },
+    {
+        "pattern": "^Narrator read up to #(\\d+) of (\\d+)$",
+        "replacement": "旁白已读至 #$1（共 $2 条）"
+    },
+    {
+        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms)(?:\\s*,?\\s*\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms))*) ago$",
+        "replacement": "已读 #$1 · $2前更新"
+    },
+    {
+        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+)\\s*mins? ago$",
+        "replacement": "已读 #$1 · $2 分钟前更新"
+    },
+    {
+        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+)\\s*secs? ago$",
+        "replacement": "已读 #$1 · $2 秒前更新"
+    },
+    {
+        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+)\\s*hrs? ago$",
+        "replacement": "已读 #$1 · $2 小时前更新"
+    },
+    {
+        "pattern": "^read #(\\d+)\\s*·\\s*updated a few seconds ago$",
+        "replacement": "已读 #$1 · 几秒前更新"
+    },
+    {
+        "pattern": "^read #(\\d+)\\s*·\\s*updated (.+) ago$",
+        "replacement": "已读 #$1 · $2 前更新"
+    },
+    {
+        "pattern": "^read #(\\d+)$",
+        "replacement": "已读 #$1"
+    },
+    {
+        "pattern": "^([^:]+): last step failed \\(quota\\)$",
+        "replacement": "$1：最近一步失败（配额不足）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^([^:]+): last step failed \\(error\\)$",
+        "replacement": "$1：最近一步失败（错误）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^([^:]+): no progress, and not waiting on the board\\s+for\\s+(.+)$",
+        "replacement": "$1：无进展（已持续 $2），且未在消息板等待",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^([^:]+): no progress, and not waiting on the board$",
+        "replacement": "$1：暂无进展且未在消息板等待",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Last change:\\s*\"(.+)\"$",
+        "replacement": "上次更改：“$1”",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^([^\\s]+) runs on (.+?); open it there\\.$",
+        "replacement": "$1 运行在 $2；请在对应机器打开。",
+        "rawGroups": true
+    },
+    {
+        "pattern": "^Tell the coordinator:\\s*\"(.+)\"$",
+        "replacement": "告诉协调器：“$1”",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Copied \"(.+)\"\\. Paste it to the coordinator and say what you want changed\\.$",
+        "replacement": "已复制“$1”。请粘贴给协调器并说明希望修改的内容。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\s*\\(not on the roster\\)$",
+        "replacement": "$1（不在成员花名册中）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+(?:\\s*/\\s*\\d+|%))\\s+done$",
+        "replacement": "$1 已完成",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+)\\s+needs?\\s+you$",
+        "replacement": "$1 项待您处理"
+    },
+    {
+        "pattern": "^(\\d+)\\s+blocked$",
+        "replacement": "$1 项已阻塞"
+    },
+    {
+        "pattern": "^(\\d+)\\s+threads?\\s+open$",
+        "replacement": "$1 条任务线进行中"
+    },
+    {
+        "pattern": "^(\\d+)\\s+active$",
+        "replacement": "$1 项活跃"
+    },
+    {
+        "pattern": "^Up next\\s*·\\s*(\\d+)$",
+        "replacement": "即将开始 · $1"
+    },
+    {
+        "pattern": "^(\\d+)\\s+of\\s+(\\d+)\\s+tasks done$",
+        "replacement": "$1 / $2 项任务已完成"
+    },
+    {
+        "pattern": "^(\\d+)\\s+of\\s+(\\d+)$",
+        "replacement": "$1 / $2"
+    },
+    {
+        "pattern": "^(.+?)\\s*·\\s*(\\d+) machines?$",
+        "replacement": "$1 · $2 台机器",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^last seen\\s+(\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms)(?:\\s*,?\\s*\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms))*)\\s+ago$",
+        "replacement": "上次在线 $1前"
+    },
+    {
+        "pattern": "^last seen\\s+(\\d+)\\s*mins?\\s+ago$",
+        "replacement": "上次在线 $1 分钟前"
+    },
+    {
+        "pattern": "^last seen\\s+(\\d+)\\s*secs?\\s+ago$",
+        "replacement": "上次在线 $1 秒前"
+    },
+    {
+        "pattern": "^last seen\\s+(\\d+)\\s*hrs?\\s+ago$",
+        "replacement": "上次在线 $1 小时前"
+    },
+    {
+        "pattern": "^last seen\\s+(\\d+)\\s*weeks?\\s+ago$",
+        "replacement": "上次在线 $1 周前"
+    },
+    {
+        "pattern": "^last seen\\s+(\\d+)\\s*months?\\s+ago$",
+        "replacement": "上次在线 $1 个月前"
+    },
+    {
+        "pattern": "^last seen\\s+a few seconds\\s+ago$",
+        "replacement": "上次在线 几秒前"
+    },
+    {
+        "pattern": "^last seen\\s+(.+)\\s+ago$",
+        "replacement": "上次在线 $1 前"
+    },
+    {
+        "pattern": "^Runs on (.+)$",
+        "replacement": "运行于 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^→ @(.+)$",
+        "replacement": "等待 @$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+)\\s+posts?$",
+        "replacement": "$1 条消息"
+    },
+    {
+        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter)\\s+Sends immediately$",
+        "replacement": "$1 立即发送",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter)\\s+Queues after the turn$",
+        "replacement": "$1 本轮后排队发送",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(⏎|Enter|⌥⏎|Alt\\+Enter)\\s+On empty prompt, sends next in queue$",
+        "replacement": "$1 输入为空时发送队列下一条",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?),\\s*current:\\s*(.+)$",
+        "replacement": "$1，当前：$2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?),\\s*(resets in .+)$",
+        "replacement": "$1，$2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\s*·\\s*reconnecting$",
+        "replacement": "$1 · 正在重连",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\s*·\\s*connecting$",
+        "replacement": "$1 · 正在连接",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\s*·\\s*unavailable$",
+        "replacement": "$1 · 不可用",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Sign in to (?!continue\\b|sync\\b|use\\b|access\\b|view\\b|get\\b|start\\b|manage\\b|enable\\b|connect\\b|save\\b|unlock\\b|your\\b)(.+)$",
+        "replacement": "登录 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Now\\s*·\\s*(\\d+\\s*/\\s*\\d+)$",
+        "replacement": "当前 · $1"
+    },
+    {
+        "pattern": "^Installing into (.+?)\\.{3}$",
+        "replacement": "正在安装到 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Scan this QR code with the camera on the device that has your passkey for (.+)$",
+        "replacement": "使用存有 $1 通行密钥的设备相机扫描此二维码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) wants to connect to a HID device$",
+        "replacement": "$1 想要连接到 HID 设备",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) wants to connect to a USB device$",
+        "replacement": "$1 想要连接到 USB 设备",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) wants to connect to a serial port$",
+        "replacement": "$1 想要连接到串口",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The WSL distro \"(.+?)\" is no longer installed\\.$",
+        "replacement": "WSL 发行版 \"$1\" 已不再安装。",
+        "rawGroups": [
+            1
+        ]
     }
 ]

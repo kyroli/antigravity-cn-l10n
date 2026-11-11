@@ -9,31 +9,33 @@ function normalizeText(text) {
 
 function createTranslator(rawDict, rawRules, config) {
     const cfg = config || {};
-    const map = new Map(Object.entries(rawDict || {}));
+    const isMapObj = rawDict instanceof Map || Object.prototype.toString.call(rawDict) === '[object Map]';
+    const map = isMapObj ? rawDict : new Map(Object.entries(rawDict || {}));
     const lowerMap = new Map();
     const lowerExclude = new Set((cfg.lowerWordsExclude || []).map(w => w.toLowerCase()));
     const enableLongPrefixLookup = cfg.enableLongPrefixLookup !== false;
 
-    const longEntries = [];
     for (const [k, v] of map.entries()) {
         const lowerK = k.toLowerCase();
-        if (!(lowerExclude.has(lowerK) && k !== lowerK)) {
+        if (!lowerExclude.has(lowerK)) {
             lowerMap.set(lowerK, v);
         }
-        if (enableLongPrefixLookup && k.length > 15) {
-            longEntries.push([k, lowerK, v]);
-        }
-    }
-    if (longEntries.length > 1) {
-        longEntries.sort((a, b) => b[0].length - a[0].length);
     }
 
-    const rules = (rawRules || []).map(r => ({
-        regex: new RegExp(r.pattern, 'i'),
-        replacement: r.replacement
-    }));
+    const rules = Array.isArray(rawRules)
+        ? rawRules.map(r => ({
+            regex: new RegExp(r.pattern, r.caseSensitive ? '' : 'i'),
+            replacement: r.replacement,
+            rawAll: r.rawGroups === true,
+            rawGroupSet: Array.isArray(r.rawGroups) ? new Set(r.rawGroups) : null
+        }))
+        : [];
+    const rulesPrefilter = rules.length > 0
+        ? new RegExp(rules.map(r => '(?:' + r.regex.source + ')').join('|'), 'i')
+        : null;
 
     const protectedFileSet = new Set((cfg.protectedFiles || []).map(f => f.trim()));
+    let longBuckets = null;
 
     // 双代缓存，避免单 Map 满载时全量清空
     let hotCache = new Map();
@@ -76,25 +78,89 @@ function createTranslator(rawDict, rawRules, config) {
     function lookupStatic(normStr) {
         if (map.has(normStr)) return map.get(normStr);
         const lower = normStr.toLowerCase();
-        if (lowerMap.has(lower)) return lowerMap.get(lower);
+        return lowerMap.has(lower) ? lowerMap.get(lower) : null;
+    }
+
+    function isProtectedOrPath(valNorm) {
+        if (protectedFileSet.has(valNorm) || protectedFileSet.has(valNorm.toUpperCase())) return true;
+        if (valNorm.startsWith('file://') || valNorm.startsWith('vscode://')) return true;
+        if (valNorm.length >= 3 && valNorm[1] === ':' && (valNorm[2] === '/' || valNorm[2] === '\\')) return true;
+        if (valNorm.length >= 4 && valNorm[0] === '/' && valNorm[2] === ':' && (valNorm[3] === '/' || valNorm[3] === '\\')) return true;
+        return !valNorm.includes(' ') && FILE_EXT_RE.test(valNorm);
+    }
+
+    function applyRuleMatch(rule, match, depth) {
+        let out = rule.replacement;
+        for (let g = match.length - 1; g >= 1; g--) {
+            const rawGroup = match[g];
+            let gVal = '';
+            if (rawGroup !== undefined) {
+                const isRaw = rule.rawAll || (rule.rawGroupSet && rule.rawGroupSet.has(g));
+                if (isRaw) {
+                    gVal = rawGroup;
+                } else {
+                    const gNorm = normalizeText(rawGroup);
+                    gVal = lookupStatic(gNorm);
+                    if (gVal === null) gVal = formatDuration(gNorm);
+                    if (gVal === null && depth < 1 && !isProtectedOrPath(gNorm) && /[a-zA-Z]/.test(gNorm)) {
+                        gVal = matchRules(gNorm, depth + 1);
+                    }
+                    if (gVal === null) gVal = rawGroup;
+                }
+            }
+            out = out.split('$' + g).join(gVal);
+        }
+        return out.replace(/\s{2,}/g, ' ').replace(/\s+后/g, '后');
+    }
+
+    function matchRules(valNorm, depth) {
+        if (rules.length === 0 || (rulesPrefilter && !rulesPrefilter.test(valNorm))) return null;
+        for (let i = 0; i < rules.length; i++) {
+            const rule = rules[i];
+            const match = valNorm.match(rule.regex);
+            if (match) return applyRuleMatch(rule, match, depth);
+        }
+        return null;
+    }
+
+    function lookupLongPrefix(valNorm) {
+        const prefix = valNorm.slice(0, -3).trim();
+        if (prefix.length < 15) return null;
+        if (!longBuckets) {
+            longBuckets = new Map();
+            for (const [k, v] of map.entries()) {
+                if (k.length <= 15) continue;
+                const lowerK = k.toLowerCase();
+                const bKey = lowerK.slice(0, 4);
+                let bucket = longBuckets.get(bKey);
+                if (!bucket) {
+                    bucket = [];
+                    longBuckets.set(bKey, bucket);
+                }
+                bucket.push([k, lowerK, v]);
+            }
+            for (const bucket of longBuckets.values()) {
+                if (bucket.length > 1) bucket.sort((a, b) => b[0].length - a[0].length);
+            }
+        }
+        const prefixLower = prefix.toLowerCase();
+        const bucket = longBuckets.get(prefixLower.slice(0, 4));
+        if (!bucket) return null;
+        for (let k = 0; k < bucket.length; k++) {
+            const [key, keyLower, translated] = bucket[k];
+            if (key.length > prefix.length && (key.startsWith(prefix) || keyLower.startsWith(prefixLower))) {
+                return translated;
+            }
+        }
         return null;
     }
 
     function translateCore(valNorm) {
-        // 1. 过滤受保护工程文件名与路径/协议（显式存在于字典中的词条放行）
-        if (!map.has(valNorm)) {
-            if (protectedFileSet.has(valNorm) || protectedFileSet.has(valNorm.toUpperCase())) return null;
-            if (valNorm.startsWith('file://') || valNorm.startsWith('vscode://')) return null;
-            if (valNorm.length >= 3 && valNorm[1] === ':' && (valNorm[2] === '/' || valNorm[2] === '\\')) return null;
-            if (valNorm.length >= 4 && valNorm[0] === '/' && valNorm[2] === ':' && (valNorm[3] === '/' || valNorm[3] === '\\')) return null;
-            if (!valNorm.includes(' ') && FILE_EXT_RE.test(valNorm)) return null;
-        }
+        if (!map.has(valNorm) && isProtectedOrPath(valNorm)) return null;
 
-        // 2. 精确静态字典与大小写兜底匹配
         const direct = lookupStatic(valNorm);
         if (direct !== null) return direct;
 
-        // 3. 快捷键后缀剥离匹配: 如 "Settings (Ctrl+,)"
         const scMatch = valNorm.match(SHORTCUT_RE);
         if (scMatch) {
             const prefTrans = lookupStatic(normalizeText(scMatch[1]));
@@ -103,26 +169,9 @@ function createTranslator(rawDict, rawRules, config) {
             }
         }
 
-        // 4. 动态正则规则匹配（支持捕获组递归查表与局部时长转换）
-        for (let k = 0; k < rules.length; k++) {
-            const rule = rules[k];
-            const match = valNorm.match(rule.regex);
-            if (match) {
-                let out = rule.replacement;
-                for (let g = 1; g < match.length; g++) {
-                    const rawGroup = match[g];
-                    let gVal = '';
-                    if (rawGroup !== undefined) {
-                        const gNorm = normalizeText(rawGroup);
-                        gVal = lookupStatic(gNorm) || formatDuration(gNorm) || rawGroup;
-                    }
-                    out = out.split('$' + g).join(gVal);
-                }
-                return out.replace(/\s{2,}/g, ' ').replace(/\s+后/g, '后');
-            }
-        }
+        const ruleHit = matchRules(valNorm, 0);
+        if (ruleHit !== null) return ruleHit;
 
-        // 5. 复合工具操作统计: 如 "Explored 2 files, Ran 1 command"
         if (toolStatFullRe.test(valNorm)) {
             const parts = valNorm.split(/\s*,\s*/);
             const transParts = [];
@@ -138,18 +187,8 @@ function createTranslator(rawDict, rawRules, config) {
             }
         }
 
-        // 6. 截断长文本前缀反查（仅对 "..." 结尾且长度 >= 20 的 UI 截断项惰性触发）
         if (enableLongPrefixLookup && valNorm.length >= 20 && valNorm.endsWith('...')) {
-            const prefix = valNorm.slice(0, -3).trim();
-            if (prefix.length >= 15) {
-                const prefixLower = prefix.toLowerCase();
-                for (let k = 0; k < longEntries.length; k++) {
-                    const [key, keyLower, translated] = longEntries[k];
-                    if (key.length > prefix.length && (key.startsWith(prefix) || keyLower.startsWith(prefixLower))) {
-                        return translated;
-                    }
-                }
-            }
+            return lookupLongPrefix(valNorm);
         }
 
         return null;
@@ -177,8 +216,7 @@ function createTranslator(rawDict, rawRules, config) {
         if (!label || typeof label !== 'string') return null;
         const m = label.match(/&([a-zA-Z])/);
         if (m) {
-            const cleanLabel = label.replace('&', '');
-            const trans = translateString(cleanLabel);
+            const trans = translateString(label.replace('&', ''));
             if (trans) return trans + '(&' + m[1].toUpperCase() + ')';
         }
         return translateString(label);
@@ -187,7 +225,8 @@ function createTranslator(rawDict, rawRules, config) {
     return {
         norm: normalizeText,
         translateString,
-        translateMenuLabel
+        translateMenuLabel,
+        formatDuration
     };
 }
 
