@@ -24,38 +24,6 @@ function cleanInjectedPatches(content) {
     return content ? String(content).replace(PATCH_BLOCK_RE, '') : '';
 }
 
-const CONFIG_SCHEMA = Object.assign(
-    Object.fromEntries([
-        'blockedTags', 'blockedClasses', 'blockedClassSubstrings', 'blockedTestIds',
-        'blockedTestIdSubstrings', 'blockedDataAttrs', 'bypassClasses', 'bypassRoles',
-        'codeEditorKeywords', 'lowerWordsExclude', 'protectedFiles',
-        'conversationRowAllowedTexts', 'fragmentPatterns'
-    ].map(k => [k, 'array'])),
-    { toolStatVerbs: 'object', toolStatNouns: 'object', frame: 'object' }
-);
-
-const FRAME_CONFIG_SCHEMA = {
-    blockedClasses: 'array', blockedTestIds: 'array', bypassClasses: 'array',
-    fragmentPatterns: 'array', dict: 'object', rules: 'array'
-};
-
-function validateSchemaObject(obj, schema, label) {
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error(`${label} 必须为 JSON 对象`);
-    for (const key of Object.keys(obj)) {
-        const expected = schema[key];
-        if (!expected) throw new Error(`${label} 包含未知配置键: "${key}"`);
-        const val = obj[key];
-        const actual = Array.isArray(val) ? 'array' : (val === null ? 'null' : typeof val);
-        if (actual !== expected) throw new Error(`${label} 配置键 "${key}" 类型错误: 期望 ${expected}，实际为 ${actual}`);
-    }
-}
-
-function validateConfigSchema(cfg) {
-    validateSchemaObject(cfg, CONFIG_SCHEMA, 'dicts/config.json');
-    if (cfg.frame !== undefined) validateSchemaObject(cfg.frame, FRAME_CONFIG_SCHEMA, 'dicts/config.json.frame');
-    return cfg;
-}
-
 function getFileHash(filePath) {
     if (!fs.existsSync(filePath)) return null;
     try { return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex'); } catch (e) { return null; }
@@ -117,13 +85,13 @@ function getDictsHash() {
 function loadConfig() {
     const configPath = path.join(DICTS_DIR, 'config.json');
     if (!fs.existsSync(configPath)) throw new Error(`缺少核心配置文件: ${configPath}`);
-    return validateConfigSchema(JSON.parse(fs.readFileSync(configPath, 'utf-8')));
+    return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 }
 
 function loadRules() {
     const rulesPath = path.join(DICTS_DIR, 'rules.json');
     if (!fs.existsSync(rulesPath)) return [];
-    try { return JSON.parse(fs.readFileSync(rulesPath, 'utf-8')); } catch (e) { return []; }
+    return JSON.parse(fs.readFileSync(rulesPath, 'utf-8'));
 }
 
 function loadDictionariesByFile() {
@@ -132,14 +100,12 @@ function loadDictionariesByFile() {
     for (const file of DICT_FILES) {
         const fp = path.join(DICTS_DIR, file);
         if (!fs.existsSync(fp)) continue;
-        try {
-            const normMap = {};
-            for (const [k, v] of Object.entries(JSON.parse(fs.readFileSync(fp, 'utf-8')))) {
-                const nk = normalizeText(k);
-                if (nk) normMap[nk] = v;
-            }
-            byFile[file] = normMap;
-        } catch (e) {}
+        const normMap = {};
+        for (const [k, v] of Object.entries(JSON.parse(fs.readFileSync(fp, 'utf-8')))) {
+            const nk = normalizeText(k);
+            if (nk) normMap[nk] = v;
+        }
+        byFile[file] = normMap;
     }
     return byFile;
 }
@@ -149,7 +115,7 @@ function loadDictionary() {
     for (const [file, normMap] of Object.entries(loadDictionariesByFile())) {
         for (const [normK, v] of Object.entries(normMap)) {
             if (totalMap[normK] && totalMap[normK] !== v) {
-                console.warn(`\x1b[33m[警告] 词条冲突: "${normK}" 在 ${file} 中的译文 "${v}" 覆盖了已有译文 "${totalMap[normK]}"\x1b[0m`);
+                console.warn(`[警告] 词条冲突: "${normK}" 在 ${file} 中的译文 "${v}" 覆盖了已有译文 "${totalMap[normK]}"`);
             }
             totalMap[normK] = v;
         }
@@ -261,9 +227,9 @@ function closeAntigravityProcesses(targetDir) {
     };
     const pids = list => list.map(p => p.pid).join(', ');
     if (waitUntilExit(8000)) return 'stopped';
-    console.log(`\x1b[33m[等待] 客户端仍在运行（为避免会话数据库损坏，已禁用强制终止进程）。阻塞 PID: ${pids(blocking)}。请手动关闭 Antigravity（含系统托盘图标）后自动继续...\x1b[0m`);
-    if (waitUntilExit(120000, (cur, sec) => console.log(`\x1b[33m[等待] 仍在等待客户端退出（已等待 ${sec}s，阻塞 PID: ${pids(cur)}）...\x1b[0m`))) return 'stopped';
-    console.error(`\x1b[31m[错误] 等待客户端退出超时，已中止本次操作（阻塞 PID: ${pids(blocking)}）。\x1b[0m`);
+    console.log(`[等待] 客户端仍在运行（为避免会话数据库损坏，已禁用强制终止进程）。阻塞 PID: ${pids(blocking)}。请手动关闭 Antigravity（含系统托盘图标）后自动继续...`);
+    if (waitUntilExit(120000, (cur, sec) => console.log(`[等待] 仍在等待客户端退出（已等待 ${sec}s，阻塞 PID: ${pids(cur)}）...`))) return 'stopped';
+    console.error(`[错误] 等待客户端退出超时，已中止本次操作（阻塞 PID: ${pids(blocking)}）。`);
     return false;
 }
 
@@ -319,7 +285,7 @@ function naturalCompare(a, b) {
 
 module.exports = {
     SIGNATURE_START, SIGNATURE_END, cleanInjectedPatches,
-    DICTS_DIR, DICT_FILES, validateConfigSchema,
+    DICTS_DIR, DICT_FILES,
     getFileHash, loadState, saveState, getTargetVersion, getDictsHash,
     normalizeText, loadConfig, loadRules, loadDictionariesByFile, loadDictionary,
     closeAntigravityProcesses, filterBlockingAntigravity, detectInstallationDir,

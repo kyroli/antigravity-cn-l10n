@@ -9,6 +9,13 @@ const extractor = require('./extractor');
 const SKIP_DIRS = new Set(['node_modules', '__mocks__', 'test', 'tests']);
 const HTML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", apos: "'", nbsp: ' ', middot: '·', rarr: '→', larr: '←', mdash: '—', ndash: '–' };
 const PK_SIG = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+const CSRF_TOKEN_RE = /--csrf_token\s+([a-f0-9-]+)/gi;
+
+function extractLastCsrf(text) {
+    let last = null;
+    for (const m of text.matchAll(CSRF_TOKEN_RE)) last = m[1];
+    return last;
+}
 
 function extractEmbeddedAssetsFromBinary(buf) {
     let combined = '';
@@ -65,10 +72,9 @@ function fetchLiveMcpMarketplace() {
     let livePort = null, liveCsrf = null;
     try {
         const out = cp.execFileSync('powershell.exe', ['-NoProfile', '-Command',
-            "Get-CimInstance Win32_Process -Filter \"Name='language_server.exe'\" | Select-Object -ExpandProperty CommandLine"
+            "Get-CimInstance Win32_Process -Filter \"Name LIKE 'language_server%.exe'\" | Select-Object -ExpandProperty CommandLine"
         ], { encoding: 'utf-8', timeout: 5000 });
-        const m = out.match(/--csrf_token\s+([a-f0-9-]+)/);
-        if (m) liveCsrf = m[1];
+        liveCsrf = extractLastCsrf(out);
     } catch (e) {}
 
     const logPath = path.join(process.env.APPDATA || '', 'antigravity', 'logs', 'main.log');
@@ -77,25 +83,42 @@ function fetchLiveMcpMarketplace() {
             const lines = fs.readFileSync(logPath, 'utf-8').split('\n');
             for (let i = lines.length - 1; i >= 0 && (!livePort || !liveCsrf); i--) {
                 const line = lines[i];
-                if (!livePort && line.includes('127.0.0.1')) { const m = line.match(/https?:\/\/127\.0\.0\.1:(\d+)/); if (m) livePort = parseInt(m[1], 10); }
-                if (!liveCsrf && line.includes('--csrf_token')) { const m = line.match(/--csrf_token\s+([a-f0-9-]+)/); if (m) liveCsrf = m[1]; }
+                // main.log 同时记录非 RPC 的 http:// 桥接端口，仅取 https://127.0.0.1:
+                if (!livePort && line.includes('https://127.0.0.1:')) {
+                    const m = line.match(/https:\/\/127\.0\.0\.1:(\d+)/);
+                    if (m) livePort = parseInt(m[1], 10);
+                }
+                if (!liveCsrf) {
+                    const token = extractLastCsrf(line);
+                    if (token) liveCsrf = token;
+                }
             }
         } catch (e) {}
     }
     if (!livePort || !liveCsrf) return null;
 
     const agent = new https.Agent({ rejectUnauthorized: false });
-    const callRpc = (pathUrl, reqBody) => new Promise(resolve => {
+    // 非 2xx 状态、JSON 解析失败、网络错误或超时均显式 reject，由调用方按需回退快照
+    const callRpc = (pathUrl, reqBody, timeoutMs = 10000) => new Promise((resolve, reject) => {
         const req = https.request({
-            hostname: '127.0.0.1', port: livePort, path: pathUrl, method: 'POST', agent, timeout: 3000,
+            hostname: '127.0.0.1', port: livePort, path: pathUrl, method: 'POST', agent, timeout: timeoutMs,
             headers: { 'x-codeium-csrf-token': liveCsrf, 'Content-Type': 'application/json', 'Connect-Protocol-Version': '1' }
         }, res => {
             let data = '';
             res.on('data', d => data += d);
-            res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { resolve(null); } });
+            res.on('end', () => {
+                if (res.statusCode < 200 || res.statusCode >= 300) {
+                    return reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 160)}`));
+                }
+                try {
+                    resolve(JSON.parse(data));
+                } catch (e) {
+                    reject(new Error(`JSON 解析失败: ${e.message}`));
+                }
+            });
         });
-        req.on('error', () => resolve(null));
-        req.on('timeout', () => { req.destroy(); resolve(null); });
+        req.on('error', e => reject(new Error(`请求失败: ${e.message}`)));
+        req.on('timeout', () => { req.destroy(); reject(new Error(`请求超时 (${timeoutMs}ms)`)); });
         req.write(JSON.stringify(reqBody));
         req.end();
     });

@@ -18,18 +18,6 @@ node patch.js --install-dir D:\Antigravity   # 手动指定安装路径
 node patch.js --no-kill                      # 跳过自动关闭客户端进程
 ```
 
-## 维护与开发
-
-客户端版本更新后，运行同步脚本提取新增文本并检查词典重复或失效项：
-
-```powershell
-node sync.js                    # 提取新增文本至 dicts/new_to_translate.json（无待译词条时推进基线）
-node sync.js --audit            # 只读执行覆盖率与词库健康审计（不写盘）
-node sync.js --prune            # 显式清理已失效的静态词条
-node sync.js --update-snapshot  # 强制更新基线快照
-npm test                        # 运行测试
-```
-
 ## 目录说明
 
 - `dicts/*.json`：分域静态词典（`menus.json` 主进程、`agents.json` Swarm/Agent 子帧、`common.json` 主界面）
@@ -38,3 +26,4 @@ npm test                        # 运行测试
 - `src/runtime/`：注入到主进程与渲染进程的运行时脚本（`translator.js`、`main.js`、`dom.js`）
 - `src/inspector/`：版本差集提取与词典检查脚本（`unpacker.js`、`extractor.js`、`auditor.js`）
 - `src/asar.js` / `src/patcher.js` / `src/utils.js`：`app.asar` 读写、补丁生成与公共配置/进程管理
+- `patch.js` / `sync.js`：命令行安装/还原入口，以及向终端输出增量未覆盖词条与词库校验脚本

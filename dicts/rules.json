@@ -1075,6 +1075,21 @@
         ]
     },
     {
+        "pattern": "^the narrator's view failed \\(it navigated away\\)$",
+        "replacement": "旁白视图加载失败（页面发生意外跳转）"
+    },
+    {
+        "pattern": "^the narrator's view failed \\(error:\\s*unknown\\)$",
+        "replacement": "旁白视图加载失败（未知错误）"
+    },
+    {
+        "pattern": "^the narrator's view failed \\(error:\\s*(.+)\\)$",
+        "replacement": "旁白视图加载失败（错误：$1）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
         "pattern": "^the narrator's view failed \\((.+)\\)$",
         "replacement": "旁白视图加载失败（$1）",
         "rawGroups": [
@@ -1183,6 +1198,72 @@
         "replacement": "已复制“$1”。请粘贴给协调器并说明希望修改的内容。",
         "rawGroups": [
             1
+        ]
+    },
+    {
+        "pattern": "^Copied \"(.+)\"\\. Paste it to the coordinator on its machine\\.$",
+        "replacement": "已复制“$1”。请粘贴给其所在机器上的协调器。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Copied \"(.+)\"\\. Paste it to the coordinator on (.+)\\.$",
+        "replacement": "已复制“$1”。请粘贴给 $2 上的协调器。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Tell it \"(.+) \\.{3}\" to the coordinator on its machine\\.$",
+        "replacement": "请转告其所在机器上的协调器：“$1 ...”",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Tell it \"(.+) \\.{3}\" to the coordinator on (.+)\\.$",
+        "replacement": "请转告 $2 上的协调器：“$1 ...”",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Copied \"(.+)\"\\. Paste it in the chat\\.$",
+        "replacement": "已复制“$1”。请粘贴到对话中。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Type \"(.+)\" in the chat\\.$",
+        "replacement": "请在对话中输入“$1”。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^#([^\\s]+) is archived: this addresses nobody$",
+        "replacement": "#$1 已归档：此提及不会唤醒任何人",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Everyone in #([^\\s]+)$",
+        "replacement": "#$1 中的所有成员",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Posted in #([^\\s;]+); click to show only #([^\\s;]+)$",
+        "replacement": "发布于 #$1；点击仅显示 #$2",
+        "rawGroups": [
+            1,
+            2
         ]
     },
     {

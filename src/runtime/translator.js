@@ -30,6 +30,7 @@ function createTranslator(rawDict, rawRules, config) {
             rawGroupSet: Array.isArray(r.rawGroups) ? new Set(r.rawGroups) : null
         }))
         : [];
+    // 全部规则拼接为单一预过滤正则，规则内不可使用 \1-\9 反向引用以免组号偏移失效
     const rulesPrefilter = rules.length > 0
         ? new RegExp(rules.map(r => '(?:' + r.regex.source + ')').join('|'), 'i')
         : null;

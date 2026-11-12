@@ -181,7 +181,7 @@ function isPatchUpToDate(asarPath, state, currentDictsHash) {
 function readCleanBackup(bakPath, rejectMsg) {
     const bakBuffer = fs.readFileSync(bakPath);
     if (bakBuffer.includes(SIGNATURE_START)) {
-        console.error(`\x1b[31m[错误] 备份文件 app.asar.bak 已包含补丁数据，${rejectMsg}\x1b[0m`);
+        console.error(`[错误] 备份文件 app.asar.bak 已包含补丁数据，${rejectMsg}`);
         return null;
     }
     return bakBuffer;
@@ -191,7 +191,7 @@ function prepareOfficialAsar(resourcesDir, state) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
     if (!fs.existsSync(asarPath)) {
-        console.error(`\x1b[31m[错误] 资源目录中不存在 app.asar: ${resourcesDir}\x1b[0m`);
+        console.error(`[错误] 资源目录中不存在 app.asar: ${resourcesDir}`);
         return null;
     }
     const asarBuffer = fs.readFileSync(asarPath);
@@ -205,7 +205,7 @@ function prepareOfficialAsar(resourcesDir, state) {
             writeAtomic(bakPath, asarBuffer);
             state.officialHash = currentAsarHash;
             utils.saveState(state);
-            console.log(`\x1b[32m[备份] 检测到客户端版本更新，已同步更新官方基线备份 (app.asar.bak)。\x1b[0m`);
+            console.log('[备份] 检测到客户端版本更新，已同步更新官方基线备份 (app.asar.bak)。');
             return asarBuffer;
         }
         if (state.officialHash !== bakHash) { state.officialHash = bakHash; utils.saveState(state); }
@@ -213,13 +213,13 @@ function prepareOfficialAsar(resourcesDir, state) {
     }
 
     if (isAlreadyPatched) {
-        console.error(`\x1b[31m[错误] 缺少官方备份文件 app.asar.bak，且当前 app.asar 已包含补丁，无法建立初始基线。\x1b[0m`);
+        console.error('[错误] 缺少官方备份文件 app.asar.bak，且当前 app.asar 已包含补丁，无法建立初始基线。');
         return null;
     }
     writeAtomic(bakPath, asarBuffer);
     state.officialHash = sha256(asarBuffer);
     utils.saveState(state);
-    console.log(`\x1b[32m[备份] 已创建官方原始文件备份 (app.asar.bak)。\x1b[0m`);
+    console.log('[备份] 已创建官方原始文件备份 (app.asar.bak)。');
     return asarBuffer;
 }
 
@@ -227,7 +227,7 @@ function restoreOfficialAsar(resourcesDir, state, onBeforeWrite) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
     if (!fs.existsSync(bakPath)) {
-        console.error('\x1b[31m[错误] 未找到官方备份文件 app.asar.bak，无法执行还原。\x1b[0m');
+        console.error('[错误] 未找到官方备份文件 app.asar.bak，无法执行还原。');
         return false;
     }
     const bakBuffer = readCleanBackup(bakPath, '已中止还原。');
@@ -240,10 +240,10 @@ function restoreOfficialAsar(resourcesDir, state, onBeforeWrite) {
         state.patchedHash = '';
         state.dictsHash = '';
         utils.saveState(state);
-        console.log(`\x1b[32m[完成] 已恢复为官方原始版本。\x1b[0m`);
+        console.log('[完成] 已恢复为官方原始版本。');
         return true;
     } catch (e) {
-        console.error(`\x1b[31m[错误] 恢复官方文件失败: ${e.message}\x1b[0m`);
+        console.error(`[错误] 恢复官方文件失败: ${e.message}`);
         return false;
     }
 }

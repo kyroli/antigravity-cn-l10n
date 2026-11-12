@@ -4,6 +4,7 @@ function installDomTranslator(translator, config) {
     if (document._agL10nInstalled || (docEl && docEl._agL10nInstalled)) return;
 
     try {
+        // 冻结或不可扩展的 document 回退将防重入标记挂到 documentElement
         const markTarget = typeof Object.isExtensible !== 'function' || Object.isExtensible(document)
             ? document
             : (docEl && (typeof Object.isExtensible !== 'function' || Object.isExtensible(docEl)) ? docEl : null);
@@ -22,16 +23,20 @@ function installDomTranslator(translator, config) {
             ? translator.norm
             : (s => (s ? String(s).replace(/[\s\u00A0\u2009\u202F]+/g, ' ').trim() : ''));
         const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const cleanList = arr => (arr || []).map(c => c.trim()).filter(Boolean);
+        const buildClassWordRe = list => (list.length
+            ? new RegExp(`(?:^|\\s)(?:${list.map(escRe).join('|')})(?=\\s|$)`, 'i')
+            : null);
 
         const BLOCKED_TAG_SET = new Set((cfg.blockedTags || []).map(t => t.toUpperCase()));
-        const BLOCKED_CLASS_LIST = (cfg.blockedClasses || []).map(c => c.trim()).filter(Boolean);
-        const BLOCKED_CLASS_SUBSTRINGS = (cfg.blockedClassSubstrings || []).map(c => c.trim()).filter(Boolean);
+        const BLOCKED_CLASS_LIST = cleanList(cfg.blockedClasses);
+        const BLOCKED_CLASS_SUBSTRINGS = cleanList(cfg.blockedClassSubstrings);
         const BLOCKED_TESTID_SET = new Set((cfg.blockedTestIds || []).map(id => id.toLowerCase()));
         const BLOCKED_TESTID_SUBSTRINGS = (cfg.blockedTestIdSubstrings || []).map(id => id.toLowerCase()).filter(Boolean);
         const BLOCKED_DATA_ATTRS = (cfg.blockedDataAttrs || []).filter(Boolean);
-        const BYPASS_CLASS_LIST = (cfg.bypassClasses || []).map(c => c.trim()).filter(Boolean);
+        const BYPASS_CLASS_LIST = cleanList(cfg.bypassClasses);
         const BYPASS_ROLE_SET = new Set((cfg.bypassRoles || []).map(r => r.toLowerCase()));
-        const CODE_EDITOR_KEYWORDS = (cfg.codeEditorKeywords || []).map(k => k.trim()).filter(Boolean);
+        const CODE_EDITOR_KEYWORDS = cleanList(cfg.codeEditorKeywords);
         const CONV_ROW_ALLOWED = new Set(cfg.conversationRowAllowedTexts || []);
 
         const hardClassParts = [];
@@ -40,12 +45,8 @@ function installDomTranslator(translator, config) {
             hardClassParts.push(`(?:^|\\s)(?!(?:bg-|text-|border-|decoration-|scrollbar-))[^\\s:\\[\\]]*(?:${CODE_EDITOR_KEYWORDS.map(escRe).join('|')})[^\\s:\\[\\]]*(?=\\s|$)`);
         }
         const HARD_BLOCKED_CLASS_RE = hardClassParts.length ? new RegExp(hardClassParts.join('|'), 'i') : null;
-        const SOFT_BLOCKED_CLASS_RE = BLOCKED_CLASS_LIST.length
-            ? new RegExp(`(?:^|\\s)(?:${BLOCKED_CLASS_LIST.map(escRe).join('|')})(?=\\s|$)`, 'i')
-            : null;
-        const BYPASS_CLASS_RE = BYPASS_CLASS_LIST.length
-            ? new RegExp(`(?:^|\\s)(?:${BYPASS_CLASS_LIST.map(escRe).join('|')})(?=\\s|$)`, 'i')
-            : null;
+        const SOFT_BLOCKED_CLASS_RE = buildClassWordRe(BLOCKED_CLASS_LIST);
+        const BYPASS_CLASS_RE = buildClassWordRe(BYPASS_CLASS_LIST);
 
         const FRAGMENT_RULES = (cfg.fragmentPatterns || []).map(fp => ({
             containerSelector: fp.containerSelector || '',
@@ -233,6 +234,7 @@ function installDomTranslator(translator, config) {
                     const tag = node.tagName ? node.tagName.toUpperCase() : '';
                     const v = getSelfVerdict(node);
                     if (v === 2) {
+                        // 输入控件本体阻断以保护用户输入内容，开放区域内仍翻译 placeholder 等控件属性
                         if ((tag === 'INPUT' || tag === 'TEXTAREA') && parentState === 0) {
                             translateElementAttributes(node, false);
                         }

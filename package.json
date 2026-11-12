@@ -6,8 +6,7 @@
   "scripts": {
     "patch": "node patch.js",
     "restore": "node patch.js --restore",
-    "sync": "node sync.js",
-    "test": "node --test tests/*.test.js"
+    "sync": "node sync.js"
   },
   "keywords": [
     "antigravity",

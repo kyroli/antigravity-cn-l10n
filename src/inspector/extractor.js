@@ -20,9 +20,51 @@ const REJECT_PATTERNS = [
     /^(?:CmdOrCtrl|Ctrl|Alt|Shift|Meta)(?:\+[A-Za-z0-9]+)+$/i,
     /^[a-zA-Z0-9$]+_[a-zA-Z0-9_$]+$/,
     /^use[A-Z][a-zA-Z0-9]*\s+must be used within/i,
+    // 过滤 HTML/SVG 片段、CSP 策略指令与内联 CSS 样式噪点
+    /<\/?[a-z!][^>]*>/i,
+    /^(?:base-uri|frame-src|script-src|style-src|img-src|connect-src|font-src|object-src|media-src|manifest-src|worker-src|form-action|default-src)\s+/i,
+    /^(?:background|margin|padding|font-size|display|position|cursor|border(?:-[a-z-]+)?|color|width|height|line-height|box-shadow|visibility|z-index|opacity|overflow)\s*:\s*[^:\s]/i,
+    /var\(--[a-z0-9_-]+/i,
     CODE_SYNTAX_RE,
     TAILWIND_TOKEN_RE
 ];
+
+const CSS_CLASS_ID_RE = /^[.#][a-z_-][a-z0-9_-]*$/i;
+const CSS_IDENT_PART_RE = /^[.#]?[a-z_-][a-z0-9_-]*$/i;
+const CSS_TAG_RE = /^(?:\*|[a-z][a-z0-9_-]*)$/;
+const CSS_ATTR_RE = /^\[[a-z][a-z0-9_-]*(?:[~|^$*]?=[^\]]*)?\]$/;
+const CSS_STRONG_ATTR_RE = /^\[[a-z][a-z0-9_-]*(?:-[a-z0-9_-]+|[~|^$*]?=[^\]]+)\]$/;
+const CSS_COMBINATOR_RE = /^\s*(?:[,>+~]|\s)\s*/;
+
+function isCssSelectorNoise(str) {
+    if (!str || (str[0] !== '.' && str[0] !== '#' && !str.includes('['))) return false;
+    const parts = [];
+    for (let i = 0; i < str.length;) {
+        const start = i;
+        while (i < str.length && !/[\s,>+~]/.test(str[i])) {
+            if (str[i] === '[') {
+                const close = str.indexOf(']', i + 1);
+                if (close === -1) return false;
+                i = close + 1;
+            } else {
+                i++;
+            }
+        }
+        if (i === start) return false;
+        parts.push(str.slice(start, i));
+        if (i < str.length) {
+            const sep = str.slice(i).match(CSS_COMBINATOR_RE);
+            if (!sep || i + sep[0].length >= str.length) return false;
+            i += sep[0].length;
+        }
+    }
+    if (parts.length >= 2 && CSS_CLASS_ID_RE.test(parts[0]) &&
+        parts.every((p, idx) => idx === 0 || CSS_IDENT_PART_RE.test(p) || /^\[[^\]]+\]$/.test(p))) {
+        return true;
+    }
+    return parts.some(p => CSS_STRONG_ATTR_RE.test(p)) &&
+        parts.every(p => CSS_TAG_RE.test(p) || CSS_CLASS_ID_RE.test(p) || CSS_ATTR_RE.test(p));
+}
 
 function isLikelyUserFacingText(str) {
     if (!str || typeof str !== 'string') return false;
@@ -31,7 +73,7 @@ function isLikelyUserFacingText(str) {
     if (s.includes('__') || s.includes('$$') || s.includes('/*') || /(?:^|\s)\/\//.test(s)) return false;
     if (s.includes('),content:') || s.includes('.describe(')) return false;
     if (s.includes('"') && (s.split('"').length - 1) % 2 !== 0) return false;
-    if (REJECT_PATTERNS.some(re => re.test(s))) return false;
+    if (REJECT_PATTERNS.some(re => re.test(s)) || isCssSelectorNoise(s)) return false;
 
     if (!/\s/.test(s)) return /^(?:OK|[A-Z][a-z]+:?)$/.test(s);
     const tokens = s.split(/\s+/);

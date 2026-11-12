@@ -149,6 +149,7 @@ function installMainHooks(electron, translator, frameScript) {
             const isExpectedDisposalError = (frame, err) => isDestroyedObj(frame)
                 || /Render frame was disposed|frame disposed|frame was disposed|destroyed|detached/i.test(err?.message || String(err || ''));
 
+            // 仅向默认会话宿主内的 plugin:// 帧及本地回环子帧注入，隔离 webview 与外部页面
             function isEligibleWebContents(contents) {
                 if (!contents || isDestroyedObj(contents) || !appReadyResolved) return false;
                 if (typeof contents.getType === 'function' && contents.getType() === 'webview') return false;
