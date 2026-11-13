@@ -27,7 +27,8 @@ function createTranslator(rawDict, rawRules, config) {
             regex: new RegExp(r.pattern, r.caseSensitive ? '' : 'i'),
             replacement: r.replacement,
             rawAll: r.rawGroups === true,
-            rawGroupSet: Array.isArray(r.rawGroups) ? new Set(r.rawGroups) : null
+            rawGroupSet: Array.isArray(r.rawGroups) ? new Set(r.rawGroups) : null,
+            safeGroupSet: Array.isArray(r.safeGroups) ? new Set(r.safeGroups) : null
         }))
         : [];
     // 全部规则拼接为单一预过滤正则，规则内不可使用 \1-\9 反向引用以免组号偏移失效
@@ -43,7 +44,19 @@ function createTranslator(rawDict, rawRules, config) {
     let coldCache = new Map();
     const MAX_GEN_SIZE = 2048;
 
-    const DURATION_RE = /^\d+\s*(?:days?|d|hours?|h(?:r)?|minutes?|m(?:in)?|seconds?|s(?:ec)?|ms)\b(?:\s*,?\s*\d+\s*(?:days?|d|hours?|h(?:r)?|minutes?|m(?:in)?|seconds?|s(?:ec)?|ms)\b)*$/i;
+    const DURATION_UNIT_PAT = '(?:years?|yrs?|months?|mo|weeks?|wks?|w|days?|d|hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s|ms)';
+    const DURATION_RE = new RegExp(`^\\d+\\s*${DURATION_UNIT_PAT}\\b(?:\\s*,?\\s*\\d+\\s*${DURATION_UNIT_PAT}\\b)*$`, 'i');
+    const DURATION_ITEM_RE = new RegExp(`(\\d+)\\s*(${DURATION_UNIT_PAT})\\b`, 'gi');
+    const DURATION_UNIT_MAP = {
+        year: '年', years: '年', yr: '年', yrs: '年',
+        month: '个月', months: '个月', mo: '个月',
+        week: '周', weeks: '周', wk: '周', wks: '周', w: '周',
+        day: '天', days: '天', d: '天',
+        hour: '小时', hours: '小时', hr: '小时', hrs: '小时', h: '小时',
+        minute: '分钟', minutes: '分钟', min: '分钟', mins: '分钟', m: '分钟',
+        second: '秒', seconds: '秒', sec: '秒', secs: '秒', s: '秒',
+        ms: '毫秒'
+    };
     const SHORTCUT_RE = /^(.+?)\s*\((Ctrl|Cmd|Alt|Shift|⌘|⌥|⇧|⌃)\+?([^)]*)\)$/i;
     const FILE_EXT_RE = /\.[a-zA-Z0-9_\-]{1,8}$/;
 
@@ -65,13 +78,12 @@ function createTranslator(rawDict, rawRules, config) {
     const toolStatFullRe = new RegExp(`^(?:(${verbKeys})\\s+)?(\\d+)\\s+(${nounKeys})(?:,\\s*(?:(${verbKeys})\\s+)?(\\d+)\\s+(${nounKeys}))*$`, 'i');
 
     function formatDuration(s) {
-        if (!s || !DURATION_RE.test(s.trim())) return null;
-        return s.trim()
-            .replace(/(\d+)\s*(?:days?|d)\b/gi, '$1 天')
-            .replace(/(\d+)\s*(?:hours?|h(?:r)?)\b/gi, '$1 小时')
-            .replace(/(\d+)\s*(?:minutes?|m(?:in)?)\b/gi, '$1 分钟')
-            .replace(/(\d+)\s*(?:seconds?|s(?:ec)?)\b/gi, '$1 秒')
-            .replace(/(\d+)\s*ms\b/gi, '$1 毫秒')
+        if (!s) return null;
+        const trimmed = s.trim();
+        if (/^a few seconds$/i.test(trimmed)) return '几秒';
+        if (!DURATION_RE.test(trimmed)) return null;
+        return trimmed
+            .replace(DURATION_ITEM_RE, (_, num, unit) => num + ' ' + DURATION_UNIT_MAP[unit.toLowerCase()])
             .replace(/,\s*/g, ' ')
             .replace(/\s{2,}/g, ' ');
     }
@@ -100,10 +112,13 @@ function createTranslator(rawDict, rawRules, config) {
                 if (isRaw) {
                     gVal = rawGroup;
                 } else {
+                    const isSafe = Boolean(rule.safeGroupSet && rule.safeGroupSet.has(g));
                     const gNorm = normalizeText(rawGroup);
-                    gVal = lookupStatic(gNorm);
+                    // safeGroups 仅允许翻译含空格的 UI 短语，防止单单词实体名撞词典误译
+                    const skipTextLookup = isSafe && (!gNorm.includes(' ') || isProtectedOrPath(gNorm));
+                    gVal = skipTextLookup ? null : lookupStatic(gNorm);
                     if (gVal === null) gVal = formatDuration(gNorm);
-                    if (gVal === null && depth < 1 && !isProtectedOrPath(gNorm) && /[a-zA-Z]/.test(gNorm)) {
+                    if (gVal === null && depth < 2 && !skipTextLookup && !isProtectedOrPath(gNorm) && /[a-zA-Z]/.test(gNorm)) {
                         gVal = matchRules(gNorm, depth + 1);
                     }
                     if (gVal === null) gVal = rawGroup;
@@ -111,7 +126,10 @@ function createTranslator(rawDict, rawRules, config) {
             }
             out = out.split('$' + g).join(gVal);
         }
-        return out.replace(/\s{2,}/g, ' ').replace(/\s+后/g, '后');
+        return out
+            .replace(/\s{2,}/g, ' ')
+            .replace(/([\u4e00-\u9fff])\s+([前后])/g, '$1$2')
+            .replace(/([。，：；！？])\s+(?=[\u4e00-\u9fff])/g, '$1');
     }
 
     function matchRules(valNorm, depth) {

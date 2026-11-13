@@ -38,7 +38,7 @@ function mergeArrayField(baseArr, extraArr, byJson = false) {
 }
 
 function buildScopedConfigs(config) {
-    const { frame: frameCfg = {}, ...hubConfig } = config || {};
+    const { frame: frameCfg = {}, audit: _auditCfg, ...hubConfig } = config || {};
     const frameConfig = Object.assign({}, hubConfig, {
         blockedClasses: mergeArrayField(hubConfig.blockedClasses, frameCfg.blockedClasses),
         blockedTestIds: mergeArrayField(hubConfig.blockedTestIds, frameCfg.blockedTestIds),

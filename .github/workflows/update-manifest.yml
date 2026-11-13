@@ -1,0 +1,82 @@
+name: Update Manifest
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+      - 'patch.js'
+      - 'Antigravity-L10n.bat'
+      - 'Antigravity-Restore.bat'
+      - 'src/asar.js'
+      - 'src/patcher.js'
+      - 'src/updater.js'
+      - 'src/utils.js'
+      - 'src/runtime/**'
+      - 'dicts/**'
+      - '.github/workflows/update-manifest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-manifest-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate manifest.json
+        run: node src/updater.js --write-manifest
+
+      - name: Commit manifest.json if changed
+        run: |
+          if [ -n "$(git status --porcelain manifest.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add manifest.json
+            git commit -m "chore: update manifest.json [skip ci]"
+            git push
+          else
+            echo "manifest.json is already up to date."
+          fi
+
+      - name: Sync Antigravity-L10n.bat release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node -e "const fs=require('fs'); fs.writeFileSync('/tmp/Antigravity-L10n.bat', fs.readFileSync('Antigravity-L10n.bat','utf8').replace(/\r\n/g,'\n').replace(/\n/g,'\r\n'), 'utf8');"
+          set +e
+          RELEASE_JSON="$(gh api "repos/${{ github.repository }}/releases/tags/launcher" 2>/tmp/gh_err.txt)"
+          RC=$?
+          set -e
+          if [ "$RC" -eq 0 ]; then
+            IS_SYNCED="$(RELEASE_JSON="$RELEASE_JSON" node -e "
+              const fs = require('fs'), crypto = require('crypto');
+              const sha = crypto.createHash('sha256').update(fs.readFileSync('/tmp/Antigravity-L10n.bat')).digest('hex');
+              const rel = JSON.parse(process.env.RELEASE_JSON || '{}');
+              const asset = (rel.assets || []).find(a => a.name === 'Antigravity-L10n.bat');
+              process.stdout.write(asset && asset.digest === 'sha256:' + sha ? '1' : '0');
+            ")"
+            if [ "$IS_SYNCED" = "1" ]; then
+              echo "Antigravity-L10n.bat release asset is already up to date."
+            else
+              gh release upload launcher /tmp/Antigravity-L10n.bat --clobber
+            fi
+          elif grep -qiE "404|Not Found" /tmp/gh_err.txt; then
+            gh release create launcher /tmp/Antigravity-L10n.bat --target "$(git rev-parse HEAD)" --title "Launcher" --notes "Single-file launcher for antigravity-cn-l10n."
+          else
+            cat /tmp/gh_err.txt >&2
+            exit "$RC"
+          fi

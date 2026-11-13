@@ -8,11 +8,11 @@
         "replacement": "(推荐) $1"
     },
     {
-        "pattern": "^You have used some of your (\\d+)-hour limit, it will fully refresh in (.+?)\\.?$",
+        "pattern": "^You have used some of your (\\d+)-hour limit, it will fully refresh in ([^.]+?)\\.?$",
         "replacement": "您已使用部分 $1 小时限额，将在 $2 后完全刷新。"
     },
     {
-        "pattern": "^You have used some of your weekly limit, it will fully refresh in (.+?)\\.?$",
+        "pattern": "^You have used some of your weekly limit, it will fully refresh in ([^.]+?)\\.?$",
         "replacement": "您已使用部分每周限额，将在 $1 后完全刷新。"
     },
     {
@@ -188,6 +188,10 @@
         "replacement": "($1 个图片附件)"
     },
     {
+        "pattern": "^((?:Your|You have (?:hit|used some of) your) (?:\\d+-hour|weekly) limit[^.]+\\.)\\s+(.+)$",
+        "replacement": "$1 $2"
+    },
+    {
         "pattern": "^Your (\\d+)-hour limit will fully refresh in ([^.]+?)\\.?$",
         "replacement": "您的 $1 小时限额将在 $2 后完全刷新。"
     },
@@ -204,40 +208,28 @@
         "replacement": "您的每周限额将在 $1 后刷新。"
     },
     {
-        "pattern": "^You have hit your (\\d+)-hour limit, (?:so )?the weekly limit does not currently apply\\. Your (?:\\d+)-hour limit will fully refresh in ([^.]+?)\\.?$",
-        "replacement": "您已达到 $1 小时限额，因此每周限额当前不适用。您的 $1 小时限额将在 $2 后完全刷新。"
-    },
-    {
-        "pattern": "^You have hit your (\\d+)-hour limit, (?:so )?the weekly limit does not currently apply\\. Your (?:\\d+)-hour limit will refresh in ([^.]+?)\\.?$",
-        "replacement": "您已达到 $1 小时限额，因此每周限额当前不适用。您的 $1 小时限额将在 $2 后刷新。"
-    },
-    {
-        "pattern": "^You have hit your weekly limit, (?:so )?the (\\d+)-hour limit does not currently apply\\. Your weekly limit will fully refresh in ([^.]+?)\\.?$",
-        "replacement": "您已达到每周限额，因此 $1 小时限额当前不适用。您的每周限额将在 $2 后完全刷新。"
-    },
-    {
-        "pattern": "^You have hit your weekly limit, (?:so )?the (\\d+)-hour limit does not currently apply\\. Your weekly limit will refresh in ([^.]+?)\\.?$",
-        "replacement": "您已达到每周限额，因此 $1 小时限额当前不适用。您的每周限额将在 $2 后刷新。"
+        "pattern": "^You have hit your (\\d+)-hour limit, (?:so )?the weekly limit does not currently apply\\.?$",
+        "replacement": "您已达到 $1 小时限额，因此每周限额当前不适用。"
     },
     {
         "pattern": "^You have hit your weekly limit, (?:so )?the (\\d+)-hour limit does not currently apply\\.?$",
         "replacement": "您已达到每周限额，因此 $1 小时限额当前不适用。"
     },
     {
-        "pattern": "^You have hit your (\\d+)-hour limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\. If on a supported paid plan, you can use AI credits in the interim\\.?$",
-        "replacement": "您已达到 $1 小时限额，将在 $2 后刷新。如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
-    },
-    {
         "pattern": "^You have hit your (\\d+)-hour limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\.?$",
         "replacement": "您已达到 $1 小时限额，将在 $2 后刷新。"
     },
     {
-        "pattern": "^You have hit your weekly limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\. If on a supported paid plan, you can use AI credits in the interim\\.?$",
-        "replacement": "您已达到每周限额，将在 $1 后刷新。如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
-    },
-    {
         "pattern": "^You have hit your weekly limit, it (?:will )?refresh(?:es)? in ([^.]+?)\\.?$",
         "replacement": "您已达到每周限额，将在 $1 后刷新。"
+    },
+    {
+        "pattern": "^If on a supported paid plan, you can use AI credits in the interim or upgrade to a higher tier\\.?$",
+        "replacement": "如果您使用的是受支持的付费计划，可在此期间使用 AI 额度或升级至更高等级。"
+    },
+    {
+        "pattern": "^If on a supported paid plan, you can use AI credits in the interim\\.?$",
+        "replacement": "如果您使用的是受支持的付费计划，可在此期间使用 AI 额度。"
     },
     {
         "pattern": "^(\\d+) active conversations? and (\\d+) archived conversations?$",
@@ -449,14 +441,14 @@
     {
         "pattern": "^Your quota for (.+?) will reset on (.+?)\\. Switch to another available model to continue\\.$",
         "replacement": "您的 $1 配额将于 $2 重置。请切换到其他可用模型以继续。",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
     {
         "pattern": "^Your quota for (.+?) has been reached\\. Switch to another available model to continue\\.$",
         "replacement": "您已达到 $1 的配额上限。请切换到其他可用模型以继续。",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
@@ -511,20 +503,8 @@
         "replacement": "$1 个任务运行中"
     },
     {
-        "pattern": "^Updated (\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms))\\s+ago$",
-        "replacement": "更新于 $1前"
-    },
-    {
-        "pattern": "^Updated (\\d+)\\s+weeks?\\s+ago$",
-        "replacement": "更新于 $1 周前"
-    },
-    {
-        "pattern": "^Updated (\\d+)\\s+months?\\s+ago$",
-        "replacement": "更新于 $1 个月前"
-    },
-    {
-        "pattern": "^Updated (\\d+)\\s+years?\\s+ago$",
-        "replacement": "更新于 $1 年前"
+        "pattern": "^Updated (.+?)\\s+ago$",
+        "replacement": "更新于 $1 前"
     },
     {
         "pattern": "^Updated just now$",
@@ -634,20 +614,31 @@
         "replacement": "还有 $1 项（显示全部）"
     },
     {
+        "pattern": "^((?:Your plan's baseline quota will refresh on .+?\\.|You need (?:at least \\d+|more) AI Credits to send messages\\.\\s*To continue using .+? now, purchase more AI Credits\\.))\\s+(.+)$",
+        "replacement": "$1 $2"
+    },
+    {
         "pattern": "^Your plan's baseline quota will refresh on (.+?)\\.?$",
         "replacement": "您订阅方案的基础配额将于 $1 刷新。"
     },
     {
-        "pattern": "^You need at least (\\d+) AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.$",
+        "pattern": "^You need at least (\\d+) AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.?$",
         "replacement": "您需要至少 $1 点 AI 额度才能发送消息。如需立即继续使用 $2，请购买更多 AI 额度。",
-        "rawGroups": [
+        "safeGroups": [
             2
         ]
     },
     {
-        "pattern": "^You need more AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.$",
+        "pattern": "^You need more AI Credits to send messages\\. To continue using (.+?) now, purchase more AI Credits\\.?$",
         "replacement": "您需要更多 AI 额度才能发送消息。如需立即继续使用 $1，请购买更多 AI 额度。",
-        "rawGroups": [
+        "safeGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^To continue using (.+?) now, enable AI Credit overages\\.?$",
+        "replacement": "如需立即继续使用 $1，请启用 AI 额度超额使用。",
+        "safeGroups": [
             1
         ]
     },
@@ -823,6 +814,18 @@
         "replacement": "每 $1 小时"
     },
     {
+        "pattern": "^((?:Uses your local files and tools|Runs even when your computer is off)\\.)\\s+(.+)$",
+        "replacement": "$1 $2"
+    },
+    {
+        "pattern": "^Uses your local files and tools\\.?$",
+        "replacement": "使用您的本地文件和工具。"
+    },
+    {
+        "pattern": "^Runs even when your computer is off\\.?$",
+        "replacement": "即使您的电脑关机也能继续运行。"
+    },
+    {
         "pattern": "^Add (\\d+) plugins? from (.+)$",
         "replacement": "从 $2 添加 $1 个插件",
         "rawGroups": [
@@ -873,7 +876,7 @@
     {
         "pattern": "^(.+), voice (\\d+) of (\\d+)$",
         "replacement": "$1，第 $2 / $3 个音色",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
@@ -1119,27 +1122,7 @@
         "replacement": "旁白已读至 #$1（共 $2 条）"
     },
     {
-        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms)(?:\\s*,?\\s*\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms))*) ago$",
-        "replacement": "已读 #$1 · $2前更新"
-    },
-    {
-        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+)\\s*mins? ago$",
-        "replacement": "已读 #$1 · $2 分钟前更新"
-    },
-    {
-        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+)\\s*secs? ago$",
-        "replacement": "已读 #$1 · $2 秒前更新"
-    },
-    {
-        "pattern": "^read #(\\d+)\\s*·\\s*updated (\\d+)\\s*hrs? ago$",
-        "replacement": "已读 #$1 · $2 小时前更新"
-    },
-    {
-        "pattern": "^read #(\\d+)\\s*·\\s*updated a few seconds ago$",
-        "replacement": "已读 #$1 · 几秒前更新"
-    },
-    {
-        "pattern": "^read #(\\d+)\\s*·\\s*updated (.+) ago$",
+        "pattern": "^read #(\\d+)\\s*·\\s*updated (.+?)\\s+ago$",
         "replacement": "已读 #$1 · $2 前更新"
     },
     {
@@ -1311,40 +1294,12 @@
     {
         "pattern": "^(.+?)\\s*·\\s*(\\d+) machines?$",
         "replacement": "$1 · $2 台机器",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
     {
-        "pattern": "^last seen\\s+(\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms)(?:\\s*,?\\s*\\d+\\s*(?:days?|d|hours?|hr|h|minutes?|min|m|seconds?|sec|s|ms))*)\\s+ago$",
-        "replacement": "上次在线 $1前"
-    },
-    {
-        "pattern": "^last seen\\s+(\\d+)\\s*mins?\\s+ago$",
-        "replacement": "上次在线 $1 分钟前"
-    },
-    {
-        "pattern": "^last seen\\s+(\\d+)\\s*secs?\\s+ago$",
-        "replacement": "上次在线 $1 秒前"
-    },
-    {
-        "pattern": "^last seen\\s+(\\d+)\\s*hrs?\\s+ago$",
-        "replacement": "上次在线 $1 小时前"
-    },
-    {
-        "pattern": "^last seen\\s+(\\d+)\\s*weeks?\\s+ago$",
-        "replacement": "上次在线 $1 周前"
-    },
-    {
-        "pattern": "^last seen\\s+(\\d+)\\s*months?\\s+ago$",
-        "replacement": "上次在线 $1 个月前"
-    },
-    {
-        "pattern": "^last seen\\s+a few seconds\\s+ago$",
-        "replacement": "上次在线 几秒前"
-    },
-    {
-        "pattern": "^last seen\\s+(.+)\\s+ago$",
+        "pattern": "^last seen\\s+(.+?)\\s+ago$",
         "replacement": "上次在线 $1 前"
     },
     {
@@ -1389,35 +1344,35 @@
     {
         "pattern": "^(.+?),\\s*current:\\s*(.+)$",
         "replacement": "$1，当前：$2",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
     {
         "pattern": "^(.+?),\\s*(resets in .+)$",
         "replacement": "$1，$2",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
     {
         "pattern": "^(.+?)\\s*·\\s*reconnecting$",
         "replacement": "$1 · 正在重连",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
     {
         "pattern": "^(.+?)\\s*·\\s*connecting$",
         "replacement": "$1 · 正在连接",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },
     {
         "pattern": "^(.+?)\\s*·\\s*unavailable$",
         "replacement": "$1 · 不可用",
-        "rawGroups": [
+        "safeGroups": [
             1
         ]
     },

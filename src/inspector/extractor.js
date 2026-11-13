@@ -158,22 +158,31 @@ function extractStringsFromJs(content) {
 }
 
 /**
- * 提取常见 UI 属性中的字符串（用于 --audit 模式扫描未翻译文本）
+ * 提取常见 UI 属性及独立 JSX 文本子节点中的字符串（用于 --audit 模式扫描未翻译文本）
  */
 function extractHighConfidenceUiStrings(content) {
     const candidates = new Map();
     if (!content) return candidates;
     content = stripBundledNoiseBlocks(content);
 
+    const recordCandidate = (raw, tag) => {
+        const norm = utils.normalizeText(unescapeJsString(raw));
+        if (isLikelyUserFacingText(norm)) {
+            if (!candidates.has(norm)) candidates.set(norm, new Set());
+            candidates.get(norm).add(tag);
+        }
+    };
+
     const uiPropRe = /(?:\b(label|title|placeholder|description|message|detail|buttonLabel|emptyMessage|tooltip|subtitle|heading)|"aria-label"|'aria-label')\s*:\s*(["'])((?:\\.|(?!\2)[^\\\r\n]){2,400})\2/g;
     let m;
     while ((m = uiPropRe.exec(content))) {
-        const prop = m[1] || 'aria-label';
-        const norm = utils.normalizeText(unescapeJsString(m[3]));
-        if (isLikelyUserFacingText(norm)) {
-            if (!candidates.has(norm)) candidates.set(norm, new Set());
-            candidates.get(norm).add(`prop:${prop}`);
-        }
+        recordCandidate(m[3], `prop:${m[1] || 'aria-label'}`);
+    }
+
+    // 补充扫描 createElement(..., "Text") 中的独立文本子节点（如仅以文本作为唯一子节点的菜单项）
+    const jsxSoleTextRe = /\.createElement\((?:[a-zA-Z0-9_$.]+|"(?:span|div|p|button|label|a|strong|em|h[1-6]|li|td|th|option)")\s*,\s*(?:null|\{[^()]{0,300}\})\s*,\s*(["'])([A-Z](?:\\.|(?!\1)[^\\\r\n]){1,200})\1\s*\)/g;
+    while ((m = jsxSoleTextRe.exec(content))) {
+        recordCandidate(m[2], 'jsx:text');
     }
     return candidates;
 }

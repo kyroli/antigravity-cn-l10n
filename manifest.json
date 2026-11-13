@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "repo": "kyroli/antigravity-cn-l10n",
+  "branch": "main",
+  "targetVersion": "2.31.2",
+  "revision": "9858affaa3a8",
+  "files": {
+    "Antigravity-L10n.bat": {
+      "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
+      "size": 2552
+    },
+    "Antigravity-Restore.bat": {
+      "sha256": "8bd6ec36ae39fb1b103f5e022df21987187a75b8e5fcf9283461096f79df7979",
+      "size": 488
+    },
+    "dicts/agents.json": {
+      "sha256": "094065f64b23d740cc4a1e1f4bdb1adcfc82d3d6b70248d4f70d1780c545f5c5",
+      "size": 39939
+    },
+    "dicts/common.json": {
+      "sha256": "249993b968e3dd41d7b7fc55072c8a7ab34363d813529b16d202a8da5cea813a",
+      "size": 255536
+    },
+    "dicts/config.json": {
+      "sha256": "ce58d9eb2b36ebd7b88b3d5a0cea684ee53b4d266fa01015ca655c3dbc74946f",
+      "size": 19994
+    },
+    "dicts/menus.json": {
+      "sha256": "480ccc748a16bda7bdfd09abee2f4ba2343d8241714c52d3905e6fbe0bbb1c96",
+      "size": 9627
+    },
+    "dicts/rules.json": {
+      "sha256": "ce1a63c0e98e4ced72a2b941b8c1d18f83bf554e3ea55638240db23e0c555109",
+      "size": 41711
+    },
+    "package.json": {
+      "sha256": "dc2a3a33356e10dd9d4636e68c99ae4cdd8cef89eefbf66e53b1ac6a84848cda",
+      "size": 507
+    },
+    "patch.js": {
+      "sha256": "014490107cd07f844bad222df73b895122372d5378f3e07b49745960a72ceecf",
+      "size": 5679
+    },
+    "src/asar.js": {
+      "sha256": "999813d9640f00f85975b987cf6b9a2e322c1cc3469816367aa9d623bda2b770",
+      "size": 11062
+    },
+    "src/patcher.js": {
+      "sha256": "ebe83ff10f1e55287dca9c26f60c6891864af87d1e5420afda451e27d2e9e131",
+      "size": 11033
+    },
+    "src/runtime/dom.js": {
+      "sha256": "70f2a0032c578790fc6fd0dd42711249ac49574d5222873fb4ff47db54eb8f89",
+      "size": 16021
+    },
+    "src/runtime/main.js": {
+      "sha256": "c870c76d8ededd096373e8d4ff15707a55d29034610576fcbc11b51055c29743",
+      "size": 13853
+    },
+    "src/runtime/translator.js": {
+      "sha256": "e787aa457daa9fecfd36684958da3aa3917a421b89ec57466425cbe9dfb478f8",
+      "size": 10887
+    },
+    "src/updater.js": {
+      "sha256": "23b99e239db4cd88a6c7238e7f3d7515fd4610b528111356c58f43a16bacfefe",
+      "size": 17076
+    },
+    "src/utils.js": {
+      "sha256": "5f113b20b715d1d650a490e06df37e7e00baad80eb38e51ef78073a21cac315a",
+      "size": 14327
+    }
+  }
+}

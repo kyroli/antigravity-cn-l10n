@@ -20,6 +20,52 @@ const SNAPSHOT_MCP = path.join(SNAPSHOT_DIR, 'mcp_marketplace_snapshot.json');
 const SNAPSHOT_BUILTIN_SKILLS = path.join(SNAPSHOT_DIR, 'builtin_skills_snapshot.json');
 const SNAPSHOT_BUILTIN_SIDECARS = path.join(SNAPSHOT_DIR, 'builtin_sidecars_snapshot.json');
 
+/** 完整拉取 SearchMarketplace 目录，覆盖根级分页及各分组内部 nextPageToken。 */
+async function fetchFullMarketplace(liveMcp) {
+    const rpcPath = '/exa.language_server_pb.LanguageServerService/SearchMarketplace';
+    const custMap = new Map();
+    const groupMap = new Map();
+    const visitedTokens = new Set();
+    const absorb = page => {
+        for (const c of page?.customizations || []) {
+            const key = c?.id || c?.displayName;
+            if (key) custMap.set(key, c);
+        }
+        for (const g of page?.groups || []) {
+            if (!g?.id) continue;
+            const prev = groupMap.get(g.id);
+            const mergedIds = Array.from(new Set([...(prev?.memberIds || []), ...(g.memberIds || [])]));
+            groupMap.set(g.id, { ...prev, ...g, memberIds: mergedIds, nextPageToken: g.nextPageToken || '' });
+        }
+    };
+
+    let root = await liveMcp.callRpc(rpcPath, { query: '', groupId: '', pageToken: '' });
+    absorb(root);
+    let rootTok = root?.nextPageToken || '';
+    for (let i = 0; i < 20 && rootTok && !visitedTokens.has(`root:${rootTok}`); i++) {
+        visitedTokens.add(`root:${rootTok}`);
+        const page = await liveMcp.callRpc(rpcPath, { query: '', groupId: '', pageToken: rootTok });
+        absorb(page);
+        rootTok = page?.nextPageToken || '';
+    }
+
+    for (const g of groupMap.values()) {
+        let tok = g.nextPageToken || '';
+        g.nextPageToken = '';
+        for (let i = 0; i < 20 && tok && !visitedTokens.has(`${g.id}:${tok}`); i++) {
+            visitedTokens.add(`${g.id}:${tok}`);
+            const page = await liveMcp.callRpc(rpcPath, { query: '', groupId: g.id, pageToken: tok });
+            absorb(page);
+            const nextGroup = (page?.groups || []).find(x => x.id === g.id);
+            tok = nextGroup?.nextPageToken || page?.nextPageToken || '';
+            const cur = groupMap.get(g.id);
+            if (cur) cur.nextPageToken = '';
+        }
+    }
+
+    return { groups: Array.from(groupMap.values()), customizations: Array.from(custMap.values()) };
+}
+
 const MCP_ENDPOINTS = [
     {
         key: 'plugins',
@@ -40,8 +86,7 @@ const MCP_ENDPOINTS = [
     {
         key: 'marketplace',
         label: 'SearchMarketplace',
-        path: '/exa.language_server_pb.LanguageServerService/SearchMarketplace',
-        body: { query: '', groupId: '', pageToken: '' },
+        fetch: fetchFullMarketplace,
         extract: v => v,
         hasData: s => Boolean(s && ((Array.isArray(s.groups) && s.groups.length > 0) || (Array.isArray(s.customizations) && s.customizations.length > 0))),
     },
@@ -129,6 +174,13 @@ function writeBaselineSnapshot(ver, pkgRaw, newFilesMap, lsExt, mcpData, skillsD
     const state = utils.loadState();
     state.targetVersion = ver;
     utils.saveState(state);
+
+    const pkgPath = path.join(__dirname, 'package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+    if (pkg.targetVersion !== ver) {
+        pkg.targetVersion = ver;
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
+    }
 }
 
 /** 构建 iframe 作用域的词典与正则覆盖判断器，保持与运行时 lowerWordsExclude 一致。 */
@@ -240,7 +292,7 @@ async function scanMarketplaceRpc(corpus, { isAuditOnly, isPrune, loaded }) {
         return null;
     }
 
-    const settled = await Promise.allSettled(MCP_ENDPOINTS.map(ep => liveMcp.callRpc(ep.path, ep.body)));
+    const settled = await Promise.allSettled(MCP_ENDPOINTS.map(ep => ep.fetch ? ep.fetch(liveMcp) : liveMcp.callRpc(ep.path, ep.body)));
     const mergedMcp = {};
     const warnings = [];
     const missingHistory = [];
@@ -379,17 +431,20 @@ async function main() {
     // 5. 词典审计与安全校验
     console.log('[5/5] 词典审计与安全校验');
     const auditRes = auditor.auditAndCleanDictionaries(corpus.current, corpus.old, { prune: isPrune, loaded });
+    const preservedSet = new Set((config.audit?.preservedTerms || []).map(s => utils.normalizeText(s).toLowerCase()).filter(Boolean));
     const untranslated = new Map();
+    const preservedSkipped = new Set();
     for (const [str, sources] of corpus.candidates) {
         const normStr = utils.normalizeText(str);
         if (!normStr || loaded.translated.has(normStr.toLowerCase()) || loaded.rules.some(re => re.test(normStr))) continue;
+        if (preservedSet.has(normStr.toLowerCase())) { preservedSkipped.add(normStr); continue; }
         // 内置 Sidecar（如 swarm_board）运行在受控 iframe 作用域，除全局词典外还会叠加 config.frame 词典/正则
         const isFrameOnly = sources.length > 0 && sources.every(src => src.startsWith('内置 Sidecar'));
         if (isFrameOnly && isCoveredInFrame(normStr)) continue;
         untranslated.set(str, sources);
     }
 
-    console.log(`  提取语料规模: ${corpus.current.size} | 候选: ${corpus.candidates.size} | 未覆盖: ${untranslated.size}`);
+    console.log(`  提取语料规模: ${corpus.current.size} | 候选: ${corpus.candidates.size} | 刻意保留术语: ${preservedSkipped.size} | 未覆盖: ${untranslated.size}`);
     if (untranslated.size > 0) {
         console.log(`  [未覆盖词条明细 (${untranslated.size} 条)]:`);
         for (const key of Array.from(untranslated.keys()).sort(utils.naturalCompare)) {

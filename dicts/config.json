@@ -155,7 +155,10 @@
         "moving",
         "raw",
         "threads",
-        "retired"
+        "retired",
+        "display",
+        "environment",
+        "repo"
     ],
     "protectedFiles": [
         "LICENSE",
@@ -567,6 +570,50 @@
                     1
                 ]
             }
+        ]
+    },
+    "audit": {
+        "preservedTerms": [
+            "ADEX",
+            "Amend",
+            "Artifacts",
+            "Branch",
+            "Buganizer",
+            "Build with Google",
+            "CitC Clone",
+            "Commit",
+            "Critique",
+            "Electron (Android Desktop)",
+            "Electron (Desktop)",
+            "Electron (Gemini App)",
+            "Flash",
+            "Flash Lite",
+            "Fork",
+            "Gemini Flash Next",
+            "GitHub",
+            "Google",
+            "Google (internal)",
+            "Google Chat",
+            "Google Chrome",
+            "Google Drive",
+            "Google3",
+            "Google3 Configuration",
+            "Jetski",
+            "Linux",
+            "MacOS",
+            "MCP",
+            "Pro",
+            "Project + Worktree",
+            "Project 4K",
+            "Prompt",
+            "Push",
+            "Turbo",
+            "Web (desktop)",
+            "Web (mobile)",
+            "WIF Config",
+            "Windows",
+            "Workspace + Worktree",
+            "Worktree"
         ]
     }
 }

@@ -6,6 +6,7 @@ const { normalizeText } = require('./runtime/translator');
 
 const DICTS_DIR = path.join(__dirname, '..', 'dicts');
 const STATE_PATH = path.join(DICTS_DIR, 'state.json');
+const PKG_PATH = path.join(__dirname, '..', 'package.json');
 const DICT_FILES = ['menus.json', 'agents.json', 'common.json'];
 
 const SIGNATURE_START = '/* --- ANTIGRAVITY CHINESE LOCALIZATION START --- */';
@@ -59,11 +60,14 @@ function readAsarPackageVersion(asarPath) {
 }
 
 function getTargetVersion(state, resourcesDir) {
-    const dir = typeof state === 'string' ? state : resourcesDir;
-    const asarVer = dir ? readAsarPackageVersion(path.join(dir, 'app.asar')) : null;
-    if (asarVer) return asarVer;
+    if (fs.existsSync(PKG_PATH)) {
+        const ver = JSON.parse(fs.readFileSync(PKG_PATH, 'utf-8')).targetVersion;
+        if (ver) return ver;
+    }
     const s = (typeof state === 'object' && state) ? state : loadState();
-    return (s && s.targetVersion) || null;
+    if (s && s.targetVersion) return s.targetVersion;
+    const dir = typeof state === 'string' ? state : resourcesDir;
+    return dir ? readAsarPackageVersion(path.join(dir, 'app.asar')) : null;
 }
 
 function getDictsHash() {

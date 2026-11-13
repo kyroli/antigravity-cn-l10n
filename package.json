@@ -1,12 +1,14 @@
 {
   "name": "antigravity-cn-l10n",
   "version": "1.0.0",
+  "targetVersion": "2.31.2",
   "description": "Antigravity (Windows) 简体中文汉化补丁",
   "main": "patch.js",
   "scripts": {
     "patch": "node patch.js",
     "restore": "node patch.js --restore",
-    "sync": "node sync.js"
+    "sync": "node sync.js",
+    "manifest": "node src/updater.js --write-manifest"
   },
   "keywords": [
     "antigravity",

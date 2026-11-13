@@ -4,14 +4,16 @@ const child_process = require('child_process');
 const utils = require('./src/utils');
 const asar = require('./src/asar');
 const patcher = require('./src/patcher');
+const updater = require('./src/updater');
 
 function parseArgs(argv = process.argv.slice(2)) {
-    const options = { restore: false, installDir: '', noKill: false };
+    const options = { restore: false, installDir: '', noKill: false, noUpdate: false };
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i];
         if (arg === '--restore') options.restore = true;
         else if (arg === '--install-dir' && i + 1 < argv.length) options.installDir = argv[++i];
         else if (arg === '--no-kill') options.noKill = true;
+        else if (arg === '--no-update') options.noUpdate = true;
         else console.warn(`[提示] 忽略未识别的命令行参数: ${arg}`);
     }
     return options;
@@ -57,7 +59,25 @@ function restoreOfficial(resourcesDir, onBeforeWrite) {
 }
 
 async function main() {
-    const options = parseArgs();
+    const rawArgs = process.argv.slice(2);
+    if (!rawArgs.includes('--restore') && !rawArgs.includes('--no-update')) {
+        const updateRes = await updater.updateIfNeeded();
+        if (updateRes && updateRes.updated) {
+            console.log('[更新] 正在使用最新补丁代码继续执行...');
+            const childRes = child_process.spawnSync(
+                process.execPath,
+                [__filename, '--no-update', ...rawArgs],
+                { stdio: 'inherit', cwd: process.cwd() }
+            );
+            if (childRes.error) {
+                console.error(`[错误] 重启补丁进程失败: ${childRes.error.message}`);
+                process.exit(1);
+            }
+            process.exit(childRes.status ?? 1);
+        }
+    }
+
+    const options = parseArgs(rawArgs);
     let noKill = options.noKill;
     const resourcesDir = utils.getResourcesDir(options.installDir);
     if (!resourcesDir || !fs.existsSync(resourcesDir)) {
