@@ -7,13 +7,6 @@ const extractor = require('./src/inspector/extractor');
 const auditor = require('./src/inspector/auditor');
 const patcher = require('./src/patcher');
 
-const STATIC_TEMPLATE_FILES = [
-    'dist/ideInstall/wizardHtml.js',
-    'dist/provisionSplash.js',
-    'dist/wsl.js',
-    'dist/cablev2.js'
-];
-
 const SNAPSHOT_DIR = path.join(__dirname, '_inspect_app');
 const SNAPSHOT_LS_ASSETS = path.join(SNAPSHOT_DIR, 'ls_assets_combined.txt');
 const SNAPSHOT_MCP = path.join(SNAPSHOT_DIR, 'mcp_marketplace_snapshot.json');
@@ -106,29 +99,37 @@ function assertRegex(pattern, label) {
     }
 }
 
-/** 校验 config.json 全部正则配置并返回已编译的 frame.rules 规则实例列表，供审计直接复用。 */
+/** 校验 config.json 全部正则配置并返回已编译的 frame.rules 与 fragmentPatterns 匹配列表，供审计直接复用。 */
 function validateConfigPatterns(config) {
     const compiledFrameRules = auditor.validateRegexRules(config.frame?.rules ?? [], 'config.json frame.rules');
+    const fragmentRules = [];
     for (const [label, list] of [['fragmentPatterns', config.fragmentPatterns || []], ['frame.fragmentPatterns', config.frame?.fragmentPatterns || []]]) {
         for (let i = 0; i < list.length; i++) {
             const fp = list[i];
             assertRegex(fp?.containerPattern, `config.json ${label}[${i}].containerPattern`);
             const reps = fp?.nodeReplacements || [];
             for (let j = 0; j < reps.length; j++) {
-                assertRegex(reps[j]?.match, `config.json ${label}[${i}].nodeReplacements[${j}].match`);
+                fragmentRules.push(assertRegex(reps[j]?.match, `config.json ${label}[${i}].nodeReplacements[${j}].match`));
             }
         }
     }
-    return compiledFrameRules.map(r => r.regex);
+    return { frameRules: compiledFrameRules.map(r => r.regex), fragmentRules };
 }
 
 /** 在内存中对原始 app.asar 执行补丁合成与完整性校验，确保词典和配置修改不破坏运行期打包。 */
 function runMemoryPatchSmokeTest(sourceBuf, parsedAsar) {
+    const allDict = utils.loadDictionary();
+    const rules = utils.loadRules();
+    const config = utils.loadConfig();
+    const tplIssues = patcher.auditStaticTemplates(parsedAsar, allDict, rules, config);
+    if (tplIssues.length > 0) {
+        throw new Error(`内存补丁冒烟校验失败：静态模板靶点异常 (${tplIssues.length} 处)\n  - ${tplIssues.join('\n  - ')}`);
+    }
     const patchMap = patcher.generatePatchMap(parsedAsar);
     if (!patchMap['dist/main.js'] || !patchMap['dist/preload.js']) {
         throw new Error('内存补丁冒烟校验失败：缺少 dist/main.js 或 dist/preload.js 补丁输出');
     }
-    for (const tplFile of STATIC_TEMPLATE_FILES) {
+    for (const tplFile of Object.keys(patcher.STATIC_TEMPLATES)) {
         const raw = parsedAsar.readFile(tplFile);
         if (raw && !raw.includes(utils.SIGNATURE_START) && !patchMap[tplFile]) {
             throw new Error(`内存补丁冒烟校验失败：静态模板 ${tplFile} 未能命中生成补丁`);
@@ -156,6 +157,11 @@ function listLocalDistJs(dir) {
 function writeBaselineSnapshot(ver, pkgRaw, newFilesMap, lsExt, mcpData, skillsData, sidecarsData) {
     const snapDistDir = path.join(SNAPSHOT_DIR, 'dist');
     fs.mkdirSync(snapDistDir, { recursive: true });
+    for (const oldRel of listLocalDistJs(snapDistDir)) {
+        if (!newFilesMap.has(oldRel)) {
+            try { fs.unlinkSync(path.join(snapDistDir, oldRel)); } catch (e) {}
+        }
+    }
     for (const [subRel, content] of newFilesMap.entries()) {
         const tp = path.join(snapDistDir, subRel);
         fs.mkdirSync(path.dirname(tp), { recursive: true });
@@ -404,7 +410,9 @@ async function main() {
     }
 
     const asarPath = path.join(resourcesDir, 'app.asar'), bakPath = path.join(resourcesDir, 'app.asar.bak');
-    const sourcePkg = fs.existsSync(bakPath) ? bakPath : asarPath;
+    // 客户端更新后会生成全新的未汉化 app.asar，此时应优先读取新 app.asar 而非旧版 app.asar.bak
+    const isAsarUnpatched = fs.existsSync(asarPath) && !fs.readFileSync(asarPath).includes(Buffer.from(utils.SIGNATURE_START, 'utf8'));
+    const sourcePkg = isAsarUnpatched ? asarPath : (fs.existsSync(bakPath) ? bakPath : asarPath);
     if (!fs.existsSync(sourcePkg)) {
         console.error(`[错误] 找不到 app.asar 或 app.asar.bak: ${asarPath}`);
         process.exit(1);
@@ -419,7 +427,7 @@ async function main() {
 
     const loaded = auditor.loadExistingTranslations();
     const config = utils.loadConfig();
-    const frameRules = validateConfigPatterns(config);
+    const { frameRules, fragmentRules } = validateConfigPatterns(config);
     const isCoveredInFrame = buildFrameMatcher(config, frameRules);
     const corpus = { current: new Set(), old: new Set(), candidates: new Map() };
 
@@ -437,6 +445,7 @@ async function main() {
     for (const [str, sources] of corpus.candidates) {
         const normStr = utils.normalizeText(str);
         if (!normStr || loaded.translated.has(normStr.toLowerCase()) || loaded.rules.some(re => re.test(normStr))) continue;
+        if (fragmentRules.some(re => re.test(normStr))) continue;
         if (preservedSet.has(normStr.toLowerCase())) { preservedSkipped.add(normStr); continue; }
         // 内置 Sidecar（如 swarm_board）运行在受控 iframe 作用域，除全局词典外还会叠加 config.frame 词典/正则
         const isFrameOnly = sources.length > 0 && sources.every(src => src.startsWith('内置 Sidecar'));

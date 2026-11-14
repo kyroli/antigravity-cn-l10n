@@ -1402,17 +1402,11 @@
         ]
     },
     {
-        "pattern": "^(.+?) wants to connect to a HID device$",
-        "replacement": "$1 想要连接到 HID 设备",
+        "pattern": "^(.+?) wants to connect to a (HID|USB) device$",
+        "replacement": "$1 想要连接到 $2 设备",
         "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^(.+?) wants to connect to a USB device$",
-        "replacement": "$1 想要连接到 USB 设备",
-        "rawGroups": [
-            1
+            1,
+            2
         ]
     },
     {
@@ -1425,6 +1419,528 @@
     {
         "pattern": "^The WSL distro \"(.+?)\" is no longer installed\\.$",
         "replacement": "WSL 发行版 \"$1\" 已不再安装。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^SSH: (.+)$",
+        "replacement": "SSH：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Connecting to the (?:running|Antigravity) server on (.+?)\\.{3}$",
+        "replacement": "正在连接到 $1 上的 Antigravity 服务器...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Connecting to (.+?)\\.{3}$",
+        "replacement": "正在连接到 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Reconnecting to (.+?)\\.{3}$",
+        "replacement": "正在重新连接到 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Disconnected from (.+)$",
+        "replacement": "已与 $1 断开连接",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Checking (.+?)\\.{3}$",
+        "replacement": "正在检查 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Waiting for another window to finish installing on (.+?)\\.{3}$",
+        "replacement": "正在等待另一个窗口完成在 $1 上的安装...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Replacing an invalid server binary on (.+?)\\.{3}$",
+        "replacement": "正在替换 $1 上无效的服务器二进制文件...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Downloading the Antigravity server on (.+?)\\.{3}$",
+        "replacement": "正在 $1 上下载 Antigravity 服务器...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Uploading the Antigravity server to (.+?)\\.{3}$",
+        "replacement": "正在将 Antigravity 服务器上传到 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Installed the Antigravity server on (.+)\\.$",
+        "replacement": "已在 $1 上安装 Antigravity 服务器。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Starting the Antigravity server on (.+?)\\.{3}$",
+        "replacement": "正在 $1 上启动 Antigravity 服务器...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Stop the Antigravity server on (.+)\\?$",
+        "replacement": "是否停止 $1 上的 Antigravity 服务器？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Agents keep running on (.+) unless its server stopped\\.$",
+        "replacement": "除非服务器已停止，否则 Agent 会继续在 $1 上运行。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Agents keep running on (.+)\\.$",
+        "replacement": "Agent 会继续在 $1 上运行。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Logs: (.+)$",
+        "replacement": "日志：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+) did not start the setup within (\\d+) s\\. ssh \\(e\\.g\\. a ProxyCommand or ProxyJump login\\) or a command in your shell startup files \\(e\\.g\\. ~/\\.bashrc\\) may be waiting for input\\.$",
+        "replacement": "$1 未能在 $2 秒内开始初始化。ssh（例如 ProxyCommand 或 ProxyJump 登录）或您的 Shell 启动脚本（例如 ~/.bashrc）中的命令可能正在等待输入。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Timed out connecting to (.+)\\.$",
+        "replacement": "连接 $1 超时。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The connection to (.+) was lost: (.+)$",
+        "replacement": "与 $1 的连接已断开：$2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^ssh exited \\(exit code ([^)]+)\\): (.+)$",
+        "replacement": "ssh 已退出（退出码 $1）：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^ssh exited \\(exit code ([^)]+)\\)\\.$",
+        "replacement": "ssh 已退出（退出码 $1）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^ssh exited \\(signal ([^)]+)\\): (.+)$",
+        "replacement": "ssh 已退出（信号 $1）：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^ssh exited \\(signal ([^)]+)\\)\\.$",
+        "replacement": "ssh 已退出（信号 $1）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The sign-in request of the Antigravity server on (.+) doesn't match what this app expects, so it was not opened\\. Update Antigravity, or restart the server on that host\\.$",
+        "replacement": "$1 上的 Antigravity 服务器发起的登录请求与当前应用预期不符，因此未予打开。请更新 Antigravity，或重启该主机上的服务器。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Local port (\\d+) is in use, so the sign-in callback can't reach (.+)\\. Close the program using it and sign in again\\. \\((.+)\\)$",
+        "replacement": "本地端口 $1 已被占用，导致登录回调无法送达 $2。请关闭占用该端口的程序后重新登录。($3)",
+        "rawGroups": [
+            1,
+            2,
+            3
+        ]
+    },
+    {
+        "pattern": "^Could not run \"([^\"]+)\"\\. Install OpenSSH or set ANTIGRAVITY_SSH_BIN\\.$",
+        "replacement": "无法运行“$1”。请安装 OpenSSH 或设置 ANTIGRAVITY_SSH_BIN。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Could not run ssh: (.+)$",
+        "replacement": "无法运行 ssh：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^ssh could not listen on its SOCKS port (\\d+)\\.$",
+        "replacement": "ssh 无法在其 SOCKS 端口 $1 上监听。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Neither (.+) nor this computer could download the Antigravity server: (.+)$",
+        "replacement": "$1 与当前计算机均无法下载 Antigravity 服务器：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server on (.+) stopped\\.$",
+        "replacement": "$1 上的 Antigravity 服务器已停止。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server on (.+) did not respond through the SSH tunnel \\((.+)\\)\\.$",
+        "replacement": "$1 上的 Antigravity 服务器未通过 SSH 隧道响应 ($2)。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Couldn't connect to the SSH host\\. Check its name, your network and ssh config \\(e\\.g\\. a ProxyCommand\\), and that ssh to it works in a terminal without a prompt\\.$",
+        "replacement": "无法连接到 SSH 主机。请检查主机名、网络连接和 ssh 配置（例如 ProxyCommand），并确认可在终端中无需交互提示直接通过 ssh 连接该主机。"
+    },
+    {
+        "pattern": "^Couldn't connect to the SSH host\\. Check its name, your network and ssh config \\(e\\.g\\. a ProxyCommand\\), and that ssh to it works in a terminal\\.$",
+        "replacement": "无法连接到 SSH 主机。请检查主机名、网络连接和 ssh 配置（例如 ProxyCommand），并确认可在终端中通过 ssh 连接该主机。"
+    },
+    {
+        "pattern": "^Couldn't connect to the SSH host \\((.+)\\)\\.$",
+        "replacement": "无法连接到 SSH 主机 ($1)。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server failed to start on the SSH host\\. See its log in (.+) on that host\\.$",
+        "replacement": "Antigravity 服务器未能在 SSH 主机上启动。请查看该主机上 $1 中的日志。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Can't (.+?): no private folder to use \\((.+)\\)\\.$",
+        "replacement": "无法$1：没有可用的私有文件夹 ($2)。",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
+        "pattern": "^Can't answer ssh's prompts: (.+)$",
+        "replacement": "无法响应 ssh 的提示：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Couldn't connect to (?!the SSH host(?:\\.| \\())(.+)$",
+        "replacement": "无法连接到 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No hosts in (.+) yet\\. Type one above\\.$",
+        "replacement": "在 $1 中尚无主机。请在上方输入。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No hosts in (.+) yet$",
+        "replacement": "$1 中尚无主机",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) hidden hosts?$",
+        "replacement": "$1 个已隐藏的主机"
+    },
+    {
+        "pattern": "^Invalid port \"([^\"]+)\": use a number from 1 to 65535\\.$",
+        "replacement": "端口“$1”无效：请使用 1 到 65535 之间的数字。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^\"([^\"]+)\" isn't a valid user name\\.$",
+        "replacement": "“$1”不是有效的用户名。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^\"([^\"]+)\" isn't a valid host name\\.$",
+        "replacement": "“$1”不是有效的主机名。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^\"([^\"]+)\" isn't a valid IPv6 address\\. Write an IPv6 address with a port in brackets, for example \\[::1\\]:2222\\.$",
+        "replacement": "“$1”不是有效的 IPv6 地址。带端口的 IPv6 地址请使用方括号包裹，例如 [::1]:2222。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH host is too long \\(at most (\\d+) characters\\)\\.$",
+        "replacement": "SSH 主机地址过长（最多 $1 个字符）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file (.+) doesn't exist or can't be read\\.$",
+        "replacement": "SSH 配置文件 $1 不存在或无法读取。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file (.+) isn't a file\\.$",
+        "replacement": "SSH 配置文件 $1 不是普通文件。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file (.+) is over 4 MiB\\.$",
+        "replacement": "SSH 配置文件 $1 超过 4 MiB。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^SSH Config \\((.+)\\)$",
+        "replacement": "SSH 配置 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+) asks:$",
+        "replacement": "$1 询问：",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server on the SSH host answered with HTTP (\\S+)\\. Sign in again from Antigravity\\.$",
+        "replacement": "SSH 主机上的 Antigravity 服务器返回了 HTTP $1。请从 Antigravity 重新登录。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Microphone blocked\\. Allow in (.+)\\.$",
+        "replacement": "麦克风已被阻止。请在 $1 中允许。"
+    },
+    {
+        "pattern": "^Microphone access for (.+) was denied\\. Quit and reopen the app to be asked again\\.$",
+        "replacement": "已拒绝 $1 的麦克风访问权限。请退出并重新打开应用以重新请求权限。"
+    },
+    {
+        "pattern": "^(\\d+) Drafts?$",
+        "replacement": "$1 份草稿"
+    },
+    {
+        "pattern": "^Resume (\\d+) comment drafts?$",
+        "replacement": "恢复 $1 份评论草稿"
+    },
+    {
+        "pattern": "^([\\s\\S]+?) \\((\\d+) folders? (?:was|were) cloned before the failure\\)$",
+        "replacement": "$1（失败前已克隆 $2 个文件夹）",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
+        "pattern": "^Sign-ins to (.+?) are kept in the cloud with your account\\. Other credentials stay on this machine\\. Credentials are only sent to the domains listed\\.$",
+        "replacement": "$1 的登录状态会随您的账户保存在云端。其他凭据将保留在本机上。凭据仅会发送至列出的域名。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Sign-ins to (.+?) are kept in the cloud with your account\\. Credentials are only sent to the domains listed\\.$",
+        "replacement": "$1 的登录状态会随您的账户保存在云端。凭据仅会发送至列出的域名。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Open Accessibility settings$",
+        "replacement": "打开辅助功能设置"
+    },
+    {
+        "pattern": "^Accessibility settings$",
+        "replacement": "辅助功能设置"
+    },
+    {
+        "pattern": "^Open Screen Recording settings$",
+        "replacement": "打开屏幕录制设置"
+    },
+    {
+        "pattern": "^Screen Recording settings$",
+        "replacement": "屏幕录制设置"
+    },
+    {
+        "pattern": "^(.+?) · press(?: (· waiting for the pointer))?$",
+        "replacement": "$1 · 按压 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) · select(?: (· waiting for the pointer))?$",
+        "replacement": "$1 · 选择 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) · typing(?: (· waiting for the pointer))?$",
+        "replacement": "$1 · 正在输入 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) · scroll ↕(?: (· waiting for the pointer))?$",
+        "replacement": "$1 · 滚动 ↕ $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) · pointer(?: (· waiting for the pointer))?$",
+        "replacement": "$1 · 移动指针 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) · looking(?: (· waiting for the pointer))?$",
+        "replacement": "$1 · 正在查看 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) (· waiting for the pointer)$",
+        "replacement": "$1 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Error code: (.+)$",
+        "replacement": "错误代码：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) reported: (.+)$",
+        "replacement": "$1 报告：$2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^File: (.+) on (.+)$",
+        "replacement": "文件：$1（位于 $2）",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Not connected to (.+)$",
+        "replacement": "未连接到 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Sign in to your organization for (.+)\\?$",
+        "replacement": "是否为 $1 登录所属组织账号？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Continue only if you just chose to sign in with your organization in this window\\. (.+) will get access to your organization's Google Cloud account\\.$",
+        "replacement": "仅当您刚才选择在此窗口中使用所属组织账号登录时，才请继续操作。$1 将获权访问您所属组织的 Google Cloud 账号。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Workforce pool: (.+?)\\s+Provider: (.+)$",
+        "replacement": "Workforce 身份池：$1  身份提供商：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Identity provider: (.+)$",
+        "replacement": "身份提供商：$1",
         "rawGroups": [
             1
         ]

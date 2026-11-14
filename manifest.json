@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
-  "targetVersion": "2.31.2",
-  "revision": "9858affaa3a8",
+  "targetVersion": "2.32.1",
+  "revision": "a1bd46d1bda6",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
@@ -14,27 +14,27 @@
       "size": 488
     },
     "dicts/agents.json": {
-      "sha256": "094065f64b23d740cc4a1e1f4bdb1adcfc82d3d6b70248d4f70d1780c545f5c5",
-      "size": 39939
+      "sha256": "e599b5a9123688991df9d9c4323518d8e4636b89615c272034054a76df9a3b6e",
+      "size": 41940
     },
     "dicts/common.json": {
-      "sha256": "249993b968e3dd41d7b7fc55072c8a7ab34363d813529b16d202a8da5cea813a",
-      "size": 255536
+      "sha256": "993904978d4926c8f513e4396836159503e3b497e16ebfa2ac06b425d8575b69",
+      "size": 261875
     },
     "dicts/config.json": {
-      "sha256": "ce58d9eb2b36ebd7b88b3d5a0cea684ee53b4d266fa01015ca655c3dbc74946f",
-      "size": 19994
+      "sha256": "311598a3bfeca584baf47031e325cd4aeee94fda8c56eeedda4604aba159c395",
+      "size": 22306
     },
     "dicts/menus.json": {
-      "sha256": "480ccc748a16bda7bdfd09abee2f4ba2343d8241714c52d3905e6fbe0bbb1c96",
-      "size": 9627
+      "sha256": "0f05b95576ebc4be14bd1b241a791d8106d02752b341cbd6a2526afc2442a8bb",
+      "size": 17054
     },
     "dicts/rules.json": {
-      "sha256": "ce1a63c0e98e4ced72a2b941b8c1d18f83bf554e3ea55638240db23e0c555109",
-      "size": 41711
+      "sha256": "86eaeda65b16641f3fd40ae9fd77f64d198b9e8ba0b2e47b341c0236b1802798",
+      "size": 57786
     },
     "package.json": {
-      "sha256": "dc2a3a33356e10dd9d4636e68c99ae4cdd8cef89eefbf66e53b1ac6a84848cda",
+      "sha256": "e5c03af5f5b815b460ebfcf00d06b971b171de56c71d50c535ba3c5b17d3a68e",
       "size": 507
     },
     "patch.js": {
@@ -46,28 +46,28 @@
       "size": 11062
     },
     "src/patcher.js": {
-      "sha256": "ebe83ff10f1e55287dca9c26f60c6891864af87d1e5420afda451e27d2e9e131",
-      "size": 11033
+      "sha256": "d2676ae476b1a02170a96c78b24a3fec2681e90f89ba15717d88b2be1013aaa8",
+      "size": 12456
     },
     "src/runtime/dom.js": {
-      "sha256": "70f2a0032c578790fc6fd0dd42711249ac49574d5222873fb4ff47db54eb8f89",
-      "size": 16021
+      "sha256": "11d1b52940a4cfbf0ae5193d2548ca65dfda25bd094abc89198d2a6c46d415da",
+      "size": 18835
     },
     "src/runtime/main.js": {
-      "sha256": "c870c76d8ededd096373e8d4ff15707a55d29034610576fcbc11b51055c29743",
-      "size": 13853
+      "sha256": "bc410f3f1233045128cdcc8728b918f0857c47a42291b079091360b029256417",
+      "size": 13992
     },
     "src/runtime/translator.js": {
-      "sha256": "e787aa457daa9fecfd36684958da3aa3917a421b89ec57466425cbe9dfb478f8",
-      "size": 10887
+      "sha256": "4f2f60fae54ac8abb8431b690ac0005439650c4e9d19f640751f51fd11261222",
+      "size": 14118
     },
     "src/updater.js": {
       "sha256": "23b99e239db4cd88a6c7238e7f3d7515fd4610b528111356c58f43a16bacfefe",
       "size": 17076
     },
     "src/utils.js": {
-      "sha256": "5f113b20b715d1d650a490e06df37e7e00baad80eb38e51ef78073a21cac315a",
-      "size": 14327
+      "sha256": "e30460b48ddaa7ffe147244059374e5933beadd41f1f04ce578e68bce4fa34d1",
+      "size": 15318
     }
   }
 }

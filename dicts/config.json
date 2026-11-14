@@ -420,6 +420,32 @@
                     "replace": " 中允许。"
                 }
             ]
+        },
+        {
+            "containerPattern": "^(?:Click|点击)\\s*(?:Open|打开)\\s*↗\\s*(?:to open macOS Privacy & Security\\.|打开 macOS[“\"]隐私与安全性[””]。)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Click\\s*$",
+                    "replace": "点击 "
+                },
+                {
+                    "match": "^\\s*to open macOS Privacy & Security\\.\\s*$",
+                    "replace": " 打开 macOS“隐私与安全性”。"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:No hosts in\\s+|在\\s*).+(?:\\s+yet\\. Type one above\\.|\\s*中尚无主机。请在上方输入。)$",
+            "nodeReplacements": [
+                {
+                    "match": "^No hosts in\\s*$",
+                    "replace": "在 "
+                },
+                {
+                    "match": "^\\s*yet\\. Type one above\\.\\s*$",
+                    "replace": " 中尚无主机。请在上方输入。"
+                }
+            ]
         }
     ],
     "frame": {
@@ -532,11 +558,13 @@
             "Copied": "已复制",
             "Copy": "复制",
             "Done": "完成",
+            "Edit": "编辑",
             "File": "文件",
             "Filters": "筛选",
             "Follow": "跟随最新",
             "Frames": "进度帧",
             "Goal": "目标",
+            "Home": "主页",
             "In review": "审查中",
             "Latest": "最新消息",
             "Moving": "进行中",
@@ -547,11 +575,13 @@
             "Overview": "概览",
             "Previous": "上一帧",
             "Raw": "原始数据",
+            "Read": "读取",
             "Search": "搜索",
             "Threads": "任务线",
             "Updating": "正在更新",
             "Waiting": "等待中",
-            "Working": "工作中"
+            "Working": "工作中",
+            "Write": "写入"
         },
         "rules": [
             {
@@ -569,6 +599,28 @@
                 "rawGroups": [
                     1
                 ]
+            },
+            {
+                "pattern": "^Thinking: ([\\s\\S]+)$",
+                "replacement": "正在思考：$1",
+                "rawGroups": [
+                    1
+                ]
+            },
+            {
+                "pattern": "^Latest action: (Read|Write|Edit|Search) (.+)$",
+                "replacement": "最新操作：$1 $2",
+                "rawGroups": [
+                    2
+                ]
+            },
+            {
+                "pattern": "^Latest action: ([\\s\\S]+)$",
+                "replacement": "最新操作：$1"
+            },
+            {
+                "pattern": "^Showing the last good view\\.json; the current file is (.+)$",
+                "replacement": "当前显示的是上一次正常的 view.json；当前文件$1"
             }
         ]
     },
@@ -577,18 +629,24 @@
             "ADEX",
             "Amend",
             "Artifacts",
+            "Better Stack",
             "Branch",
             "Buganizer",
             "Build with Google",
             "CitC Clone",
+            "Cloudflare",
             "Commit",
             "Critique",
+            "Desktop",
             "Electron (Android Desktop)",
             "Electron (Desktop)",
             "Electron (Gemini App)",
+            "Enter",
+            "Escape",
             "Flash",
             "Flash Lite",
             "Fork",
+            "Frameworks",
             "Gemini Flash Next",
             "GitHub",
             "Google",
@@ -598,7 +656,9 @@
             "Google Drive",
             "Google3",
             "Google3 Configuration",
+            "incident.io",
             "Jetski",
+            "Levels.fyi",
             "Linux",
             "MacOS",
             "MCP",
@@ -607,13 +667,18 @@
             "Project 4K",
             "Prompt",
             "Push",
+            "sonarqube",
+            "Spacefast",
+            "Stage",
+            "Tavily",
             "Turbo",
             "Web (desktop)",
             "Web (mobile)",
             "WIF Config",
             "Windows",
             "Workspace + Worktree",
-            "Worktree"
+            "Worktree",
+            "~/.ssh/config (default)"
         ]
     }
 }

@@ -60,7 +60,19 @@ function installDomTranslator(translator, config) {
             }))
         }));
 
+        const fragmentMatchSources = [];
+        for (let i = 0; i < FRAGMENT_RULES.length; i++) {
+            const reps = FRAGMENT_RULES[i].replacements;
+            for (let j = 0; j < reps.length; j++) {
+                fragmentMatchSources.push('(?:' + reps[j].matchRe.source + ')');
+            }
+        }
+        const FRAGMENT_NODE_PREFILTER_RE = fragmentMatchSources.length
+            ? new RegExp(fragmentMatchSources.join('|'), 'i')
+            : null;
+
         const translatedValues = new WeakMap();
+        const translatedAttrs = new WeakMap();
         // verdict: 0 = neutral, 1 = soft-blocked, 2 = hard-blocked (不可绕过), 3 = bypass
         const elementVerdictCache = new WeakMap();
 
@@ -121,15 +133,21 @@ function installDomTranslator(translator, config) {
                 || null;
         }
 
+        let lastZoneConvBypass = false;
+
         function isConvRowAllowed(el, fallbackText) {
             if (CONV_ROW_ALLOWED.size === 0) return false;
-            const t = el && el.textContent ? el.textContent.trim() : '';
-            if (t && CONV_ROW_ALLOWED.has(t)) return true;
+            if (el && el.childElementCount === 0) {
+                const raw = el.textContent;
+                const t = raw ? raw.trim() : '';
+                if (t && CONV_ROW_ALLOWED.has(t)) return true;
+            }
             return Boolean(fallbackText && CONV_ROW_ALLOWED.has(fallbackText.trim()));
         }
 
         // 返回区域状态: 0 = 开放, 1 = 软阻断, 2 = 硬阻断（祖先任意一层为 2 均不可绕过）
         function getZoneState(node) {
+            lastZoneConvBypass = false;
             try {
                 if (!node) return 0;
                 const isText = node.nodeType === Node.TEXT_NODE;
@@ -139,13 +157,21 @@ function installDomTranslator(translator, config) {
                 let softResult = null;
                 while (curr && curr.nodeType === Node.ELEMENT_NODE) {
                     const v = getSelfVerdict(curr);
-                    if (v === 2) return 2;
+                    if (v === 2) {
+                        lastZoneConvBypass = false;
+                        return 2;
+                    }
                     if (softResult === null) {
                         if (v === 3) {
                             softResult = 0;
                         } else if (v === 1) {
                             const isConvRow = (curr.getAttribute?.('data-testid') || '').toLowerCase().startsWith('conversation-row-');
-                            softResult = (isConvRow && isConvRowAllowed(originEl, fallbackText)) ? 0 : 1;
+                            if (isConvRow && isConvRowAllowed(originEl, fallbackText)) {
+                                softResult = 0;
+                                lastZoneConvBypass = true;
+                            } else {
+                                softResult = 1;
+                            }
                         }
                     }
                     curr = getParentOrHost(curr);
@@ -158,8 +184,15 @@ function installDomTranslator(translator, config) {
         function translateSingleAttribute(node, attr) {
             const v = node.getAttribute(attr);
             if (!v || (attr === 'aria-label' && v.trim() === 'Cancel')) return;
+            let attrMap = translatedAttrs.get(node);
+            if (attrMap && attrMap[attr] === v) return;
             const trans = translator.translateString(v);
             if (trans !== null && trans !== v) {
+                if (!attrMap) {
+                    attrMap = Object.create(null);
+                    translatedAttrs.set(node, attrMap);
+                }
+                attrMap[attr] = trans;
                 node.setAttribute(attr, trans);
             }
         }
@@ -172,8 +205,9 @@ function installDomTranslator(translator, config) {
         }
 
         function tryTranslateSiblingFragment(node, val) {
+            if (!FRAGMENT_NODE_PREFILTER_RE || !FRAGMENT_NODE_PREFILTER_RE.test(val)) return false;
             const parentEl = getParentOrHost(node);
-            if (!parentEl || !parentEl.childNodes || parentEl.childNodes.length > 6 || parentEl.childElementCount > 1) {
+            if (!parentEl || !parentEl.childNodes || parentEl.childNodes.length < 2 || parentEl.childNodes.length > 6 || parentEl.childElementCount > 1) {
                 return false;
             }
             let parentText = null;
@@ -273,27 +307,55 @@ function installDomTranslator(translator, config) {
                 if (!el || el.nodeType !== Node.ELEMENT_NODE) return 0;
                 if (parentCache.has(el)) return parentCache.get(el);
                 const state = getZoneState(el);
-                if (state !== 0 || !isConvRowAllowed(el)) {
+                if (!lastZoneConvBypass) {
                     parentCache.set(el, state);
                 }
                 return state;
+            }
+            let addedElemSet = null;
+            if (mutations.length > 1) {
+                for (let k = 0; k < mutations.length; k++) {
+                    const m = mutations[k];
+                    if (m.type === 'childList' && m.addedNodes.length > 0) {
+                        for (let n = 0; n < m.addedNodes.length; n++) {
+                            const nd = m.addedNodes[n];
+                            if (nd && nd.nodeType === Node.ELEMENT_NODE) {
+                                if (!addedElemSet) addedElemSet = new Set();
+                                addedElemSet.add(nd);
+                            }
+                        }
+                    }
+                }
+            }
+            function hasAddedAncestor(node) {
+                if (!addedElemSet || addedElemSet.size <= 1) return false;
+                let cur = getParentOrHost(node);
+                while (cur) {
+                    if (addedElemSet.has(cur)) return true;
+                    cur = getParentOrHost(cur);
+                }
+                return false;
             }
             for (let k = 0; k < mutations.length; k++) {
                 const m = mutations[k];
                 if (m.type === 'childList') {
                     for (let n = 0; n < m.addedNodes.length; n++) {
                         const node = m.addedNodes[n];
+                        if (hasAddedAncestor(node)) continue;
                         const parent = getParentOrHost(node);
                         translateNode(node, parent ? getStateCached(parent) : 0);
                     }
                 } else if (m.type === 'characterData') {
                     const node = m.target;
+                    if (!node || translatedValues.get(node) === node.nodeValue) continue;
                     if (getZoneState(node) === 0) {
                         translateTextNode(node);
                     }
                 } else if (m.type === 'attributes') {
                     const el = m.target;
                     if (el && el.nodeType === Node.ELEMENT_NODE && m.attributeName) {
+                        const attrMap = translatedAttrs.get(el);
+                        if (attrMap && attrMap[m.attributeName] === el.getAttribute(m.attributeName)) continue;
                         const tag = el.tagName ? el.tagName.toUpperCase() : '';
                         const checkTarget = (tag === 'INPUT' || tag === 'TEXTAREA') ? (getParentOrHost(el) || el) : el;
                         if (getStateCached(checkTarget) === 0) {

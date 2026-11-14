@@ -25,6 +25,22 @@ function cleanInjectedPatches(content) {
     return content ? String(content).replace(PATCH_BLOCK_RE, '') : '';
 }
 
+/** 折叠打包代码中的跨行相邻字符串常量拼接（含“字面量 + 模板字符串”），便于正则精确匹配整句。 */
+function foldAdjacentJsStrings(content) {
+    if (!content) return '';
+    let s = String(content), prev;
+    do {
+        prev = s;
+        s = s
+            .replace(/(['"])((?:\\.|(?!\1)[^\\\r\n])*)\1\s*\+\s*\1((?:\\.|(?!\1)[^\\\r\n])*)\1(?=\s*(?:[,;)\]+:?}]|\r?\n|$))/g, '$1$2$3$1')
+            .replace(/(`(?:\\.|[^\\`])*)\$\{([^}]+)\}([^`]*`)\s*\+\s*(['"])((?:\\.|(?!\4)[^\\\r\n])*)\4(?=\s*(?:[,;)\]+:?}]|\r?\n|$))/g,
+                (_, a, expr, b, _q, tail) => `${a}\${${expr}}${b.slice(0, -1)}${tail.replace(/`|\$\{/g, m => '\\' + m)}\``)
+            .replace(/(['"])((?:\\.|(?!\1)[^\\\r\n])*)\1\s*\+\s*(`(?:\\.|[^\\`])*\$\{[^}]+\}[^`]*`)(?=\s*(?:[,;)\]+:?}]|\r?\n|$))/g,
+                (_, _q, head, tpl) => `\`${head.replace(/`|\$\{/g, m => '\\' + m)}${tpl.slice(1)}`);
+    } while (s !== prev);
+    return s;
+}
+
 function getFileHash(filePath) {
     if (!fs.existsSync(filePath)) return null;
     try { return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex'); } catch (e) { return null; }
@@ -288,7 +304,7 @@ function naturalCompare(a, b) {
 }
 
 module.exports = {
-    SIGNATURE_START, SIGNATURE_END, cleanInjectedPatches,
+    SIGNATURE_START, SIGNATURE_END, cleanInjectedPatches, foldAdjacentJsStrings,
     DICTS_DIR, DICT_FILES,
     getFileHash, loadState, saveState, getTargetVersion, getDictsHash,
     normalizeText, loadConfig, loadRules, loadDictionariesByFile, loadDictionary,

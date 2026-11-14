@@ -23,7 +23,9 @@ function createTranslator(rawDict, rawRules, config) {
     }
 
     const rules = Array.isArray(rawRules)
-        ? rawRules.map(r => ({
+        ? rawRules.map((r, i) => ({
+            idx: i,
+            pattern: r.pattern,
             regex: new RegExp(r.pattern, r.caseSensitive ? '' : 'i'),
             replacement: r.replacement,
             rawAll: r.rawGroups === true,
@@ -31,9 +33,34 @@ function createTranslator(rawDict, rawRules, config) {
             safeGroupSet: Array.isArray(r.safeGroups) ? new Set(r.safeGroups) : null
         }))
         : [];
-    // 全部规则拼接为单一预过滤正则，规则内不可使用 \1-\9 反向引用以免组号偏移失效
-    const rulesPrefilter = rules.length > 0
-        ? new RegExp(rules.map(r => '(?:' + r.regex.source + ')').join('|'), 'i')
+    // 按首词、数字前缀与通配规则分桶并保留原始索引顺序，兼顾 O(1) 首词分流与 100% 优先级等价
+    const wordBuckets = new Map();
+    const digitRules = [];
+    const wildRules = [];
+    const WORD_PREFIX_RE = /^\^([a-zA-Z]+)(?:\\b|\\s|[ :/,.\-!'?])/;
+    const DIGIT_PREFIX_RE = /^\^(?:\(\\d\+\)|\\d\+)/;
+    for (let i = 0; i < rules.length; i++) {
+        const r = rules[i];
+        const wm = typeof r.pattern === 'string' ? r.pattern.match(WORD_PREFIX_RE) : null;
+        if (wm) {
+            const w = wm[1].toLowerCase();
+            let bucket = wordBuckets.get(w);
+            if (!bucket) {
+                bucket = [];
+                wordBuckets.set(w, bucket);
+            }
+            bucket.push(r);
+        } else if (typeof r.pattern === 'string' && DIGIT_PREFIX_RE.test(r.pattern)) {
+            digitRules.push(r);
+        } else {
+            wildRules.push(r);
+        }
+    }
+    const digitPrefilter = digitRules.length > 0
+        ? new RegExp(digitRules.map(r => '(?:' + r.regex.source + ')').join('|'), 'i')
+        : null;
+    const wildPrefilter = wildRules.length > 0
+        ? new RegExp(wildRules.map(r => '(?:' + r.regex.source + ')').join('|'), 'i')
         : null;
 
     const protectedFileSet = new Set((cfg.protectedFiles || []).map(f => f.trim()));
@@ -129,17 +156,52 @@ function createTranslator(rawDict, rawRules, config) {
         return out
             .replace(/\s{2,}/g, ' ')
             .replace(/([\u4e00-\u9fff])\s+([前后])/g, '$1$2')
-            .replace(/([。，：；！？])\s+(?=[\u4e00-\u9fff])/g, '$1');
+            .replace(/([。，：；！？])\s+(?=[\u4e00-\u9fff])/g, '$1')
+            .trim();
     }
 
     function matchRules(valNorm, depth) {
-        if (rules.length === 0 || (rulesPrefilter && !rulesPrefilter.test(valNorm))) return null;
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            const match = valNorm.match(rule.regex);
-            if (match) return applyRuleMatch(rule, match, depth);
+        if (rules.length === 0 || !valNorm) return null;
+        const c0 = valNorm.charCodeAt(0);
+        let primary = null;
+        if ((c0 >= 65 && c0 <= 90) || (c0 >= 97 && c0 <= 122)) {
+            let end = 1;
+            while (end < valNorm.length) {
+                const c = valNorm.charCodeAt(end);
+                if (!((c >= 65 && c <= 90) || (c >= 97 && c <= 122))) break;
+                end++;
+            }
+            primary = wordBuckets.get(valNorm.slice(0, end).toLowerCase()) || null;
+        } else if (c0 >= 48 && c0 <= 57) {
+            if (digitPrefilter && digitPrefilter.test(valNorm)) {
+                primary = digitRules;
+            }
         }
-        return null;
+        let pRule = null;
+        let pMatch = null;
+        if (primary) {
+            for (let i = 0; i < primary.length; i++) {
+                const m = valNorm.match(primary[i].regex);
+                if (m) {
+                    pRule = primary[i];
+                    pMatch = m;
+                    break;
+                }
+            }
+        }
+        if (pRule && (wildRules.length === 0 || pRule.idx < wildRules[0].idx)) {
+            return applyRuleMatch(pRule, pMatch, depth);
+        }
+        if (wildPrefilter && wildPrefilter.test(valNorm)) {
+            const maxIdx = pRule ? pRule.idx : Infinity;
+            for (let i = 0; i < wildRules.length; i++) {
+                const r = wildRules[i];
+                if (r.idx >= maxIdx) break;
+                const m = valNorm.match(r.regex);
+                if (m) return applyRuleMatch(r, m, depth);
+            }
+        }
+        return pRule ? applyRuleMatch(pRule, pMatch, depth) : null;
     }
 
     function lookupLongPrefix(valNorm) {
@@ -214,20 +276,40 @@ function createTranslator(rawDict, rawRules, config) {
     }
 
     function translateString(val) {
+        if (!val || typeof val !== 'string' || !/[a-zA-Z]/.test(val)) return null;
         const valNorm = normalizeText(val);
         if (!valNorm) return null;
-        if (hotCache.has(valNorm)) return hotCache.get(valNorm);
-        if (coldCache.has(valNorm)) {
-            const cached = coldCache.get(valNorm);
-            hotCache.set(valNorm, cached);
+        const hasNl = typeof val === 'string' && val.includes('\n');
+        const cacheKey = hasNl ? 'ML:' + val.trim() : valNorm;
+        if (hotCache.has(cacheKey)) return hotCache.get(cacheKey);
+        if (coldCache.has(cacheKey)) {
+            const cached = coldCache.get(cacheKey);
+            hotCache.set(cacheKey, cached);
             return cached;
         }
-        const res = translateCore(valNorm);
+        let res = translateCore(valNorm);
+        // 多行文本在整段未命中时按行回退翻译
+        if (res === null && hasNl) {
+            const lines = val.split('\n');
+            if (lines.length >= 2 && lines.length <= 8) {
+                let changed = false;
+                const out = lines.map(l => {
+                    const n = normalizeText(l);
+                    const t = n && translateCore(n);
+                    if (t && t !== n) {
+                        changed = true;
+                        return t;
+                    }
+                    return l;
+                });
+                if (changed) res = out.join('\n');
+            }
+        }
         if (hotCache.size >= MAX_GEN_SIZE) {
             coldCache = hotCache;
             hotCache = new Map();
         }
-        hotCache.set(valNorm, res);
+        hotCache.set(cacheKey, res);
         return res;
     }
 
