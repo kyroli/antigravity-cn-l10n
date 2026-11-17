@@ -3,7 +3,7 @@
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
   "targetVersion": "2.32.2",
-  "revision": "c50de8f71d2f",
+  "revision": "d1d8fa6ad7e7",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
@@ -18,16 +18,16 @@
       "size": 41940
     },
     "dicts/common.json": {
-      "sha256": "a495c8bb80f825ba1ed0962d632034b9d7a682af917cf5041c9a68f089e13a5f",
-      "size": 262448
+      "sha256": "7e07e9cb475f436bb94968077edae7ec717afcb7bf27bc44cc13aa2dd4f30fef",
+      "size": 259869
     },
     "dicts/config.json": {
       "sha256": "311598a3bfeca584baf47031e325cd4aeee94fda8c56eeedda4604aba159c395",
       "size": 22306
     },
     "dicts/menus.json": {
-      "sha256": "0f05b95576ebc4be14bd1b241a791d8106d02752b341cbd6a2526afc2442a8bb",
-      "size": 17054
+      "sha256": "723b08d32076a7c57bebc888b595f85cb5892ee1fd432400e2b011826b8cc35c",
+      "size": 19633
     },
     "dicts/rules.json": {
       "sha256": "86eaeda65b16641f3fd40ae9fd77f64d198b9e8ba0b2e47b341c0236b1802798",
