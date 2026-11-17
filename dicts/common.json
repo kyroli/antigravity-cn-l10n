@@ -2149,6 +2149,8 @@
     "review comments": "审查评论",
     "Rewinds the conversation only. Files in this folder stay as they are now.": "仅倒回对话。此文件夹中的文件保持现状。",
     "Rewinds the conversation only. Files in this workspace stay as they are now.": "仅倒回对话。此工作区中的文件保持现状。",
+    "Robotics": "机器人技术",
+    "Robotics skills for any robot: 3D perception, collision-free motion planning, visual servoing, robot bring-up, sim2real, agent iteration, MuJoCo simulation, SimReady 3D asset authoring and physics auditing, and a live MuJoCo Studio 3D web sidecar.": "适用于各类机器人的机器人技能：涵盖 3D 感知、无碰撞运动规划、视觉伺服、机器人调试启动、仿真到现实迁移 (sim2real)、Agent 迭代、MuJoCo 仿真、SimReady 3D 资产创作与物理审查，以及实时 MuJoCo Studio 3D Web Sidecar。",
     "Rpc failed due to xhr error": "由于 XHR 错误导致 RPC 请求失败",
     "Rules and customization token budgets exceeded. Large rules are demoted to path pointers and large customizations are excluded from context.": "超出规则和自定义项 Token 预算。体积较大的规则已降级为路径指针，较大的自定义项已从上下文中排除。",
     "Rules token budget exceeded. Large rules are demoted to path pointers.": "超出规则 Token 预算。体积较大的规则已降级为路径指针。",
