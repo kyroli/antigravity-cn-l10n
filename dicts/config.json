@@ -158,7 +158,12 @@
         "retired",
         "display",
         "environment",
-        "repo"
+        "repo",
+        "later",
+        "passphrase",
+        "password",
+        "restart",
+        "resume"
     ],
     "protectedFiles": [
         "LICENSE",
@@ -446,6 +451,89 @@
                     "replace": " 中尚无主机。请在上方输入。"
                 }
             ]
+        },
+        {
+            "containerPattern": "^(?:Always open|总是直接打开)\\s+.+?:\\s*(?:links without asking|链接而不再询问)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Always open\\s*$",
+                    "replace": "总是直接打开 "
+                },
+                {
+                    "match": "^\\s*links without asking\\s*$",
+                    "replace": " 链接而不再询问"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Couldn't delete cookies for|无法删除)\\s+.+?(?:\\. Try again\\.|的 Cookie，请重试。)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Couldn't delete cookies for\\s*$",
+                    "replace": "无法删除 "
+                },
+                {
+                    "match": "^\\s*\\. Try again\\.\\s*$",
+                    "replace": " 的 Cookie，请重试。"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Inspect live bindings or record custom key chords filtered to|查看实时键位绑定，或录制筛选为)\\s+antigravity\\.\\s*(?:commands\\.|命令的自定义快捷键。)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Inspect live bindings or record custom key chords filtered to\\s*$",
+                    "replace": "查看实时键位绑定，或录制筛选为 "
+                },
+                {
+                    "match": "^\\s*commands\\.\\s*$",
+                    "replace": " 命令的自定义快捷键。"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Zipping|正在打包)\\s*.+(?:\\.\\.\\.|…)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Zipping\\s*$",
+                    "replace": "正在打包"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^\\d+\\s+(?:plugins?|个插件)$",
+            "nodeReplacements": [
+                {
+                    "match": "^\\s*plugins?\\s*$",
+                    "replace": " 个插件"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Open\\s*|打开\\s*).+?\\s*(?:panel|面板)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Open\\s*$",
+                    "replace": "打开 "
+                },
+                {
+                    "match": "^\\s*panel\\s*$",
+                    "replace": " 面板"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:No sites match\\s*|没有匹配\\s*)[“\"].+[”\"](?:\\.|的站点。)$",
+            "nodeReplacements": [
+                {
+                    "match": "^No sites match\\s*[“\"]$",
+                    "replace": "没有匹配“"
+                },
+                {
+                    "match": "^[”\"]\\.\\s*$",
+                    "replace": "”的站点。"
+                }
+            ]
         }
     ],
     "frame": {
@@ -627,6 +715,7 @@
     "audit": {
         "preservedTerms": [
             "ADEX",
+            "@all 2",
             "Amend",
             "Artifacts",
             "Better Stack",
@@ -669,7 +758,9 @@
             "Push",
             "sonarqube",
             "Spacefast",
+            "~/.ssh/config (default)",
             "Stage",
+            "Swarm",
             "Tavily",
             "Turbo",
             "Web (desktop)",
@@ -677,8 +768,7 @@
             "WIF Config",
             "Windows",
             "Workspace + Worktree",
-            "Worktree",
-            "~/.ssh/config (default)"
+            "Worktree"
         ]
     }
 }

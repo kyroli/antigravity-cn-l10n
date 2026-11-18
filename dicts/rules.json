@@ -685,6 +685,27 @@
         ]
     },
     {
+        "pattern": "^Yes, allow downloads from (.+) for this run$",
+        "replacement": "是，仅此次运行允许从 $1 下载",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Yes, allow downloads from (.+) in this conversation$",
+        "replacement": "是，在此会话中允许从 $1 下载",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Yes, always allow downloads from (.+)$",
+        "replacement": "是，始终允许从 $1 下载",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
         "pattern": "^Yes, allow (.+) in this conversation$",
         "replacement": "是，在此会话中允许 $1",
         "rawGroups": [
@@ -1377,6 +1398,13 @@
         ]
     },
     {
+        "pattern": "^Sign in to use (.+)!$",
+        "replacement": "登录以使用 $1！",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
         "pattern": "^Sign in to (?!continue\\b|sync\\b|use\\b|access\\b|view\\b|get\\b|start\\b|manage\\b|enable\\b|connect\\b|save\\b|unlock\\b|your\\b)(.+)$",
         "replacement": "登录 $1",
         "rawGroups": [
@@ -1440,6 +1468,13 @@
     {
         "pattern": "^Connecting to (.+?)\\.{3}$",
         "replacement": "正在连接到 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Connecting to (.+)$",
+        "replacement": "正在连接到 $1",
         "rawGroups": [
             1
         ]
@@ -1944,5 +1979,1182 @@
         "rawGroups": [
             1
         ]
+    },
+    {
+        "pattern": "^Allow$",
+        "replacement": "允许",
+        "caseSensitive": true
+    },
+    {
+        "pattern": "^Continue$",
+        "replacement": "继续",
+        "caseSensitive": true
+    },
+    {
+        "pattern": "^Sign [Ii]n$",
+        "replacement": "登录",
+        "caseSensitive": true
+    },
+    {
+        "pattern": "^Restarting the Antigravity server on (.+?)(?:\\.{3}|…)$",
+        "replacement": "正在 $1 上重启 Antigravity 服务器...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Its server on (.+?) stopped, and its agents with it\\.$",
+        "replacement": "它在 $1 上的服务器已停止，其中的 Agent 也随之停止。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Its agents on (.+?) stopped with it\\.$",
+        "replacement": "它在 $1 上的 Agent 也随之停止。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Moving the Antigravity server to (.+?)(?:\\.{3}|…)$",
+        "replacement": "正在将 Antigravity 服务器迁移到 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) didn't answer after this computer woke up\\.$",
+        "replacement": "此电脑唤醒后，$1 未作出响应。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server on (.+?) has no HTTP port to stop it through\\.$",
+        "replacement": "$1 上的 Antigravity 服务器没有可用于停止它的 HTTP 端口。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server on (.+?) refused to stop \\(HTTP (\\S+)\\)\\.$",
+        "replacement": "$1 上的 Antigravity 服务器拒绝停止（HTTP $2）。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Could not confirm that the Antigravity server on (.+?) stopped \\((.+)\\)\\.$",
+        "replacement": "无法确认 $1 上的 Antigravity 服务器是否已停止（$2）。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Could not confirm that the Antigravity server on (.+?) stopped\\.$",
+        "replacement": "无法确认 $1 上的 Antigravity 服务器是否已停止。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^the answer is over (\\d+) bytes$",
+        "replacement": "响应超过 $1 字节",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The Antigravity server on (.+?) didn't give this window a sign-in token \\((.+)\\)\\.$",
+        "replacement": "$1 上的 Antigravity 服务器未向此窗口提供登录令牌（$2）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) asked to open a sign-in at (.+?) that can't finish on that host, so it was not opened\\.$",
+        "replacement": "$1 请求打开位于 $2 的登录页面，但该登录无法在该主机上完成，因此未打开。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(.+?) asked for an upload it can't need\\.$",
+        "replacement": "$1 请求了其不可能需要的上传操作。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) sent a line longer than (\\d+) characters\\.$",
+        "replacement": "$1 发送了超过 $2 个字符的行。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Antigravity couldn't reach the SSH host to finish signing in\\. Sign in again from Antigravity\\.$",
+        "replacement": "Antigravity 无法连接到该 SSH 主机以完成登录。请从 Antigravity 重新登录。"
+    },
+    {
+        "pattern": "^Antigravity couldn't reach (.+?) to finish signing in\\. Sign in again from Antigravity\\.$",
+        "replacement": "Antigravity 无法连接到 $1 以完成登录。请从 Antigravity 重新登录。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^This sign-in came back from another server than the sign-in page you agreed to, so Antigravity didn't pass it on to the SSH host\\.$",
+        "replacement": "此次登录回调来自与您确认的登录页面不同的服务器，因此 Antigravity 未将其传递给该 SSH 主机。"
+    },
+    {
+        "pattern": "^This sign-in came back from another server than the sign-in page you agreed to, so Antigravity didn't pass it on to (.+)\\.$",
+        "replacement": "此次登录回调来自与您确认的登录页面不同的服务器，因此 Antigravity 未将其传递给 $1。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Antigravity on the SSH host couldn't finish signing in \\(HTTP (\\d+)\\)\\. Sign in again from Antigravity\\.$",
+        "replacement": "该 SSH 主机上的 Antigravity 无法完成登录（HTTP $1）。请从 Antigravity 重新登录。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Antigravity on (.+?) couldn't finish signing in \\(HTTP (\\d+)\\)\\. Sign in again from Antigravity\\.$",
+        "replacement": "$1 上的 Antigravity 无法完成登录（HTTP $2）。请从 Antigravity 重新登录。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Verification code for (.+)$",
+        "replacement": "$1 的验证码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Password for (.+)$",
+        "replacement": "$1 的密码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Current password for (.+)$",
+        "replacement": "$1 的当前密码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^New password for (.+)$",
+        "replacement": "$1 的新密码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Confirm new password for (.+)$",
+        "replacement": "确认 $1 的新密码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Passphrase for (.+)$",
+        "replacement": "$1 的密码短语",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^PIN for (.+)$",
+        "replacement": "$1 的 PIN",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Trust (.+)\\?$",
+        "replacement": "信任 $1 吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Connect to (.+?) anyway\\?$",
+        "replacement": "仍要连接到 $1 吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Add (.+?) to ssh-agent\\?$",
+        "replacement": "将 $1 添加到 ssh-agent 吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Question from (.+)$",
+        "replacement": "来自 $1 的询问",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Allow (.+?) to use your microphone\\?$",
+        "replacement": "允许 $1 使用您的麦克风吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The page in this window comes from (.+?)\\. If you allow it, that host can use this computer's microphone for voice whenever one of its windows is open\\. Antigravity asks again after you quit it\\.$",
+        "replacement": "此窗口中的页面来自 $1。如果您允许，只要其任一窗口处于打开状态，该主机便可使用此电脑的麦克风进行语音交互。退出 Antigravity 后系统会再次向您询问。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Finish this sign-in on (.+?)\\?$",
+        "replacement": "要在 $1 上完成此登录吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Continue only if you just chose to sign in from the (.+?) window\\. Your browser opens the sign-in page; once you sign in, (.+?) gets access to that account\\.\\nSign-in page: (.+)$",
+        "replacement": "仅当您刚才在 $1 窗口中选择了登录时，才请继续操作。您的浏览器将打开登录页面；登录完成后，$2 将获得该账号的访问权限。\n登录页面：$3",
+        "rawGroups": [
+            1,
+            2,
+            3
+        ]
+    },
+    {
+        "pattern": "^Continue only if you just chose to sign in from the (.+?) window\\. Your browser opens the sign-in page; once you sign in, (.+?) gets access to that account\\.$",
+        "replacement": "仅当您刚才在 $1 窗口中选择了登录时，才请继续操作。您的浏览器将打开登录页面；登录完成后，$2 将获得该账号的访问权限。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Sign-in page: (.+)$",
+        "replacement": "登录页面：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) still runs Antigravity server (.+)\\.$",
+        "replacement": "$1 仍在运行 Antigravity 服务器 $2。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(.+?) can't be the SSH config file$",
+        "replacement": "$1 不能作为 SSH 配置文件",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) (isn't an SSH config file|is saved in a way ssh can't read): (.+?)\\. (Choose a file of ssh settings, such as ~/.ssh/config\\.|Save it as UTF-8 without a byte-order mark\\.)$",
+        "replacement": "$1 $2：$3。$4",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) (isn't an SSH config file|is saved in a way ssh can't read)$",
+        "replacement": "$1 $2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(It's a binary file|It holds a key or certificate|It holds SSH public keys, like a \\.pub or authorized_keys file|It lists SSH host keys, like known_hosts|It starts with a byte-order mark|It's saved as UTF-16)\\. (Choose a file of ssh settings, such as ~/.ssh/config\\.|Save it as UTF-8 without a byte-order mark\\.)$",
+        "replacement": "$1。$2"
+    },
+    {
+        "pattern": "^(.+?) is running server (.+?); this app is (.+?)\\. Restart the server now\\?$",
+        "replacement": "$1 正在运行服务器 $2；当前应用版本为 $3。是否立即重启服务器？",
+        "rawGroups": [
+            1,
+            2,
+            3
+        ]
+    },
+    {
+        "pattern": "^Any (agent or task|agent, task or terminal) still running on it stops\\. The server starts again with this app's version\\.$",
+        "replacement": "任何仍在其中运行的 $1都将停止。服务器将使用当前应用版本重新启动。"
+    },
+    {
+        "pattern": "^This window's Antigravity server runs on (.+?), another machine that shares your home directory\\.$",
+        "replacement": "此窗口的 Antigravity 服务器运行在 $1（另一台共享您主目录的计算机）上。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Your Antigravity server runs on (.+?), another machine that shares your home directory\\.$",
+        "replacement": "您的 Antigravity 服务器运行在 $1（另一台共享您主目录的计算机）上。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?), another machine that shares your home directory, started your Antigravity server\\.$",
+        "replacement": "$1（另一台共享您主目录的计算机）启动了您的 Antigravity 服务器。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) reached (.+?) this time\\. Cancel and reconnect to try again for (.+?), or take over to stop the server on (.+?), and its agents, and run it on (.+?) instead\\.$",
+        "replacement": "$1 此次连接到了 $2。您可以取消并重新连接以重试连接到 $3，或者选择接管以停止 $4 上的服务器及其 Agent，并改为在 $5 上运行。",
+        "rawGroups": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    {
+        "pattern": "^(.+?) reached (.+?)\\. Take over to stop the server on (.+?), and its agents, and run it on (.+?) instead\\. To keep it running, connect to (.+)\\.$",
+        "replacement": "$1 连接到了 $2。您可以选择接管以停止 $3 上的服务器及其 Agent，并改为在 $4 上运行。若要保持其继续运行，请连接到 $5。",
+        "rawGroups": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    {
+        "pattern": "^(.+?) reached (.+?)\\. Take over only if that server no longer runs, for example if (.+?) was shut down or replaced: if it still runs, both servers would write the same files\\. To check, connect to (.+)\\.$",
+        "replacement": "$1 连接到了 $2。仅当该服务器已不再运行时（例如 $3 已关机或被更换）才应选择接管：如果它仍在运行，两台服务器将写入同一批文件。如需检查，请连接到 $4。",
+        "rawGroups": [
+            1,
+            2,
+            3,
+            4
+        ]
+    },
+    {
+        "pattern": "^The SSH host isn't supported\\. Antigravity needs a Linux host on x64 or arm64 with glibc 2\\.26 or newer\\. Windows and macOS hosts aren't supported yet\\.$",
+        "replacement": "不支持此 SSH 主机。Antigravity 需要 glibc 2.26 或更高版本的 x64 或 arm64 Linux 主机。暂不支持 Windows 和 macOS 主机。"
+    },
+    {
+        "pattern": "^Windows SSH hosts aren't supported yet\\. Antigravity needs a Linux host on x64 or arm64 with glibc 2\\.26 or newer\\.$",
+        "replacement": "暂不支持 Windows SSH 主机。Antigravity 需要 glibc 2.26 或更高版本的 x64 或 arm64 Linux 主机。"
+    },
+    {
+        "pattern": "^The SSH config file (.+?) can't be changed by others: it must be yours or root's, and not group- or world-writable\\.$",
+        "replacement": "SSH 配置文件 $1 不能允许其他用户修改：它必须归您或 root 所有，且不可对同组或其他用户开放写入权限。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file must be an absolute path \\(got (.+)\\)\\.$",
+        "replacement": "SSH 配置文件路径必须是绝对路径（实际为 $1）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file must be on one of this computer's drives \\(got (.+)\\)\\.$",
+        "replacement": "SSH 配置文件必须位于本机的某个磁盘驱动器上（实际为 $1）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file can't be on a network share \\((.+)\\)\\.$",
+        "replacement": "SSH 配置文件不能位于网络共享路径上（$1）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH config file (.+?) is now a link: choose the file again\\.$",
+        "replacement": "SSH 配置文件 $1 现在是一个链接：请重新选择文件。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Missing \"\\]\" after the IPv6 address in \"(.+)\"\\.$",
+        "replacement": "\"$1\" 中的 IPv6 地址后缺少 \"]\"。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Unexpected \"(.+)\" after \"\\]\"\\.$",
+        "replacement": "\"$1\" 不应出现在 \"]\" 之后。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Invalid percent-encoding in the user name \"(.+)\"\\.$",
+        "replacement": "用户名 \"$1\" 中的百分号编码无效。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The SSH host must not contain (.+)\\.$",
+        "replacement": "SSH 主机名不能包含 $1。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^This folder belongs to the WSL distro \"(.+?)\", but this window is connected to \"(.+?)\"\\.$",
+        "replacement": "此文件夹属于 WSL 发行版 \"$1\"，但当前窗口连接的是 \"$2\"。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^This location cannot be opened in WSL: (.+)$",
+        "replacement": "无法在 WSL 中打开此位置：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^AGY working in (.+?) \\(background\\)$",
+        "replacement": "AGY 正在 $1 中运行（后台）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) AGY agents working$",
+        "replacement": "$1 个 AGY Agent 正在运行",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) agents stopped$",
+        "replacement": "$1 个 Agent 已停止",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(\\+(\\d+) stopped\\)$",
+        "replacement": "$1（另有 $2 个已停止）",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+?) · (.+?) · stopped$",
+        "replacement": "Agent：$1 · $2 · 已停止",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+?) · (.+?) · paused$",
+        "replacement": "Agent：$1 · $2 · 已暂停",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+?) · (.+?) · starting$",
+        "replacement": "Agent：$1 · $2 · 启动中",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+?) · (.+?) · background$",
+        "replacement": "Agent：$1 · $2 · 后台运行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+?) · (.+?) · foreground$",
+        "replacement": "Agent：$1 · $2 · 前台运行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+?) · (.+?) · controlling$",
+        "replacement": "Agent：$1 · $2 · 控制中",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Agent: (.+)$",
+        "replacement": "Agent：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Delete cookies for (.+)$",
+        "replacement": "删除 $1 的 Cookie",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Deleted cookies for (.+)$",
+        "replacement": "已删除 $1 的 Cookie",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) cookies?$",
+        "replacement": "$1 个 Cookie",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Add bundle (.+)$",
+        "replacement": "添加捆绑包 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Added (.+?) and installed (\\d+) plugins?\\.$",
+        "replacement": "已添加 $1，并安装了 $2 个插件。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Added (.+)\\.$",
+        "replacement": "已添加 $1。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Removed (.+)\\.$",
+        "replacement": "已移除 $1。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^This plugin in (.+?) may have looser code review\\. Review its contents before adding the bundle\\.$",
+        "replacement": "$1 中的此插件代码审查可能较宽松。添加捆绑包前请先检查其内容。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^These plugins in (.+?) may have looser code review\\. Review their contents before adding the bundle\\.$",
+        "replacement": "$1 中的这些插件代码审查可能较宽松。添加捆绑包前请先检查其内容。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) plugins?, all already installed\\. Adding the bundle installs plugins it gains later\\.$",
+        "replacement": "共 $1 个插件，均已安装。添加捆绑包后，后续新增的插件也会自动安装。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) plugins?\\. Adding the bundle installs plugins it gains later\\.$",
+        "replacement": "共 $1 个插件。添加捆绑包后，后续新增的插件也会自动安装。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) plugins?\\. Add bundle installs it\\.$",
+        "replacement": "共 $1 个插件。添加捆绑包将安装该插件。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) plugins?\\. Add bundle installs all of them\\.$",
+        "replacement": "共 $1 个插件。添加捆绑包将全部安装它们。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) plugins?\\. Add bundle installs (\\d+); the ones you already have stay as they are\\.$",
+        "replacement": "共 $1 个插件。添加捆绑包将安装其中的 $2 个；您已安装的插件保持不变。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(\\d+) plugins?\\. Disabling or removing the bundle applies only to the ones it installed\\.$",
+        "replacement": "共 $1 个插件。禁用或移除该捆绑包时，仅影响由其安装的插件。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Retrying transcription \\(attempt (\\d+)\\)(?:\\.{3}|…)$",
+        "replacement": "正在重试转录（第 $1 次）...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Showing latest (\\d+) browser steps$",
+        "replacement": "显示最近 $1 个浏览器步骤",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Browser tools run on the SSH host this window is connected to, and Chrome there isn't accepting remote debugging\\. Complete these steps on the SSH host, not on this computer:$",
+        "replacement": "浏览器工具运行在此窗口所连的 SSH 主机上，且该主机上的 Chrome 未开启远程调试。请在 SSH 主机上（而非本机）完成以下步骤："
+    },
+    {
+        "pattern": "^Browser tools run on (.+?), the SSH host this window is connected to, and Chrome there isn't accepting remote debugging\\. Complete these steps on (.+?), not on this computer:$",
+        "replacement": "浏览器工具运行在此窗口所连的 SSH 主机 $1 上，且该主机上的 Chrome 未开启远程调试。请在 $2 上（而非本机）完成以下步骤：",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Open Google Chrome on the SSH host\\.$",
+        "replacement": "在该 SSH 主机上打开 Google Chrome。"
+    },
+    {
+        "pattern": "^Open Google Chrome on (.+)\\.$",
+        "replacement": "在 $1 上打开 Google Chrome。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^If the SSH host is a Cloudtop, open it in$",
+        "replacement": "如果该 SSH 主机是 Cloudtop，请在此打开："
+    },
+    {
+        "pattern": "^If (.+?) is a Cloudtop, open it in$",
+        "replacement": "如果 $1 是 Cloudtop，请在此打开：",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Honors standard VS Code shortcuts without collisions \\(e\\.g\\. (.+)\\)\\.$",
+        "replacement": "遵循标准 VS Code 快捷键而不产生冲突（例如：$1）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Uses standalone Antigravity chords \\(e\\.g\\. (.+)\\)\\. Replaces Go to Symbol \\(([^)]+)\\) and Trigger Suggest \\(([^)]+)\\), and rebinds VS Code Settings to (.+)\\.$",
+        "replacement": "使用独立的 Antigravity 组合键（例如：$1）。替换“转到符号”($2) 与“触发建议”($3)，并将 VS Code“设置”重新绑定为 $4。",
+        "rawGroups": [
+            1,
+            2,
+            3,
+            4
+        ]
+    },
+    {
+        "pattern": "^Thinking \\((\\d+)s\\)(?:\\.{3}|…)$",
+        "replacement": "正在思考 ($1s)...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Working · (\\d+)s$",
+        "replacement": "正在执行 · $1s",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Stop (\\d+) items?\\?$",
+        "replacement": "要停止这 $1 个项目吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) items? could not be stopped: (.+)$",
+        "replacement": "$1 个项目无法停止：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(\\d+) calls? · (.+)$",
+        "replacement": "$1 次通话 · $2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Deleted (\\d+) recordings? \\(([^)]+)\\)$",
+        "replacement": "已删除 $1 条录音 ($2)",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^This deletes (\\d+) call recordings? \\(([^)]+)\\) from your machine\\. You can't undo this\\.$",
+        "replacement": "此操作将从您的设备中删除 $1 条通话录音 ($2)，且无法撤销。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Hid (.+)$",
+        "replacement": "已隐藏 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Showing (.+) again$",
+        "replacement": "已重新显示 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Hide (.+) from this list$",
+        "replacement": "从此列表中隐藏 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Show (.+) in the list again$",
+        "replacement": "在列表中重新显示 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) items? in (.+?) exceeded the customization budget and (?:was|were) excluded from context\\.$",
+        "replacement": "$2 中的 $1 个项目超出了自定义配置预算，已从上下文中排除。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) rules? exceeded the rules budget and (?:was|were) demoted from full inline content to a file-path pointer\\.$",
+        "replacement": "$1 条规则超出了规则预算，已从完整内联内容降级为文件路径指针。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) tools? in this MCP server \\(([^)]+) tokens\\) exceeded the customization budget and were excluded from context\\.$",
+        "replacement": "此 MCP 服务器中的 $1 个工具（$2 个 Token）超出了自定义配置预算，已从上下文中排除。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Exceeded the customization token budget \\(([^)]+) tokens\\) and was excluded from context\\.$",
+        "replacement": "已超出自定义配置 Token 预算（$1 个 Token），并从上下文中排除。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) needs you to sign in before it can be used\\.$",
+        "replacement": "您需要先登录 $1，然后才能使用该功能。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^A folder in this project could not be loaded because its location is invalid\\.$",
+        "replacement": "由于路径无效，此项目中的一个文件夹无法加载。"
+    },
+    {
+        "pattern": "^(\\d+) folders in this project could not be loaded because their locations are invalid\\.$",
+        "replacement": "由于路径无效，此项目中的 $1 个文件夹无法加载。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Can[’']t access \"(.+?)\"\\. macOS privacy settings are blocking Antigravity from this location\\. Allow Antigravity in System Settings > Privacy & Security > Files and Folders \\(or Full Disk Access\\)\\.$",
+        "replacement": "无法访问“$1”。macOS 隐私设置正在阻止 Antigravity 访问此位置。请在“系统设置 > 隐私与安全性 > 文件与文件夹”（或“完全磁盘访问权限”）中允许 Antigravity。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Can[’']t create this path — [“\"](.+?)[”\"] is a file, not a folder\\.$",
+        "replacement": "无法创建此路径——“$1”是文件，而不是文件夹。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^[“\"](.+?)[”\"] isn[’']t a valid folder name\\.$",
+        "replacement": "“$1”不是有效的文件夹名称。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The folder [“\"](.+?)[”\"] does not exist\\. Would you like to create it\\?$",
+        "replacement": "文件夹“$1”不存在。是否立即创建？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^File exceeds the (\\d+)MB display limit \\((\\d+)MB\\), so it can't be opened or downloaded here\\.$",
+        "replacement": "文件超出了 $1MB 显示限制（当前 $2MB），因此无法在此打开或下载。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Sign-in failed: (.+)$",
+        "replacement": "登录失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^SSH config: (.+)$",
+        "replacement": "SSH 配置：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^You're signing in on (.+?)\\. Your sign-in stays on that machine\\.$",
+        "replacement": "您正在 $1 上登录。您的登录状态仅保留在该设备上。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Remove shortcut (.+?) for (.+)$",
+        "replacement": "移除 $2 的快捷键 $1",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Shortcut (.+?) for (.+)$",
+        "replacement": "$2 的快捷键 $1",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Remove (.+?) from Recent$",
+        "replacement": "从最近记录中移除 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Removed (.+?) from Recent$",
+        "replacement": "已从最近记录中移除 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Couldn't remove (.+?) from Recent$",
+        "replacement": "无法从最近记录中移除 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Could not attach folder \"(.+?)\": (.+)$",
+        "replacement": "无法附加文件夹“$1”：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Could not attach image: (.+)$",
+        "replacement": "无法附加图片：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Could not open folder: (.+)$",
+        "replacement": "无法打开文件夹：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Could not apply the selected permissions: (.+)$",
+        "replacement": "无法应用所选权限：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Could not read (.+)\\.$",
+        "replacement": "无法读取 $1。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Couldn't load apps: (.+)$",
+        "replacement": "无法加载应用：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Couldn't save base branch: (.+)$",
+        "replacement": "无法保存基础分支：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Couldn't switch to (.+?): (.+)$",
+        "replacement": "无法切换到 $1：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Added MCP server \"(.+?)\", but it failed to start: (.+)$",
+        "replacement": "已添加 MCP 服务器“$1”，但启动失败：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Error refreshing MCP servers: (.+)$",
+        "replacement": "刷新 MCP 服务器失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Error restarting (.+?): (.+)$",
+        "replacement": "重启 $1 失败：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Error toggling tool: (.+)$",
+        "replacement": "切换工具状态失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Error updating agent: (.+)$",
+        "replacement": "更新 Agent 失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Review skill before installing$",
+        "replacement": "安装前请先检查此技能"
+    },
+    {
+        "pattern": "^Review plugin before installing$",
+        "replacement": "安装前请先检查此插件"
+    },
+    {
+        "pattern": "^Review (.+?) before installing$",
+        "replacement": "安装前请先检查 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Skip \\(([^)]+)\\), Skip All \\(([^)]+)\\)$",
+        "replacement": "跳过 ($1)，全部跳过 ($2)",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(.+?), setup required$",
+        "replacement": "$1，需要设置",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?): Connect GitHub$",
+        "replacement": "$1：连接 GitHub",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Using browser · (.+)$",
+        "replacement": "正在使用浏览器 · $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The preview did not respond on port (\\d+)\\.$",
+        "replacement": "预览未在端口 $1 上响应。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Filter skills and rules: (.+)$",
+        "replacement": "筛选技能与规则：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Go to slide (\\d+)$",
+        "replacement": "转到第 $1 页幻灯片",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^App view for (.+)$",
+        "replacement": "$1 的应用视图",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^New secret for (.+)$",
+        "replacement": "$1 的新密钥",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Secret for (.+)$",
+        "replacement": "$1 的密钥",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Searching as (.+)$",
+        "replacement": "正以 $1 身份搜索",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Uses your local clone, (.+)$",
+        "replacement": "使用您的本地克隆：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Auth code for (.+)$",
+        "replacement": "$1 的授权码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Your Plan: (.+)$",
+        "replacement": "您的套餐：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Side question \\(conversation ([^)]+)\\): (.+)$",
+        "replacement": "旁支问题（会话 $1）：$2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Open conversation (.+)$",
+        "replacement": "打开会话 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Moved conversation (.+)$",
+        "replacement": "已移动会话 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The selected project can't be found\\. Pick another project from the project selector to send\\.$",
+        "replacement": "找不到所选的项目。请从项目选择器中另选一个后再发送。"
+    },
+    {
+        "pattern": "^The selected workspace can't be found\\. Pick another workspace from the workspace selector to send\\.$",
+        "replacement": "找不到所选的工作区。请从工作区选择器中另选一个后再发送。"
     }
 ]

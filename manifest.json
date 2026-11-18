@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
-  "targetVersion": "2.32.2",
-  "revision": "d1d8fa6ad7e7",
+  "targetVersion": "2.33.0",
+  "revision": "9f6d23cfc8d4",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
@@ -14,27 +14,27 @@
       "size": 488
     },
     "dicts/agents.json": {
-      "sha256": "e599b5a9123688991df9d9c4323518d8e4636b89615c272034054a76df9a3b6e",
-      "size": 41940
+      "sha256": "3171379656c81df72d7a959404e7a13c51faadb8242ea2ec3e65c6061a1f31f5",
+      "size": 42757
     },
     "dicts/common.json": {
-      "sha256": "7e07e9cb475f436bb94968077edae7ec717afcb7bf27bc44cc13aa2dd4f30fef",
-      "size": 259869
+      "sha256": "4b45adbe6d68cb7122db83382f0cc0c832f1b4c7599218f557b9237c897ff40a",
+      "size": 272029
     },
     "dicts/config.json": {
-      "sha256": "311598a3bfeca584baf47031e325cd4aeee94fda8c56eeedda4604aba159c395",
-      "size": 22306
+      "sha256": "20b5cdd04349f611865d38e6957d703c720c4ab73cea82f76cc426a278024aa5",
+      "size": 25517
     },
     "dicts/menus.json": {
-      "sha256": "723b08d32076a7c57bebc888b595f85cb5892ee1fd432400e2b011826b8cc35c",
-      "size": 19633
+      "sha256": "49c9f77255aa5d7bc0f1c08ed4cd6e8bd37740f19694c78a048dfdea40bdad51",
+      "size": 22293
     },
     "dicts/rules.json": {
-      "sha256": "86eaeda65b16641f3fd40ae9fd77f64d198b9e8ba0b2e47b341c0236b1802798",
-      "size": 57786
+      "sha256": "4e82e696d3305c64a570b9be0d4f90fd3810770f68c48c53b19171ff928e7121",
+      "size": 96060
     },
     "package.json": {
-      "sha256": "c679dfb44fca3b9e385962771449946866bccb691073da8faf0b3366d3119644",
+      "sha256": "2a65680dd8fa28f7b9ff7205baea2a00ef16ae506d2f4c302b988b5473cb297b",
       "size": 507
     },
     "patch.js": {
@@ -46,8 +46,8 @@
       "size": 11062
     },
     "src/patcher.js": {
-      "sha256": "d2676ae476b1a02170a96c78b24a3fec2681e90f89ba15717d88b2be1013aaa8",
-      "size": 12456
+      "sha256": "85a8a60188c5e159ff116f79545458d7d702c86816fdb1a7e2a6241dc01e05a5",
+      "size": 15332
     },
     "src/runtime/dom.js": {
       "sha256": "11d1b52940a4cfbf0ae5193d2548ca65dfda25bd094abc89198d2a6c46d415da",

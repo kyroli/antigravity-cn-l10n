@@ -17,7 +17,7 @@ const FRAME_ORIGIN_GUARD = `
         const isLocalSub = !isTop && (proto === 'http:' || proto === 'https:') && (host === '127.0.0.1' || host === 'localhost' || host === '[::1]');
         if (proto !== 'plugin:' && !isLocalSub) return;`;
 
-const SLOT_TOKEN = 'AGSLOT0';
+const SLOT_PREFIX = 'AGSLOT';
 const serializeDict = dict => `new Map(${JSON.stringify(dict instanceof Map ? Array.from(dict.entries()) : Object.entries(dict || {}))})`;
 const serializeStr = str => JSON.stringify(str).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 const escapeTpl = str => String(str).replace(/[`\\]|\$\{/g, m => '\\' + m);
@@ -101,7 +101,7 @@ const buildFramePayload = (dict, rules, config) => buildDomPayload({
     dict, rules, config, errorTag: '[ANTIGRAVITY_FRAME_LOCALIZATION_ERROR]', guardCode: FRAME_ORIGIN_GUARD, wrapSignature: false
 });
 
-// 支持三类静态源码字面量替换：引号字符串（'...' / `...`）、HTML 标签文本（<tag>...</tag> 或 >...</tag>）及含单处 ${...} 插值的模板片段
+// 支持三类静态源码字面量替换：引号字符串（'...' / "..." / `...`）、HTML 标签文本（<tag>...</tag> 或 >...</tag>）及含多处 ${...} 或空内联标签槽位
 const STATIC_TEMPLATES = {
     'dist/ideInstall/wizardHtml.js': [
         '<title>Welcome to Antigravity</title>',
@@ -128,51 +128,120 @@ const STATIC_TEMPLATES = {
         "'Verify on your device to continue…'"
     ],
     'dist/remote/disconnectedPage.js': [
+        "'Reconnect'",
+        "'Stop Server'",
+        "'Close'",
+        "'Restarting…'",
         "'Reconnecting…'",
         "'Disconnected'",
+        '`Restarting the Antigravity server on ${host}…`',
         '`Reconnecting to ${host}…`',
         '`Disconnected from ${host}`',
+        "'This window opens it again once it has started.'",
+        '`Its server on ${host} stopped, and its agents with it.`',
         '`Agents keep running on ${host}.`',
-        '`Agents keep running on ${host} unless its server stopped.`',
-        '>Reconnect</a>',
-        '>Close</a>'
+        '`Its agents on ${host} stopped with it.`',
+        '`Agents keep running on ${host} unless its server stopped.`'
     ],
     'dist/remote/sshPrompts.js': [
+        '<p class="context">Connecting to <span id="label"></span></p>',
         '>Asked again: your last answer may not have worked.</div>',
         ">That's too long.</div>",
         '>Cancel</button>',
-        '>Continue</button>'
-    ],
-    'dist/remote/sshPromptPreload.js': [
-        '`${label} asks:`'
+        '>Continue</button>',
+        "'Password'",
+        "'Current password'",
+        "'New password'",
+        "'Confirm new password'",
+        "'Passphrase'",
+        '`Verification code for ${who}`',
+        '`Password for ${who}`',
+        '`PIN for ${who}`',
+        '`Sign in to ${who}`',
+        {
+            target: '`${asked[0]} for ${hostPromptsMarked ? asked[1] : label}`',
+            replace: translator => {
+                const sample = translator.translateString('Password for x');
+                return sample && sample !== 'Password for x'
+                    ? '`${hostPromptsMarked ? asked[1] : label} 的 ${asked[0]}`'
+                    : null;
+            }
+        }
     ],
     'dist/remote/signInCallback.js': [
-        "'Signed in'",
-        "'Signed in. You can close this tab.'",
-        "'Sign-in did not complete'",
-        "'The Antigravity server on the SSH host could not be reached. Sign in again from Antigravity.'",
-        '`The Antigravity server on the SSH host answered with HTTP ${status}. Sign in again from Antigravity.`'
+        "'You have successfully authenticated.'",
+        "'You can close this tab and return to Antigravity.'",
+        '"Sign-in didn\'t finish"',
+        "`Antigravity couldn't reach ${host} to finish signing in. Sign in again from Antigravity.`",
+        "`This sign-in came back from another server than the sign-in page you agreed to, so Antigravity didn't pass it on to ${host}.`",
+        "`Antigravity on ${host} couldn't finish signing in (HTTP ${status}). Sign in again from Antigravity.`"
+    ],
+    'dist/computer/hud.js': [
+        '<title>AGY Desktop HUD</title>',
+        '<div id="status">AGY is controlling your Mac</div>',
+        '>Stop</button>',
+        '>Resume</button>',
+        "'Stopped'",
+        "'Stop'",
+        "'AGY Desktop HUD'"
+    ],
+    'dist/computer/hudState.js': [
+        "'Agent paused — you have control'",
+        "'Agent idle'",
+        '`AGY working in ${name} (background)`',
+        "'AGY working in the background'",
+        "'AGY is controlling your Mac'"
+    ],
+    'dist/computer/hudAgents.js': [
+        '`${working} AGY agents working`',
+        "'Agent stopped'",
+        '`${stopped} agents stopped`',
+        '`${text} (+${stopped} stopped)`'
     ]
 };
 
-/** 将 STATIC_TEMPLATES 中的原始代码片段解析为译文代码（自动保留单处 ${...} 模板插值槽位）。 */
+/** 将 STATIC_TEMPLATES 中的原始代码片段解析为译文代码（支持多处 ${...}、空内联标签及数字插值回退）。 */
 function translateStaticTarget(target, translator) {
     const withSlot = (str, open, close, literalJson) => {
-        const m = str.match(/\$\{[^}]+\}/);
-        const key = m ? str.replace(m[0], SLOT_TOKEN) : str;
-        const t = translator.translateString(key);
-        if (!t || (m && !t.includes(SLOT_TOKEN))) return null;
-        if (literalJson) return JSON.stringify(t);
-        const body = escapeTpl(t);
-        return open + (m ? body.split(SLOT_TOKEN).join(m[0]) : body) + close;
+        if (literalJson) {
+            const t = translator.translateString(str);
+            return t ? JSON.stringify(t) : null;
+        }
+        const slotRe = /\$\{[^}]+\}|<[a-z0-9]+\b[^>]*><\/[a-z0-9]+>/gi;
+        const slots = str.match(slotRe) || [];
+        const tryTranslate = mkTok => {
+            const toks = [];
+            const key = str.replace(slotRe, () => {
+                const tok = mkTok(toks.length);
+                toks.push(tok);
+                return tok;
+            });
+            const t = translator.translateString(key);
+            return t && toks.every(tok => t.includes(tok)) ? { t, toks } : null;
+        };
+        const hit = tryTranslate(idx => `${SLOT_PREFIX}${idx}`)
+            || (slots.length > 0 && !str.includes('9910') ? tryTranslate(idx => String(99100 + idx)) : null);
+        if (!hit) return null;
+        let body = escapeTpl(hit.t);
+        hit.toks.forEach((tok, idx) => { body = body.split(tok).join(slots[idx]); });
+        return open + body + close;
     };
     const q = target[0];
-    if ((q === "'" || q === '`') && target.endsWith(q)) {
-        const inner = target.slice(1, -1).replace(/\\u2026/g, '…');
+    if ((q === "'" || q === '"' || q === '`') && target.endsWith(q)) {
+        const inner = target.slice(1, -1)
+            .replace(/\\u2026/g, '…')
+            .replace(/\\(['"\\])/g, '$1');
         return (q === '`' && inner.includes('${')) ? withSlot(inner, '`', '`') : withSlot(inner, '', '', true);
     }
     const hm = target.match(/^(<[^>]+>|>)(.+)(<\/[a-z0-9]+>)$/i);
     return hm ? withSlot(hm[2], hm[1], hm[3]) : null;
+}
+
+function resolveStaticTarget(entry, translator) {
+    const isObj = entry && typeof entry === 'object';
+    const target = isObj ? entry.target : entry;
+    const replacement = isObj ? entry.replace(translator, target) : translateStaticTarget(target, translator);
+    return { target, replacement };
 }
 
 function patchStaticTemplates(asarReader, patchMap, dict, rules, hubConfig) {
@@ -181,8 +250,8 @@ function patchStaticTemplates(asarReader, patchMap, dict, rules, hubConfig) {
         const raw = asarReader.readFile(file);
         if (!raw || raw.includes(SIGNATURE_START)) continue;
         let next = utils.foldAdjacentJsStrings(raw), changed = false;
-        for (const target of targets) {
-            const replacement = translateStaticTarget(target, translator);
+        for (const entry of targets) {
+            const { target, replacement } = resolveStaticTarget(entry, translator);
             if (replacement && replacement !== target && next.includes(target)) {
                 next = next.split(target).join(replacement);
                 changed = true;
@@ -202,8 +271,8 @@ function auditStaticTemplates(asarReader, dict, rules, hubConfig) {
             continue;
         }
         const folded = utils.foldAdjacentJsStrings(raw);
-        for (const target of targets) {
-            const replacement = translateStaticTarget(target, translator);
+        for (const entry of targets) {
+            const { target, replacement } = resolveStaticTarget(entry, translator);
             if (!replacement || replacement === target) {
                 issues.push(`${file}: 靶点缺少有效译文 -> ${target}`);
             } else if (!folded.includes(target)) {
