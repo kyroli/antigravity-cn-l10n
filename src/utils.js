@@ -25,7 +25,6 @@ function cleanInjectedPatches(content) {
     return content ? String(content).replace(PATCH_BLOCK_RE, '') : '';
 }
 
-/** 折叠打包代码中的跨行相邻字符串常量拼接（含“字面量 + 模板字符串”），便于正则精确匹配整句。 */
 function foldAdjacentJsStrings(content) {
     if (!content) return '';
     let s = String(content), prev;
@@ -90,10 +89,14 @@ function getDictsHash() {
     if (!fs.existsSync(DICTS_DIR)) return '';
     try {
         const hashSum = crypto.createHash('sha256');
+        const runtimeDir = path.join(__dirname, 'runtime');
+        const runtimeFiles = fs.existsSync(runtimeDir)
+            ? fs.readdirSync(runtimeDir).filter(f => f.endsWith('.js')).sort().map(f => [path.join('runtime', f), path.join(runtimeDir, f)])
+            : [];
         const tracked = [
             ...[...DICT_FILES, 'config.json', 'rules.json'].sort().map(f => [f, path.join(DICTS_DIR, f)]),
-            ...['patcher.js', 'asar.js', 'utils.js', path.join('runtime', 'translator.js'), path.join('runtime', 'main.js'), path.join('runtime', 'dom.js')]
-                .map(sf => [sf, path.join(__dirname, sf)])
+            ...['patcher.js', 'asar.js', 'utils.js'].map(sf => [sf, path.join(__dirname, sf)]),
+            ...runtimeFiles
         ];
         for (const [name, fullPath] of tracked) {
             if (fs.existsSync(fullPath)) { hashSum.update(name); hashSum.update(fs.readFileSync(fullPath, 'utf-8')); }

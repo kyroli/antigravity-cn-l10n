@@ -1,8 +1,47 @@
-function installMainHooks(electron, translator, frameScript) {
+const { normalizeText, createTranslator } = require('./translator');
+const { installDomTranslator } = require('./dom');
+const bundleRewriter = require('./bundleRewriter');
+const bundleProxy = require('./bundleProxy');
+
+function buildFrameScript(data = {}) {
+    const frameExtra = data.frameExtraDict || {};
+    const frameDict = Object.keys(frameExtra).length
+        ? Object.assign({}, data.agentsDict || {}, frameExtra)
+        : (data.agentsDict || {});
+    const frameRules = Array.isArray(data.frameExtraRules) && data.frameExtraRules.length
+        ? [...data.frameExtraRules, ...(data.rules || [])]
+        : (data.rules || []);
+    const { frame: _frame, ...cleanCfg } = data.frameConfig || {};
+    const safeJson = v => JSON.stringify(v).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    const serializedDict = `new Map(${safeJson(Object.entries(frameDict))})`;
+    return `(() => {
+    try {
+        const loc = typeof location !== 'undefined' ? location : null;
+        if (!loc) return;
+        const proto = loc.protocol, host = (loc.hostname || '').toLowerCase();
+        let isTop = true;
+        try { isTop = typeof window === 'undefined' ? true : window === window.top; } catch (e) { isTop = false; }
+        const isLocalSub = !isTop && (proto === 'http:' || proto === 'https:') && (host === '127.0.0.1' || host === 'localhost' || host === '[::1]');
+        if (proto !== 'plugin:' && !isLocalSub) return;
+        const __cfg = ${safeJson(cleanCfg)};
+        ${normalizeText.toString()}
+        ${createTranslator.toString()}
+        ${installDomTranslator.toString()}
+        const translator = createTranslator(${serializedDict}, ${safeJson(frameRules)}, __cfg);
+        installDomTranslator(translator, __cfg);
+    } catch (e) { console.error('[ANTIGRAVITY_FRAME_LOCALIZATION_ERROR]', e); }
+})();`;
+}
+
+function installMainHooks(electron, translator, extraOpts) {
     if (!electron || !translator || electron._agL10nInstalled) return;
     try {
         Object.defineProperty(electron, '_agL10nInstalled', { value: true });
         const { app, Menu, Tray, dialog, BrowserWindow } = electron;
+        const opts = extraOpts && typeof extraOpts === 'object' ? extraOpts : {};
+        const dialogTranslator = opts.dialogTranslator || translator;
+        const getFrameScript = typeof opts.getFrameScript === 'function' ? opts.getFrameScript : null;
+        const onAppReadyExtra = typeof opts.onAppReadyExtra === 'function' ? opts.onAppReadyExtra : null;
 
         function wrapBefore(obj, prop, onArgs) {
             if (!obj || typeof obj[prop] !== 'function') return;
@@ -102,11 +141,11 @@ function installMainHooks(electron, translator, frameScript) {
                 if (arg && typeof arg === 'object' && !Array.isArray(arg) && !(typeof BrowserWindow === 'function' && arg instanceof BrowserWindow)) {
                     for (const field of ['title', 'message', 'detail', 'buttonLabel']) {
                         if (typeof arg[field] === 'string' && arg[field]) {
-                            arg[field] = translator.translateString(arg[field]) || arg[field];
+                            arg[field] = dialogTranslator.translateString(arg[field]) || arg[field];
                         }
                     }
                     if (Array.isArray(arg.buttons)) {
-                        arg.buttons = arg.buttons.map(b => (typeof b === 'string' ? (translator.translateString(b) || b) : b));
+                        arg.buttons = arg.buttons.map(b => (typeof b === 'string' ? (dialogTranslator.translateString(b) || b) : b));
                     }
                     break;
                 }
@@ -117,12 +156,13 @@ function installMainHooks(electron, translator, frameScript) {
             wrapBefore(dialog, 'showMessageBox', translateDialogOptions);
             wrapBefore(dialog, 'showOpenDialog', translateDialogOptions);
             wrapBefore(dialog, 'showErrorBox', a => {
-                if (typeof a[0] === 'string' && a[0]) a[0] = translator.translateString(a[0]) || a[0];
-                if (typeof a[1] === 'string' && a[1]) a[1] = translator.translateString(a[1]) || a[1];
+                if (typeof a[0] === 'string' && a[0]) a[0] = dialogTranslator.translateString(a[0]) || a[0];
+                if (typeof a[1] === 'string' && a[1]) a[1] = dialogTranslator.translateString(a[1]) || a[1];
             });
         }
 
-        if (typeof frameScript === 'string' && frameScript.length > 0 && app) {
+        const hasFrameHooks = Boolean(getFrameScript);
+        if ((hasFrameHooks || onAppReadyExtra) && app) {
             const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]']);
             const pendingWebContents = new Set();
             let appReadyResolved = !app.isReady || Boolean(app.isReady());
@@ -149,7 +189,6 @@ function installMainHooks(electron, translator, frameScript) {
             const isExpectedDisposalError = (frame, err) => isDestroyedObj(frame)
                 || /Render frame was disposed|frame disposed|frame was disposed|destroyed|detached/i.test(err?.message || String(err || ''));
 
-            // 仅向默认会话宿主及注册了 plugin:// 协议的受控会话（如 SSH 远程窗口）内的目标帧注入，隔离 webview 与外部页面
             function isEligibleWebContents(contents) {
                 if (!contents || isDestroyedObj(contents) || !appReadyResolved) return false;
                 if (typeof contents.getType === 'function' && contents.getType() === 'webview') return false;
@@ -190,6 +229,8 @@ function installMainHooks(electron, translator, frameScript) {
 
             function injectIntoFrame(frame, contents) {
                 if (!isEligibleTargetFrame(frame, contents)) return;
+                const scriptToInject = getFrameScript ? getFrameScript() : '';
+                if (!scriptToInject) return;
                 const url = safeRead(frame, 'url') || '';
                 const onErr = err => {
                     if (!isExpectedDisposalError(frame, err)) {
@@ -197,7 +238,7 @@ function installMainHooks(electron, translator, frameScript) {
                     }
                 };
                 try {
-                    Promise.resolve(frame.executeJavaScript(frameScript, false)).catch(onErr);
+                    Promise.resolve(frame.executeJavaScript(scriptToInject, false)).catch(onErr);
                 } catch (e) { onErr(e); }
             }
 
@@ -243,6 +284,10 @@ function installMainHooks(electron, translator, frameScript) {
                 if (readyFlushed) return;
                 readyFlushed = true;
                 appReadyResolved = true;
+                if (onAppReadyExtra) {
+                    try { onAppReadyExtra(); } catch (e) { console.error('[ANTIGRAVITY_MAIN_READY_ERROR]', e); }
+                }
+                if (!hasFrameHooks) return;
                 for (const wc of pendingWebContents) attachFrameTracker(wc);
                 pendingWebContents.clear();
                 try {
@@ -253,7 +298,7 @@ function installMainHooks(electron, translator, frameScript) {
                 }
             }
 
-            if (typeof app.on === 'function') {
+            if (hasFrameHooks && typeof app.on === 'function') {
                 app.on('web-contents-created', (_event, contents) => handleContents(contents));
             }
             if (appReadyResolved) {
@@ -271,6 +316,54 @@ function installMainHooks(electron, translator, frameScript) {
     }
 }
 
+function installFromAsar(electron) {
+    if (!electron || electron._agL10nInstalled) return;
+    const data = require('./data.json');
+
+    const hubCfg = data.hubConfig || {};
+    const { ipcMain } = electron;
+    if (ipcMain && typeof ipcMain.on === 'function') {
+        const bootPayloadJson = JSON.stringify({
+            allDict: data.allDict || {},
+            rules: data.rules || [],
+            hubConfig: hubCfg
+        });
+        ipcMain.on('ag-l10n-boot', event => { event.returnValue = bootPayloadJson; });
+    }
+
+    const translatorCfg = {
+        lowerWordsExclude: hubCfg.lowerWordsExclude || [],
+        protectedFiles: hubCfg.protectedFiles || [],
+        toolStatVerbs: hubCfg.toolStatVerbs,
+        toolStatNouns: hubCfg.toolStatNouns,
+        enableLongPrefixLookup: false
+    };
+
+    const menuTranslator = createTranslator(data.menusDict || {}, data.rules || [], translatorCfg);
+    const allTranslator = createTranslator(data.allDict || {}, data.rules || [], translatorCfg);
+
+    let cachedFrameScript = null;
+    const getFrameScript = () => {
+        if (cachedFrameScript === null) cachedFrameScript = buildFrameScript(data);
+        return cachedFrameScript;
+    };
+
+    installMainHooks(electron, menuTranslator, {
+        dialogTranslator: allTranslator,
+        getFrameScript,
+        onAppReadyExtra: () => {
+            bundleProxy.installBundleProxy(electron, {
+                translator: allTranslator,
+                hubConfig: hubCfg,
+                dictsHash: data.dictsHash || '0',
+                bundleRewriter
+            });
+        }
+    });
+}
+
 module.exports = {
-    installMainHooks
+    buildFrameScript,
+    installMainHooks,
+    installFromAsar
 };

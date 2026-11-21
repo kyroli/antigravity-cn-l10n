@@ -1,9 +1,5 @@
 [
     {
-        "pattern": "^\\(Recommended\\)$",
-        "replacement": "(推荐)"
-    },
-    {
         "pattern": "^\\(Recommended\\)\\s+(.+)$",
         "replacement": "(推荐) $1"
     },
@@ -492,31 +488,12 @@
         "replacement": "显示较早的 $1 个步骤"
     },
     {
-        "pattern": "^Hi (.+?), what can we get done today\\?$",
-        "replacement": "您好 $1，今天我们能一起完成些什么？",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
         "pattern": "^(\\d+) tasks? running$",
         "replacement": "$1 个任务运行中"
     },
     {
         "pattern": "^Updated (.+?)\\s+ago$",
         "replacement": "更新于 $1 前"
-    },
-    {
-        "pattern": "^Updated just now$",
-        "replacement": "刚刚更新"
-    },
-    {
-        "pattern": "^Updated today$",
-        "replacement": "今日更新"
-    },
-    {
-        "pattern": "^Updated yesterday$",
-        "replacement": "昨日更新"
     },
     {
         "pattern": "^Updated (?:on\\s+)?((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\\s+\\d{1,2}(?:,\\s*\\d{4})?|\\d{4}-\\d{2}-\\d{2}(?:\\s+\\d{1,2}:\\d{2}(?::\\d{2})?)?|\\d{1,2}\\/\\d{1,2}\\/\\d{2,4})$",
@@ -581,10 +558,6 @@
     {
         "pattern": "^Sort and filter conversations \\((\\d+) active\\)$",
         "replacement": "排序与筛选会话（$1 个活跃）"
-    },
-    {
-        "pattern": "^Load older messages, showing (\\d+) of (\\d+)$",
-        "replacement": "加载更早的消息，当前显示 $1 / $2 条"
     },
     {
         "pattern": "^Proceed with implementation plan and (\\d+) comments?$",
@@ -736,13 +709,6 @@
     {
         "pattern": "^Yes, save rule for '(.+)' in this conversation$",
         "replacement": "是，在此会话中保存针对 '$1' 的规则",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^Agent needs permission to act on (.+)$",
-        "replacement": "Agent 需要权限才能操作 $1",
         "rawGroups": [
             1
         ]
@@ -972,10 +938,6 @@
         ]
     },
     {
-        "pattern": "^(\\d+) matching bundles?$",
-        "replacement": "$1 个匹配的捆绑包"
-    },
-    {
         "pattern": "^Account this MCP server uses: (.+)$",
         "replacement": "此 MCP 服务器使用的账号：$1",
         "rawGroups": [
@@ -1018,14 +980,6 @@
     {
         "pattern": "^Context window (\\d+)% full$",
         "replacement": "上下文窗口已使用 $1%"
-    },
-    {
-        "pattern": "^Context window about (\\d+)% full, compacted since the last response$",
-        "replacement": "上下文窗口已使用约 $1%（自上次回复后已压缩）"
-    },
-    {
-        "pattern": "^(\\d+)% of the context window used$",
-        "replacement": "已使用 $1% 的上下文窗口"
     },
     {
         "pattern": "^Exceeded the customization token budget \\((\\d+) tokens\\) and was excluded from context\\.$",
@@ -1097,10 +1051,6 @@
         "rawGroups": [
             1
         ]
-    },
-    {
-        "pattern": "^the narrator's view failed \\(it navigated away\\)$",
-        "replacement": "旁白视图加载失败（页面发生意外跳转）"
     },
     {
         "pattern": "^the narrator's view failed \\(error:\\s*unknown\\)$",
@@ -1683,14 +1633,6 @@
         ]
     },
     {
-        "pattern": "^Couldn't connect to the SSH host\\. Check its name, your network and ssh config \\(e\\.g\\. a ProxyCommand\\), and that ssh to it works in a terminal without a prompt\\.$",
-        "replacement": "无法连接到 SSH 主机。请检查主机名、网络连接和 ssh 配置（例如 ProxyCommand），并确认可在终端中无需交互提示直接通过 ssh 连接该主机。"
-    },
-    {
-        "pattern": "^Couldn't connect to the SSH host\\. Check its name, your network and ssh config \\(e\\.g\\. a ProxyCommand\\), and that ssh to it works in a terminal\\.$",
-        "replacement": "无法连接到 SSH 主机。请检查主机名、网络连接和 ssh 配置（例如 ProxyCommand），并确认可在终端中通过 ssh 连接该主机。"
-    },
-    {
         "pattern": "^Couldn't connect to the SSH host \\((.+)\\)\\.$",
         "replacement": "无法连接到 SSH 主机 ($1)。",
         "rawGroups": [
@@ -1858,22 +1800,6 @@
         ]
     },
     {
-        "pattern": "^Open Accessibility settings$",
-        "replacement": "打开辅助功能设置"
-    },
-    {
-        "pattern": "^Accessibility settings$",
-        "replacement": "辅助功能设置"
-    },
-    {
-        "pattern": "^Open Screen Recording settings$",
-        "replacement": "打开屏幕录制设置"
-    },
-    {
-        "pattern": "^Screen Recording settings$",
-        "replacement": "屏幕录制设置"
-    },
-    {
         "pattern": "^(.+?) · press(?: (· waiting for the pointer))?$",
         "replacement": "$1 · 按压 $2",
         "rawGroups": [
@@ -1979,16 +1905,6 @@
         "rawGroups": [
             1
         ]
-    },
-    {
-        "pattern": "^Allow$",
-        "replacement": "允许",
-        "caseSensitive": true
-    },
-    {
-        "pattern": "^Continue$",
-        "replacement": "继续",
-        "caseSensitive": true
     },
     {
         "pattern": "^Sign [Ii]n$",
@@ -2098,19 +2014,11 @@
         ]
     },
     {
-        "pattern": "^Antigravity couldn't reach the SSH host to finish signing in\\. Sign in again from Antigravity\\.$",
-        "replacement": "Antigravity 无法连接到该 SSH 主机以完成登录。请从 Antigravity 重新登录。"
-    },
-    {
         "pattern": "^Antigravity couldn't reach (.+?) to finish signing in\\. Sign in again from Antigravity\\.$",
         "replacement": "Antigravity 无法连接到 $1 以完成登录。请从 Antigravity 重新登录。",
         "rawGroups": [
             1
         ]
-    },
-    {
-        "pattern": "^This sign-in came back from another server than the sign-in page you agreed to, so Antigravity didn't pass it on to the SSH host\\.$",
-        "replacement": "此次登录回调来自与您确认的登录页面不同的服务器，因此 Antigravity 未将其传递给该 SSH 主机。"
     },
     {
         "pattern": "^This sign-in came back from another server than the sign-in page you agreed to, so Antigravity didn't pass it on to (.+)\\.$",
@@ -2354,14 +2262,6 @@
             3,
             4
         ]
-    },
-    {
-        "pattern": "^The SSH host isn't supported\\. Antigravity needs a Linux host on x64 or arm64 with glibc 2\\.26 or newer\\. Windows and macOS hosts aren't supported yet\\.$",
-        "replacement": "不支持此 SSH 主机。Antigravity 需要 glibc 2.26 或更高版本的 x64 或 arm64 Linux 主机。暂不支持 Windows 和 macOS 主机。"
-    },
-    {
-        "pattern": "^Windows SSH hosts aren't supported yet\\. Antigravity needs a Linux host on x64 or arm64 with glibc 2\\.26 or newer\\.$",
-        "replacement": "暂不支持 Windows SSH 主机。Antigravity 需要 glibc 2.26 或更高版本的 x64 或 arm64 Linux 主机。"
     },
     {
         "pattern": "^The SSH config file (.+?) can't be changed by others: it must be yours or root's, and not group- or world-writable\\.$",
@@ -2646,10 +2546,6 @@
         ]
     },
     {
-        "pattern": "^Browser tools run on the SSH host this window is connected to, and Chrome there isn't accepting remote debugging\\. Complete these steps on the SSH host, not on this computer:$",
-        "replacement": "浏览器工具运行在此窗口所连的 SSH 主机上，且该主机上的 Chrome 未开启远程调试。请在 SSH 主机上（而非本机）完成以下步骤："
-    },
-    {
         "pattern": "^Browser tools run on (.+?), the SSH host this window is connected to, and Chrome there isn't accepting remote debugging\\. Complete these steps on (.+?), not on this computer:$",
         "replacement": "浏览器工具运行在此窗口所连的 SSH 主机 $1 上，且该主机上的 Chrome 未开启远程调试。请在 $2 上（而非本机）完成以下步骤：",
         "rawGroups": [
@@ -2658,19 +2554,11 @@
         ]
     },
     {
-        "pattern": "^Open Google Chrome on the SSH host\\.$",
-        "replacement": "在该 SSH 主机上打开 Google Chrome。"
-    },
-    {
         "pattern": "^Open Google Chrome on (.+)\\.$",
         "replacement": "在 $1 上打开 Google Chrome。",
         "rawGroups": [
             1
         ]
-    },
-    {
-        "pattern": "^If the SSH host is a Cloudtop, open it in$",
-        "replacement": "如果该 SSH 主机是 Cloudtop，请在此打开："
     },
     {
         "pattern": "^If (.+?) is a Cloudtop, open it in$",
@@ -2812,10 +2700,6 @@
         "rawGroups": [
             1
         ]
-    },
-    {
-        "pattern": "^A folder in this project could not be loaded because its location is invalid\\.$",
-        "replacement": "由于路径无效，此项目中的一个文件夹无法加载。"
     },
     {
         "pattern": "^(\\d+) folders in this project could not be loaded because their locations are invalid\\.$",
@@ -3014,14 +2898,6 @@
         ]
     },
     {
-        "pattern": "^Review skill before installing$",
-        "replacement": "安装前请先检查此技能"
-    },
-    {
-        "pattern": "^Review plugin before installing$",
-        "replacement": "安装前请先检查此插件"
-    },
-    {
         "pattern": "^Review (.+?) before installing$",
         "replacement": "安装前请先检查 $1",
         "rawGroups": [
@@ -3150,11 +3026,1064 @@
         ]
     },
     {
-        "pattern": "^The selected project can't be found\\. Pick another project from the project selector to send\\.$",
-        "replacement": "找不到所选的项目。请从项目选择器中另选一个后再发送。"
+        "pattern": "^Answered: ([\\s\\S]+)$",
+        "replacement": "已回答：$1",
+        "rawGroups": [
+            1
+        ]
     },
     {
-        "pattern": "^The selected workspace can't be found\\. Pick another workspace from the workspace selector to send\\.$",
-        "replacement": "找不到所选的工作区。请从工作区选择器中另选一个后再发送。"
+        "pattern": "^Live preview unavailable · (.+)$",
+        "replacement": "实时预览不可用 · $1"
+    },
+    {
+        "pattern": "^Reconnect (.+)$",
+        "replacement": "重新关联 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Disconnect (.+)$",
+        "replacement": "断开关联 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No messages in last (\\d+) steps — load older$",
+        "replacement": "最近 $1 步内无消息 — 加载更早消息",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No messages in last (\\d+) steps · Load more$",
+        "replacement": "最近 $1 步内无消息 · 加载更多",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No messages in last (\\d+) steps, load older$",
+        "replacement": "最近 $1 步内无消息，加载更早消息",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Telemetry is turned off for your account\\. This means (.+?) does not collect any of your prompts, content, or model responses, but will still collect general usage patterns \\(e\\.g\\., feature adoption, active user counts\\)\\.$",
+        "replacement": "您的账户已关闭遥测功能。这意味着 $1 不会收集您的任何提示词、内容或模型回复，但仍会收集常规使用模式（例如功能采用情况、活跃用户数）。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+(?:\\.\\d+)?) seconds$",
+        "replacement": "$1 秒",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(Default\\)$",
+        "replacement": "$1（默认）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Open in (.+)$",
+        "replacement": "在 $1 中打开",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Source (\\d+)$",
+        "replacement": "来源 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Nothing is running on port (\\S+)$",
+        "replacement": "端口 $1 上没有任何运行中的服务",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Resume the conversation to start its workspace again, then start the server on port (\\S+) and retry\\.$",
+        "replacement": "请恢复该会话以重新启动其工作区，然后在端口 $1 上启动服务器后重试。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No server is listening on port (\\S+) inside the remote workspace\\. Start it, or ask the agent to, then retry\\.$",
+        "replacement": "远程工作区内端口 $1 上没有服务器在监听。请先启动服务或让 Agent 启动后再重试。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\. View site information$",
+        "replacement": "$1。查看站点信息"
+    },
+    {
+        "pattern": "^(.+?) download progress$",
+        "replacement": "$1 下载进度",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Show (.+?) in folder$",
+        "replacement": "在文件夹中显示 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) could not find the requested page\\.$",
+        "replacement": "$1 找不到所请求的页面。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) is currently unable to handle this request\\.$",
+        "replacement": "$1 当前无法处理此请求。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Give each Best of N fork a full clone of your workspace, including its local commit history\\. Choosing a winner then gives your workspace that fork's state, so the commits it made are kept\\. Forks take longer to create than the default CitC clone\\.(.*)$",
+        "replacement": "为每个多路并行 (Best of N) 分叉提供工作区的完整克隆（包含本地提交历史）。选定胜出方案后，您的工作区将采用该分叉的状态，从而保留其创建的提交。创建分叉比默认的 CitC 克隆耗时更长。$1"
+    },
+    {
+        "pattern": "^Give each Best of N fork its own clone of your Git repository instead of a copy-on-write overlay\\. Each fork is then a real repository, so commits it makes are kept when you choose it as the winner\\. Forks take longer to create, and the wait grows with the size of your repository\\.(.*)$",
+        "replacement": "为每个多路并行 (Best of N) 分叉创建 Git 仓库的独立克隆，而非写时复制叠加层。这样每个分叉都是真实的仓库，在您选定其为胜出方案时会保留其提交记录。创建分叉耗时较长，且等待时间随仓库规模增长。$1"
+    },
+    {
+        "pattern": "^When toggled on, ([^.]+?) collects usage data to help Google enhance performance and features\\.$",
+        "replacement": "开启后，$1 将收集使用数据，以帮助 Google 改进性能与功能。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Receive product updates, tips, and promotions from Google ([^.]+?) via email\\.$",
+        "replacement": "通过电子邮件接收来自 Google $1 的产品更新、使用技巧和促销活动通知。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(disabled by admin\\)$",
+        "replacement": "$1（已被管理员禁用）"
+    },
+    {
+        "pattern": "^Manage ([^.]+?) app settings\\.$",
+        "replacement": "管理 $1 应用设置。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^When toggled on, ([^.]+?) will use your AI credits to fulfill model requests once you're out of model quota\\. ([^.]+?) will always use your model quota first before using AI credits\\.$",
+        "replacement": "开启后，当您的模型配额耗尽时，$1 将使用您的 AI 额度来完成模型请求。$2 始终会优先消耗模型配额，然后再使用 AI 额度。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Stop ([^.!?\\n]{1,40})\\?$",
+        "replacement": "要停止 $1 吗？"
+    },
+    {
+        "pattern": "^(.+?): ([\\d,]+) tokens$",
+        "replacement": "$1：$2 个 Token",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
+        "pattern": "^(\\d+) tools?$",
+        "replacement": "$1 个工具",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to delete recordings: (.+)$",
+        "replacement": "删除录音失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to delete \"(.+?)\"$",
+        "replacement": "删除“$1”失败",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to delete ([^:]{1,30}): (.+)$",
+        "replacement": "删除$1失败：$2",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
+        "pattern": "^Failed to delete ([^.!?\\n]{1,40})$",
+        "replacement": "删除$1失败"
+    },
+    {
+        "pattern": "^Failed to save cloud permission settings: (.+)$",
+        "replacement": "保存云端权限设置失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to save project Google3 configuration: (.+)$",
+        "replacement": "保存项目 Google3 配置失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to save project settings: (.+)$",
+        "replacement": "保存项目设置失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to save project permissions: (.+)$",
+        "replacement": "保存项目权限失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to save project: (.+)$",
+        "replacement": "保存项目失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to save settings: (.+)$",
+        "replacement": "保存设置失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to save \"(.+?)\"$",
+        "replacement": "保存“$1”失败",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(experimental\\)$",
+        "replacement": "$1（实验性）"
+    },
+    {
+        "pattern": "^Build with ([^.]+?) Plugins$",
+        "replacement": "使用 $1 插件进行构建",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) tools? disabled$",
+        "replacement": "已禁用 $1 个工具",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Disable (.+?) tool for (.+)$",
+        "replacement": "为 $2 禁用 $1 工具",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Enable (.+?) tool for (.+)$",
+        "replacement": "为 $2 启用 $1 工具",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(\\d+) accounts?$",
+        "replacement": "$1 个账号",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Label for (.+)$",
+        "replacement": "$1 的标签",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Authorization code for (.+)$",
+        "replacement": "$1 的授权码",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(Remote\\)$",
+        "replacement": "$1（远程）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Add \\((\\d+)\\)$",
+        "replacement": "添加 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Duplicate ([^.!?\\n]{1,30}) name$",
+        "replacement": "$1名称重复"
+    },
+    {
+        "pattern": "^Cannot add folder: \"(.+?)\" is not a valid folder location\\.$",
+        "replacement": "无法添加文件夹：“$1”不是有效的文件夹路径。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to resolve folder: (.+?) \\(([^)]+)\\)$",
+        "replacement": "解析文件夹失败：$1 ($2)",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Edit ([^.!?\\n]{1,30}) name$",
+        "replacement": "编辑$1名称"
+    },
+    {
+        "pattern": "^Open (.+?), (.+?)\\. Summarizing call$",
+        "replacement": "打开 $1，$2。正在总结通话",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Connected to (.+)$",
+        "replacement": "已连接到 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) lines? added, (\\d+) lines? removed$",
+        "replacement": "新增 $1 行，删除 $2 行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Couldn't ([a-zA-Z]{2,20}) conversation$",
+        "replacement": "无法$1会话"
+    },
+    {
+        "pattern": "^Failed to ([a-zA-Z]{2,20}) conversation$",
+        "replacement": "$1会话失败"
+    },
+    {
+        "pattern": "^Failed to unarchive project: (.+)$",
+        "replacement": "取消归档项目失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to select workspace: (.+)$",
+        "replacement": "选择工作区失败：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to archive ([^.!?\\n]{1,40})$",
+        "replacement": "归档$1失败"
+    },
+    {
+        "pattern": "^Failed to create ([^.!?\\n]{1,30})$",
+        "replacement": "创建$1失败"
+    },
+    {
+        "pattern": "^Conversation (.+)$",
+        "replacement": "会话 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Image (\\d+)$",
+        "replacement": "图片 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Line (\\d+) → (\\d+)$",
+        "replacement": "第 $1 → $2 行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Relaunch ([^.]+?) to finish Screen Recording\\.$",
+        "replacement": "重新启动 $1 以完成屏幕录制设置。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Error while (.+)$",
+        "replacement": "$1时出错"
+    },
+    {
+        "pattern": "^View Diff for (.+)$",
+        "replacement": "查看 $1 的差异",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) comments?$",
+        "replacement": "$1 条评论",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^View (?!\\d)([a-zA-Z]+) (\\d+)$",
+        "replacement": "查看$1 $2",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
+        "pattern": "^Message from (.+)$",
+        "replacement": "来自 $1 的消息"
+    },
+    {
+        "pattern": "^Open URL in system browser: (.+)$",
+        "replacement": "在系统浏览器中打开 URL：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Waiting for command completion \\(up to (\\d+) seconds?\\)$",
+        "replacement": "正在等待命令完成（最多 $1 秒）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Chunk (\\d+(?:/\\d+)?)$",
+        "replacement": "分块 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^\\((\\d+) steps?\\)$",
+        "replacement": "($1 步)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Cost summary: (.+)$",
+        "replacement": "费用摘要：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Review permissions for (.+)$",
+        "replacement": "检查 $1 的权限",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^On top of those defaults, ([^,]+?) requests the access below\\.$",
+        "replacement": "除上述默认权限外，$1 还请求以下访问权限。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Enabled \"(.+?)\"\\.$",
+        "replacement": "已启用“$1”。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Started \"(.+?)\"\\.$",
+        "replacement": "已启动“$1”。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to start \"(.+?)\"\\.$",
+        "replacement": "启动“$1”失败。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Restarted \"(.+?)\"\\.$",
+        "replacement": "已重启“$1”。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Failed to update \"(.+?)\"$",
+        "replacement": "更新“$1”失败",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Showing first (\\d+) references?$",
+        "replacement": "显示前 $1 条引用",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Unfold lines (\\d+)-(\\d+)$",
+        "replacement": "展开第 $1-$2 行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Fold lines (\\d+)-(\\d+)$",
+        "replacement": "折叠第 $1-$2 行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Edit comment: (.+)$",
+        "replacement": "编辑评论：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Plan, (\\d+) of (\\d+) steps? done$",
+        "replacement": "计划，已完成 $1 / $2 步",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\. Hide plan$",
+        "replacement": "$1。隐藏计划"
+    },
+    {
+        "pattern": "^(.+?)\\. Show plan$",
+        "replacement": "$1。显示计划"
+    },
+    {
+        "pattern": "^Submit \\(([^)]+)\\)$",
+        "replacement": "提交 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Continue \\(([^)]+)\\)$",
+        "replacement": "继续 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Cancel Questionnaire and Stop the Agent \\(([^)]+)\\)$",
+        "replacement": "取消问卷并停止 Agent ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) files? changed$",
+        "replacement": "已更改 $1 个文件",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Open Subagent: (.+)$",
+        "replacement": "打开子 Agent：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Install folder \"(.+?)\" is already in use$",
+        "replacement": "安装文件夹“$1”已被占用",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Configure (.+?), values missing$",
+        "replacement": "配置 $1（缺少参数值）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Configure (.+)$",
+        "replacement": "配置 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^The (.+?) MCP server requires configuration parameters before it can be started\\.$",
+        "replacement": "$1 MCP 服务器需要配置参数后才能启动。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Loading (.+?)(?:\\.\\.\\.|…)$",
+        "replacement": "正在加载 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No ([^.!?\\n]{1,30}) found for$",
+        "replacement": "未找到匹配的$1："
+    },
+    {
+        "pattern": "^Fix with Agent: (.+)$",
+        "replacement": "使用 Agent 修复：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^More actions for (.+)$",
+        "replacement": "$1 的更多操作",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Rule (\\d+)$",
+        "replacement": "规则 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?), error$",
+        "replacement": "$1，错误"
+    },
+    {
+        "pattern": "^(\\d+) / (\\d+) rows?$",
+        "replacement": "$1 / $2 行",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^(\\d+) rows?$",
+        "replacement": "$1 行",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Disable Word Wrap \\(([^)]+)\\)$",
+        "replacement": "禁用自动换行 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Enable Word Wrap \\(([^)]+)\\)$",
+        "replacement": "启用自动换行 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Preview unavailable — (.+)$",
+        "replacement": "预览不可用 — $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Move to Group: (.+)$",
+        "replacement": "移动到分组：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Unpin ([^.!?\\n]{1,30})$",
+        "replacement": "取消固定$1"
+    },
+    {
+        "pattern": "^Pin Entire ([^.!?\\n]{1,30})$",
+        "replacement": "固定整个$1"
+    },
+    {
+        "pattern": "^No matching ([^.!?\\n]{1,30})$",
+        "replacement": "没有匹配的$1"
+    },
+    {
+        "pattern": "^No remote ([^.!?\\n]{1,30})$",
+        "replacement": "没有远程$1"
+    },
+    {
+        "pattern": "^Remove context from (.+)$",
+        "replacement": "从 $1 移除上下文",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Question (\\d+) of (\\d+)$",
+        "replacement": "问题 $1 / $2",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Compare responses from (\\d+) models side-by-side to find the best result\\.$",
+        "replacement": "并排对比 $1 个模型的回复，以选出最佳结果。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No connectors match [“\"]([^”\"]*)[”\"]$",
+        "replacement": "没有匹配“$1”的连接器",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Agent permissions preset: ([^,]+?), (.+)$",
+        "replacement": "Agent 权限预设：$1，$2"
+    },
+    {
+        "pattern": "^Using default ([^.!?\\n]{1,30}) name$",
+        "replacement": "正在使用默认$1名称"
+    },
+    {
+        "pattern": "^Detached at ([0-9a-zA-Z._-]+)$",
+        "replacement": "已分离于 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment: (.+)$",
+        "replacement": "环境：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\. Switch microphone\\.$",
+        "replacement": "$1。切换麦克风。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?)\\. Switch mic$",
+        "replacement": "$1。切换麦克风",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Send now: (.+)$",
+        "replacement": "立即发送：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Welcome to ([^.!?\\n]+)!$",
+        "replacement": "欢迎使用 $1！",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Select ([^.!?\\n]{1,40}) Theme$",
+        "replacement": "选择 $1 主题",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Deleted \"(.+?)\"\\.$",
+        "replacement": "已删除“$1”。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Run (.+?) now$",
+        "replacement": "立即运行 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Blocked: (.+)$",
+        "replacement": "已阻止：$1"
+    },
+    {
+        "pattern": "^Details for (.+)$",
+        "replacement": "$1 详情",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Opens the New Conversation screen for this ([^.!?\\n]{1,30})$",
+        "replacement": "打开此$1的新建会话界面"
+    },
+    {
+        "pattern": "^You have (\\d+) conversations? in progress\\. Updating will interrupt them, and they will automatically resume once the update completes\\.$",
+        "replacement": "您有 $1 个正在进行的会话。更新将暂时中断这些会话，并在更新完成后自动恢复。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Switch environment \\(([^)]+)\\)$",
+        "replacement": "切换环境 ($1)",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?), showing (\\d+) of (\\d+)$",
+        "replacement": "$1，显示第 $2 / $3 项",
+        "rawGroups": [
+            2,
+            3
+        ]
+    },
+    {
+        "pattern": "^Turn (\\d+)$",
+        "replacement": "第 $1 轮",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Go to turn (\\d+) of (\\d+)$",
+        "replacement": "转到第 $1 / $2 轮",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Select model with (.+)$",
+        "replacement": "按 $1 选择模型",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Error: (.+)$",
+        "replacement": "错误：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^More options for (.+)$",
+        "replacement": "$1 的更多选项",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) days?$",
+        "replacement": "$1 天",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^([^.!?\\n]{1,30}) archived$",
+        "replacement": "$1已归档"
+    },
+    {
+        "pattern": "^([^.!?\\n]{1,30}) deleted$",
+        "replacement": "$1已删除"
+    },
+    {
+        "pattern": "^Search Google for \"(.+?)\"$",
+        "replacement": "在 Google 上搜索“$1”",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Keep: (.+)$",
+        "replacement": "保留：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(unavailable\\)$",
+        "replacement": "$1（不可用）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(latest\\)$",
+        "replacement": "$1（最新）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) CEL values$",
+        "replacement": "$1 CEL 值",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Connect an account for (.+?) so the agent can run automations\\.$",
+        "replacement": "请连接 $1 账号，以便 Agent 运行自动化任务。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Up ((?:\\d+\\s*[dhms]\\s*)+|<\\s*1[ms])$",
+        "replacement": "已运行 $1"
+    },
+    {
+        "pattern": "^Enter ([^.!?\\n]{1,30}) name(?:\\.\\.\\.|…)$",
+        "replacement": "输入$1名称..."
+    },
+    {
+        "pattern": "^Bar (\\d+)$",
+        "replacement": "柱状系列 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Line (\\d+)$",
+        "replacement": "折线系列 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) color picker$",
+        "replacement": "$1 颜色选择器"
+    },
+    {
+        "pattern": "^Low contrast ratio \\(([^)]+)\\)\\. Text may be hard to read\\.$",
+        "replacement": "对比度过低 ($1)。文本可能难以辨认。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Scroll to: (.+?) on page (\\d+)$",
+        "replacement": "滚动至第 $2 页的 $1",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Page (\\d+) failed to load$",
+        "replacement": "第 $1 页加载失败",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Go to page (\\d+)$",
+        "replacement": "转到第 $1 页",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^([^.!?\\n]{1,40}) failed$",
+        "replacement": "$1失败"
+    },
+    {
+        "pattern": "^(.+?)\\. This commit is already pushed; amending will require a force push\\.$",
+        "replacement": "$1。此提交已推送；修订需要强制推送。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Remove (.+?) from list$",
+        "replacement": "从列表中移除 $1",
+        "rawGroups": [
+            1
+        ]
     }
 ]

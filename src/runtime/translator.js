@@ -33,7 +33,6 @@ function createTranslator(rawDict, rawRules, config) {
             safeGroupSet: Array.isArray(r.safeGroups) ? new Set(r.safeGroups) : null
         }))
         : [];
-    // 按首词、数字前缀与通配规则分桶并保留原始索引顺序，兼顾 O(1) 首词分流与 100% 优先级等价
     const wordBuckets = new Map();
     const digitRules = [];
     const wildRules = [];
@@ -66,7 +65,6 @@ function createTranslator(rawDict, rawRules, config) {
     const protectedFileSet = new Set((cfg.protectedFiles || []).map(f => f.trim()));
     let longBuckets = null;
 
-    // 双代缓存，避免单 Map 满载时全量清空
     let hotCache = new Map();
     let coldCache = new Map();
     const MAX_GEN_SIZE = 2048;
@@ -141,7 +139,6 @@ function createTranslator(rawDict, rawRules, config) {
                 } else {
                     const isSafe = Boolean(rule.safeGroupSet && rule.safeGroupSet.has(g));
                     const gNorm = normalizeText(rawGroup);
-                    // safeGroups 仅允许翻译含空格的 UI 短语，防止单单词实体名撞词典误译
                     const skipTextLookup = isSafe && (!gNorm.includes(' ') || isProtectedOrPath(gNorm));
                     gVal = skipTextLookup ? null : lookupStatic(gNorm);
                     if (gVal === null) gVal = formatDuration(gNorm);
@@ -288,7 +285,6 @@ function createTranslator(rawDict, rawRules, config) {
             return cached;
         }
         let res = translateCore(valNorm);
-        // 多行文本在整段未命中时按行回退翻译
         if (res === null && hasNl) {
             const lines = val.split('\n');
             if (lines.length >= 2 && lines.length <= 8) {

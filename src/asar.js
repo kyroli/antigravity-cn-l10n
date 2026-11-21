@@ -41,9 +41,6 @@ function parseAsar(asarBuf) {
     return { header, dataStart, oldData, getNode, readFile };
 }
 
-/**
- * 统一遍历 ASAR 内 dist/ 目录下的 .js 文件。
- */
 function walkDistJs(parsedAsar, options = {}) {
     const parsed = Buffer.isBuffer(parsedAsar) ? parseAsar(parsedAsar) : parsedAsar;
     const filesMap = new Map();
@@ -58,6 +55,7 @@ function walkDistJs(parsedAsar, options = {}) {
     const walk = (node, prefix) => {
         for (const [name, child] of Object.entries(node.files || {})) {
             const rel = `${prefix}/${name}`;
+            if (rel === 'dist/l10n') continue;
             if (!includeTests && (rel === 'dist/__mocks__' || rel === 'dist/test')) continue;
             if (child.files) { walk(child, rel); continue; }
             if (!rel.endsWith('.js') || (!includeTests && rel.endsWith('.test.js'))) continue;
@@ -70,9 +68,6 @@ function walkDistJs(parsedAsar, options = {}) {
     return filesMap;
 }
 
-/**
- * 定位或新建 ASAR header 中的文件节点，自动创建缺失的嵌套父目录并拒绝路径类型冲突。
- */
 function ensureAsarFileNode(header, relPath) {
     const parts = String(relPath || '').replace(/\\/g, '/').split('/').filter(Boolean);
     if (parts.length === 0) throw new Error(`无效 ASAR 路径: ${relPath}`);
@@ -132,9 +127,6 @@ function patchAsarInMemory(asarBuf, patcherFn) {
     return outBuf;
 }
 
-/**
- * 写盘前/写盘后回读校验：重新解析生成的 ASAR Buffer，核对被注入文件的完整性哈希与 package.json 可读性。
- */
 function verifyPatchedAsar(asarBuf, expectedHashes = {}) {
     const reparsed = parseAsar(asarBuf);
     const pkg = reparsed.readFile('package.json', 'utf8');

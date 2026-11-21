@@ -1,15 +1,14 @@
 const utils = require('../utils');
+const bundleRewriter = require('../runtime/bundleRewriter');
 
-// 允许基础 ASCII 与标准西文排版/警示符号
 const DISALLOWED_CHAR_RE = /[^\x20-\x7E\u00A0\u00A9\u00B0\u00B7\u2013\u2014\u2018-\u201D\u2022\u2026\u2190-\u2193\u2195\u2197\u21BB\u2303\u2318\u2325\u21E7\u23CE\u26A0\u2713\uFE0F]/;
 const TW_BRACKET_SRC = '\\[(?:[^\\[\\]]|\\[[^\\]]*\\])*\\]';
 const TW_VARIANT_SRC = `(?:(?:${TW_BRACKET_SRC}|@?[a-z0-9_-]+(?:-${TW_BRACKET_SRC})?)(?:\\/[a-zA-Z0-9_-]+)?:)`;
-const TAILWIND_TOKEN_RE = new RegExp(`^${TW_VARIANT_SRC}*!?-?(?:flex-shrink|flex|grid|bg|text|border|items|justify|p|px|py|pl|pr|pt|pb|m|mx|my|mt|mb|ml|mr|w|h|min-w|max-w|min-h|max-h|overflow|rounded|gap|shrink|grow|font|leading|tracking|opacity|shadow|ring|stroke|fill|transition|duration|animate|cursor|select|tabular|z|top|bottom|left|right|inset|line|space|divide|col|row|aspect|object|o2|agy|pointer-events|whitespace|break|outline)-(?:\\d|px|auto|full|screen|min|max|fit|none|sm|md|lg|xl|2xl|base|xs|center|start|end|between|around|evenly|col|row|wrap|nowrap|normal|words|hidden|scroll|clip|ellipsis|solid|dashed|dotted|transparent|current|inherit|white|black|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|muted|primary|secondary|destructive|accent|success|warning|error|foreground|background|border|ti|tile|wchip|runnote|live|card|hover|fav|\\[)`);
-const TW_UTILITY_TRIGGER_RE = new RegExp(`^(?:${TW_VARIANT_SRC}+|\\[[a-zA-Z-]+:[^\\]]+\\]$|(?:group|@container)\\/[a-z0-9_-]+$|^@container$)`, 'i');
+const TAILWIND_TOKEN_RE = new RegExp(`^${TW_VARIANT_SRC}*!?-?(?:flex-shrink|flex|grid|bg|text|border|items|justify|p|px|py|pl|pr|pt|pb|m|mx|my|mt|mb|ml|mr|w|h|min-w|max-w|min-h|max-h|overflow|rounded|gap|shrink|grow|font|leading|tracking|opacity|shadow|ring|stroke|fill|transition|duration|animate|cursor|select|tabular|z|top|bottom|left|right|inset|line|space|divide|col|row|aspect|object|o2|agy|hv|pointer-events|whitespace|break|outline)-(?:\\d|px|auto|full|screen|min|max|fit|none|sm|md|lg|xl|2xl|base|xs|center|start|end|between|around|evenly|col|row|wrap|nowrap|normal|words|hidden|scroll|clip|ellipsis|solid|dashed|dotted|transparent|current|inherit|white|black|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|muted|primary|secondary|destructive|accent|success|warning|error|foreground|background|border|ti|tile|wchip|runnote|live|card|hover|fav|semibold|medium|bold|thin|extralight|extrabold|black|\\[)`);
+const TW_UTILITY_TRIGGER_RE = new RegExp(`^(?:${TW_VARIANT_SRC}+|\\[[a-zA-Z-]+:[^\\]]+\\]$|(?:group|@container)\\/[a-z0-9_-]+$|^@container$|^truncate$|^hv-[a-z]$)`, 'i');
 const TW_CLASS_TOKEN_RE = new RegExp(`^${TW_VARIANT_SRC}*!?-?(?:@?[a-zA-Z0-9_.\\-/+%]|${TW_BRACKET_SRC}|\\([^)]+\\))+$`);
 const CODE_SYNTAX_RE = /\b(?:const|let|var)\s+[a-zA-Z_$][\w$]*\s*=|\bfunction\s*[a-zA-Z_$]*\s*\(|\b(?:import\s+[\w*{'"]|export\s+(?:default|const|let|var|function|class|\*)\b)|\bswitch\s*\(|\bcase\s+['"\d]|=>|[&|]{2}|={2,3}|!==?/;
 const REJECT_PATTERNS = [
-    // 过滤语法字面量、URL/文件路径、代码标识符与快捷键组合
     /^(?:use strict|utf-?8|true|false|null|undefined|NaN|Infinity)$/i,
     /[\{\}\\]|^['"]?[:;)\}=]|^[,;:=\\|]|[;=\\/|]$|['"]\s*\+|\+\s*['"]/,
     /^(?:(?:https?|file|vscode|plugin):\/\/|mailto:)\S+$/i,
@@ -20,22 +19,22 @@ const REJECT_PATTERNS = [
     /^[a-zA-Z0-9@_.-]+(?:\/[a-zA-Z0-9@_.-]+)+$|^[a-z0-9_-]+(?:,[a-z0-9_-]+)+$|^[a-z0-9/_-]+;\s*[a-z0-9_= -]+$/i,
     /^(?:CmdOrCtrl|Ctrl|Alt|Shift|Meta)(?:\+[A-Za-z0-9]+)+$/i,
     /^use[A-Z][a-zA-Z0-9]*\s+must be used within/i,
-    // 过滤 HTML/SVG 片段、CSP 策略指令与内联 CSS 样式噪点
     /<\/?[a-z!][^>]*>/i,
     /^(?:base-uri|frame-src|script-src|style-src|img-src|connect-src|font-src|object-src|media-src|manifest-src|worker-src|form-action|default-src)\s+/i,
     /^(?:background|margin|padding|font-size|display|position|cursor|border(?:-[a-z-]+)?|color|width|height|line-height|box-shadow|visibility|z-index|opacity|overflow|text-shadow|text-decoration)\s*:\s*[^:\s]/i,
-    /var\(--[a-z0-9_-]+|^(?:calc|inset|rgb|rgba|hsl|hsla|clamp|minmax|repeat|translate|scale|rotate)\([^)]+\)$/i,
-    // 过滤日志前缀、缓存控制头与残缺错误前缀
+    /var\(--[a-z0-9_-]+|^(?:calc|inset|rgb|rgba|hsl|hsla|clamp|minmax|repeat|translate|scale|rotate)\([^)]+\)$|^(?:linear|radial|conic)-gradient\(.+\)$/i,
+    /^\(prefers-[a-z-]+:\s*[a-z-]+\)$/i,
+    /^\[[a-z-]+="[^"]*"\]:[a-z-]+\(/i,
+    /^button,\s*a$/,
+    /^"[^"]+"\s+in\s+[a-z][a-z0-9_]*$/,
     /^\[(?:[A-Z_]+\]\s|AX snapshot truncated\b|&[_>a-z])/i,
     /^(?:private|public|no-cache|no-store)(?:,\s*[a-z0-9_=-]+)+$|^\(KHTML, like Gecko\)|^pane embedded$/i,
-    /\bfailed:$|^Error (?:parsing|sending) |^Failed to close SSH connections:$/,
-    // 过滤扩展名列表、网络错误集合、CSS 过渡/字体栈与纯 return 字面量语句
+    /\bfailed:$|^Error (?:parsing|sending) |^Failed to (?:close SSH connections|refresh active search after in-place PDF reload|reload PDF in place|unload staged PDF document):$/,
     /^\.[a-z0-9]{1,10}(?:\s+\.[a-z0-9]{1,10}){2,}$/i,
     /^[a-z0-9_ /:.-]+(?:;[a-z0-9_ /:.-]+){3,}$/i,
     /^(?:opacity|transform|visibility|border-width)(?:,\s*(?:opacity|transform|visibility|border-width))+$/,
     /^(?:[a-zA-Z0-9 _-]+|'[a-zA-Z0-9 _-]+'|"[a-zA-Z0-9 _-]+")(?:,\s*(?:[a-zA-Z0-9 _-]+|'[a-zA-Z0-9 _-]+'|"[a-zA-Z0-9 _-]+"))*,\s*(?:sans-serif|serif|monospace|system-ui|cursive|fantasy|ui-sans-serif|ui-monospace|ui-serif)$/i,
     /^return\s+(?:-?\d+|true|false|null|undefined|this);?$/,
-    // 过滤测试桩/假驱动、模型系统指令错误、Lexical/Worker 断言与 Shell/进程内部文本
     /\bs\d+:e\d+\s+AX[A-Z]\w+|^macOS \d+(?:\.\d+){1,2}$/,
     /^(?:ACTION_FAILED|AGENT_(?:PAUSED|STOPPED)|USER_(?:STOP|TAKEOVER)|POINTER_BUSY|GEOMETRY_CHANGED|TARGET_CHANGED|SCRIPT_TIMEOUT|INTERRUPTED|PROTOCOL_VIOLATION|INVALID_SDP|NO_STREAMS|UNKNOWN_SESSION|CONFINEMENT_OUTDATED|ERR_[A-Z0-9_]+|AGY_[A-Z0-9_]+):\s|^AGY_[A-Z0-9_]+\s+must be\b/,
     /%s|^\$[a-zA-Z]\w*:|^[A-Z][a-zA-Z0-9]+\.[a-zA-Z_$][\w$]*:\s/,
@@ -46,6 +45,7 @@ const REJECT_PATTERNS = [
     /^'s\s[^:]*:$|\s'$|^(?:Enter passphrase for key '|Enter PIN for|Warning: the|differs from the key for the IP address|Accept updated hostkeys\?|to agent\?|Add key|Retype|any more|this time|checking other host|taking over|Could not load its window)$/,
     /^(?:bad (?:nonce|device key)|no device proof|the device key must be\b|busy: another pairing prompt is open)/,
     /^(?:done\.\w+|rpc \w+|modifiers)\s+must be\b|^(?:stderr|stdout line)\s+(?:exceeds|is not valid JSON)\b|^(?:script run aborted|user Stop|lease ended|actuator (?:client stopped|transport closed)|ActuatorService unimplemented|result exceeds limits|Browser did not answer Browser\.getVersion)$/,
+    /^(?:Desktop Hub|Closed|Inactive|Agents pane Stop|live preview unavailable: agy-desktop-rtc is not installed|No open local browser host|Capture session failed|Session closed while opening|Unknown session|WebRTC SDP negotiation failed|WebRTC tab capture APIs unavailable|Remote-control command failed|RPC call failed|Method not found|Failed to stop agent browser|(?:Browser control action|Take control) failed|Navigation rejected|Open failed|[a-z][a-zA-Z0-9]*Service is not available|Limit the number of macro expansions to the specified number.+)$/,
     CODE_SYNTAX_RE,
     TAILWIND_TOKEN_RE
 ];
@@ -98,7 +98,6 @@ function isLikelyUserFacingText(str) {
         tokens.every(t => TW_CLASS_TOKEN_RE.test(t) && !/[.,!?]$/.test(t))) {
         return false;
     }
-    // 过滤路径段组合、键位映射、按键名列表及纯小写代码标识符词串
     if (tokens.length >= 2 &&
         tokens.every(t => /^[a-z0-9_]+(?:[./+-][a-z0-9_]+)+$/i.test(t) || /^(?:cmd|ctrl|alt|shift|meta|enter|escape|tab|space|backspace|delete|up|down|left|right|\+)+$/i.test(t) || /^\.?[a-z0-9.,+-]+:[a-z0-9+-]+$/i.test(t))) {
         return false;
@@ -129,14 +128,15 @@ function unescapeJsString(rawStr) {
         .replace(/\\(.)/g, (_, ch) => ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v', 0: '\0' }[ch] || ch));
 }
 
-// 剔除抛错、控制台/内部日志及内部 RPC/失败回调中的非 UI 参数，保留外层调用语法
-const INTERNAL_NOISE_RE = /(\bthrow new (?:Error|TypeError|RangeError)|(?<!\.)\b(?:console|main_\d+\.default)\.(?:log|warn|error|info|debug)|\b(?:opts\.log\?\.|this\.(?:log(?:Warn|Info|Debug)?|abandon|protocolViolation|killAndFail|failAll|resync)|logRejection|checkName|toFailure|stopAll)|(?<!\.)\bfailure(?=\s*\(\s*['"][A-Z0-9_]+['"])|\breject\s*\(\s*new Error|\bnew (?:CdpError|ConnectError))\s*\((?:[^()'"`]|'[^'\\\r\n]*(?:\\.[^'\\\r\n]*)*'|"[^"\\\r\n]*(?:\\.[^"\\\r\n]*)*"|`[^`\\\r\n]*(?:\\.[^`\\\r\n]*)*`|\([^()'"`]*\))*\)/g;
+const INTERNAL_NOISE_RE = /(\bthrow new (?:Error|TypeError|RangeError)|(?<!\.)\b(?:console|main_\d+\.default)\.(?:log|warn|error|info|debug)|\b(?:opts\.log\?\.|this\.(?:log(?:Warn|Info|Debug)?|abandon|protocolViolation|killAndFail|failAll|resync|teardownWindow|tabGoneOrFailed|sendCommandWithAck)|logRejection|checkName|toFailure|stopAll|stopAllComputerAgents|errRes|failOffer|failFrame|failCmd|purge|must|die)|(?<!\.)\b(?:failure|fail)(?=\s*\()|\breject\s*\(\s*new Error|\bnew (?:CdpError|ConnectError))\s*\((?:[^()'"`]|'[^'\\\r\n]*(?:\\.[^'\\\r\n]*)*'|"[^"\\\r\n]*(?:\\.[^"\\\r\n]*)*"|`[^`\\\r\n]*(?:\\.[^`\\\r\n]*)*`|\([^()'"`]*\))*\)/g;
 
 function stripBundledNoiseBlocks(content) {
     if (!content) return '';
     return utils.foldAdjacentJsStrings(utils.cleanInjectedPatches(content))
         .replace(/\/\*[\s\S]{0,600}?Kiel University[\s\S]*?\.ELK\.default;/g, '')
         .replace(/"vscode:\/\/schemas\/workbench-colors"[\s\S]*?"vscode:\/\/schemas\/token-styling"[\s\S]{0,1500}?terminal\."\+[a-zA-Z0-9_$]+\);/g, '')
+        .replace(/\b[a-zA-Z0-9_$]+\(\s*[a-zA-Z0-9_$]+\s*,\s*"([A-Z][a-zA-Z]+)"\s*,\s*"([a-z][a-zA-Z]+)"\s*\)/g, (m, a, b) => a.toLowerCase() === b.toLowerCase() ? 'null' : m)
+        .replace(/\|\|"the app"/g, '||""')
         .replace(INTERNAL_NOISE_RE, (_, head) => `${head}()`)
         .replace(/\bActuatorStatus\.[A-Z_]+,\s*detail:\s*(['"])(?:\\.|(?!\1)[^\\\r\n])*\1/g, 'ActuatorStatus.INTERNAL');
 }
@@ -195,9 +195,6 @@ function extractStringsFromJs(content) {
     return strings;
 }
 
-/**
- * 提取常见 UI 属性及独立 JSX 文本子节点中的字符串（用于 --audit 模式扫描未翻译文本）
- */
 function extractHighConfidenceUiStrings(content) {
     const candidates = new Map();
     if (!content) return candidates;
@@ -217,10 +214,18 @@ function extractHighConfidenceUiStrings(content) {
         recordCandidate(m[3], `prop:${m[1] || 'aria-label'}`);
     }
 
-    // 补充扫描 createElement(..., "Text") 中的独立文本子节点（如仅以文本作为唯一子节点的菜单项）
-    const jsxSoleTextRe = /\.createElement\((?:[a-zA-Z0-9_$.]+|"(?:span|div|p|button|label|a|strong|em|h[1-6]|li|td|th|option)")\s*,\s*(?:null|\{[^()]{0,300}\})\s*,\s*(["'])([A-Z](?:\\.|(?!\1)[^\\\r\n]){1,200})\1\s*\)/g;
-    while ((m = jsxSoleTextRe.exec(content))) {
-        recordCandidate(m[2], 'jsx:text');
+    const reactIdent = bundleRewriter.detectReactIdent(content);
+    if (reactIdent) {
+        for (const [norm, tags] of bundleRewriter.extractReactUiStrings(content, utils.normalizeText, isLikelyUserFacingText).entries()) {
+            if (!candidates.has(norm)) candidates.set(norm, new Set());
+            const set = candidates.get(norm);
+            for (const t of tags) set.add(t);
+        }
+    } else {
+        const jsxSoleTextRe = /\.createElement\((?:[a-zA-Z0-9_$.]+|"(?:span|div|p|button|label|a|strong|em|h[1-6]|li|td|th|option)")\s*,\s*(?:null|\{[^()]{0,300}\})\s*,\s*(["'])([A-Z](?:\\.|(?!\1)[^\\\r\n]){1,200})\1\s*\)/g;
+        while ((m = jsxSoleTextRe.exec(content))) {
+            recordCandidate(m[2], 'jsx:text');
+        }
     }
     return candidates;
 }

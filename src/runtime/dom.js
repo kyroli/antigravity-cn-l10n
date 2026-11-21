@@ -4,7 +4,6 @@ function installDomTranslator(translator, config) {
     if (document._agL10nInstalled || (docEl && docEl._agL10nInstalled)) return;
 
     try {
-        // 冻结或不可扩展的 document 回退将防重入标记挂到 documentElement
         const markTarget = typeof Object.isExtensible !== 'function' || Object.isExtensible(document)
             ? document
             : (docEl && (typeof Object.isExtensible !== 'function' || Object.isExtensible(docEl)) ? docEl : null);
@@ -73,7 +72,6 @@ function installDomTranslator(translator, config) {
 
         const translatedValues = new WeakMap();
         const translatedAttrs = new WeakMap();
-        // verdict: 0 = neutral, 1 = soft-blocked, 2 = hard-blocked (不可绕过), 3 = bypass
         const elementVerdictCache = new WeakMap();
 
         function getClassString(el) {
@@ -145,7 +143,6 @@ function installDomTranslator(translator, config) {
             return Boolean(fallbackText && CONV_ROW_ALLOWED.has(fallbackText.trim()));
         }
 
-        // 返回区域状态: 0 = 开放, 1 = 软阻断, 2 = 硬阻断（祖先任意一层为 2 均不可绕过）
         function getZoneState(node) {
             lastZoneConvBypass = false;
             try {
@@ -207,7 +204,7 @@ function installDomTranslator(translator, config) {
         function tryTranslateSiblingFragment(node, val) {
             if (!FRAGMENT_NODE_PREFILTER_RE || !FRAGMENT_NODE_PREFILTER_RE.test(val)) return false;
             const parentEl = getParentOrHost(node);
-            if (!parentEl || !parentEl.childNodes || parentEl.childNodes.length < 2 || parentEl.childNodes.length > 6 || parentEl.childElementCount > 1) {
+            if (!parentEl || !parentEl.childNodes || parentEl.childNodes.length < 2 || parentEl.childNodes.length > 16 || parentEl.childElementCount > 6) {
                 return false;
             }
             let parentText = null;
@@ -250,6 +247,10 @@ function installDomTranslator(translator, config) {
             const val = node.nodeValue;
             if (!val || val.trim().length < 1) return;
             if (translatedValues.get(node) === val) return;
+            if (!/[a-zA-Z]/.test(val) && !/^[."”'’\s·]+$/.test(val)) {
+                translatedValues.set(node, val);
+                return;
+            }
             if (tryTranslateSiblingFragment(node, val)) return;
             const trans = translator.translateString(val);
             if (trans !== null && trans !== val) {
@@ -268,7 +269,6 @@ function installDomTranslator(translator, config) {
                     const tag = node.tagName ? node.tagName.toUpperCase() : '';
                     const v = getSelfVerdict(node);
                     if (v === 2) {
-                        // 输入控件本体阻断以保护用户输入内容，开放区域内仍翻译 placeholder 等控件属性
                         if ((tag === 'INPUT' || tag === 'TEXTAREA') && parentState === 0) {
                             translateElementAttributes(node, false);
                         }

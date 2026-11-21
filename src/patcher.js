@@ -1,25 +1,14 @@
+const fs = require('fs');
+const path = require('path');
 const vm = require('vm');
 const utils = require('./utils');
 const { normalizeText, createTranslator } = require('./runtime/translator');
-const { installMainHooks } = require('./runtime/main');
 const { installDomTranslator } = require('./runtime/dom');
+const { buildFrameScript } = require('./runtime/main');
 const { SIGNATURE_START, SIGNATURE_END, cleanInjectedPatches } = utils;
 
-const RENDERER_PLUGIN_GUARD = `
-        if (typeof location !== 'undefined' && location && location.protocol === 'plugin:') return;`;
-
-const FRAME_ORIGIN_GUARD = `
-        const loc = typeof location !== 'undefined' ? location : null;
-        if (!loc) return;
-        const proto = loc.protocol, host = (loc.hostname || '').toLowerCase();
-        let isTop = true;
-        try { isTop = typeof window === 'undefined' ? true : window === window.top; } catch (e) { isTop = false; }
-        const isLocalSub = !isTop && (proto === 'http:' || proto === 'https:') && (host === '127.0.0.1' || host === 'localhost' || host === '[::1]');
-        if (proto !== 'plugin:' && !isLocalSub) return;`;
-
+const RUNTIME_L10N_FILES = ['translator.js', 'dom.js', 'bundleRewriter.js', 'bundleProxy.js', 'main.js'];
 const SLOT_PREFIX = 'AGSLOT';
-const serializeDict = dict => `new Map(${JSON.stringify(dict instanceof Map ? Array.from(dict.entries()) : Object.entries(dict || {}))})`;
-const serializeStr = str => JSON.stringify(str).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 const escapeTpl = str => String(str).replace(/[`\\]|\$\{/g, m => '\\' + m);
 
 function insertAfterPrologue(source, injectedCode) {
@@ -61,47 +50,29 @@ const pickTranslatorCfg = cfg => ({
     enableLongPrefixLookup: false
 });
 
-function buildMainPayload(dict, rules, config, frameScript) {
-    if (typeof config === 'string' && frameScript === undefined) { frameScript = config; config = {}; }
-    const frameArg = typeof frameScript === 'string' && frameScript.length > 0 ? `, ${serializeStr(frameScript)}` : '';
+function buildRendererPayload() {
     return `${SIGNATURE_START}
 (() => {
     try {
-        const electron = require('electron');
+        if (typeof location !== 'undefined' && location && location.protocol === 'plugin:') return;
+        const electron = typeof require === 'function' ? require('electron') : null;
+        const ipc = electron && electron.ipcRenderer;
+        if (!ipc || typeof ipc.sendSync !== 'function') return;
+        const rawBoot = ipc.sendSync('ag-l10n-boot');
+        if (!rawBoot) return;
+        const boot = typeof rawBoot === 'string' ? JSON.parse(rawBoot) : rawBoot;
+        if (!boot || !boot.allDict) return;
+        const { frame: _frame, ...cleanCfg } = boot.hubConfig || {};
         ${normalizeText.toString()}
         ${createTranslator.toString()}
-        ${installMainHooks.toString()}
-        const translator = createTranslator(${serializeDict(dict)}, ${JSON.stringify(rules || [])}, ${JSON.stringify(pickTranslatorCfg(config))});
-        installMainHooks(electron, translator${frameArg});
-    } catch (e) { console.error('[ANTIGRAVITY_MAIN_LOCALIZATION_ERROR]', e); }
+        ${installDomTranslator.toString()}
+        const translator = createTranslator(new Map(Object.entries(boot.allDict)), boot.rules || [], cleanCfg);
+        installDomTranslator(translator, cleanCfg);
+    } catch (e) { console.error('[ANTIGRAVITY_RENDERER_LOCALIZATION_ERROR]', e); }
 })();
 ${SIGNATURE_END}`;
 }
 
-function buildDomPayload({ dict, rules, config, errorTag, guardCode, wrapSignature = true }) {
-    const { frame, ...cleanCfg } = config || {};
-    const body = `(() => {
-    try {${guardCode ? `${guardCode}\n` : ''}
-        const __cfg = ${JSON.stringify(cleanCfg)};
-        ${normalizeText.toString()}
-        ${createTranslator.toString()}
-        ${installDomTranslator.toString()}
-        const translator = createTranslator(${serializeDict(dict)}, ${JSON.stringify(rules || [])}, __cfg);
-        installDomTranslator(translator, __cfg);
-    } catch (e) { console.error(${JSON.stringify(errorTag)}, e); }
-})();`;
-    return wrapSignature ? `${SIGNATURE_START}\n${body}\n${SIGNATURE_END}` : body;
-}
-
-const buildRendererPayload = (dict, rules, config) => buildDomPayload({
-    dict, rules, config, errorTag: '[ANTIGRAVITY_RENDERER_LOCALIZATION_ERROR]', guardCode: RENDERER_PLUGIN_GUARD, wrapSignature: true
-});
-
-const buildFramePayload = (dict, rules, config) => buildDomPayload({
-    dict, rules, config, errorTag: '[ANTIGRAVITY_FRAME_LOCALIZATION_ERROR]', guardCode: FRAME_ORIGIN_GUARD, wrapSignature: false
-});
-
-// 支持三类静态源码字面量替换：引号字符串（'...' / "..." / `...`）、HTML 标签文本（<tag>...</tag> 或 >...</tag>）及含多处 ${...} 或空内联标签槽位
 const STATIC_TEMPLATES = {
     'dist/ideInstall/wizardHtml.js': [
         '<title>Welcome to Antigravity</title>',
@@ -180,13 +151,15 @@ const STATIC_TEMPLATES = {
         '<title>AGY Desktop HUD</title>',
         '<div id="status">AGY is controlling your Mac</div>',
         '>Stop</button>',
-        '>Resume</button>',
+        '"Let agents use this Mac again. The stopped task does not restart."',
+        '>Allow again</button>',
         "'Stopped'",
         "'Stop'",
         "'AGY Desktop HUD'"
     ],
     'dist/computer/hudState.js': [
-        "'Agent paused — you have control'",
+        "'You took over — agent stopped'",
+        "'Agent stopped'",
         "'Agent idle'",
         '`AGY working in ${name} (background)`',
         "'AGY working in the background'",
@@ -200,7 +173,6 @@ const STATIC_TEMPLATES = {
     ]
 };
 
-/** 将 STATIC_TEMPLATES 中的原始代码片段解析为译文代码（支持多处 ${...}、空内联标签及数字插值回退）。 */
 function translateStaticTarget(target, translator) {
     const withSlot = (str, open, close, literalJson) => {
         if (literalJson) {
@@ -283,6 +255,16 @@ function auditStaticTemplates(asarReader, dict, rules, hubConfig) {
     return issues;
 }
 
+function buildMainBootstrap() {
+    return `${SIGNATURE_START}
+(() => {
+    try {
+        require('./l10n/main').installFromAsar(require('electron'));
+    } catch (e) { console.error('[ANTIGRAVITY_MAIN_LOCALIZATION_ERROR]', e); }
+})();
+${SIGNATURE_END}`;
+}
+
 function verifyPatchOutputs(patchMap, extraScripts = []) {
     for (const [name, code] of extraScripts) {
         if (!code) continue;
@@ -290,6 +272,10 @@ function verifyPatchOutputs(patchMap, extraScripts = []) {
         new vm.Script(code, { filename: name });
     }
     for (const [rel, code] of Object.entries(patchMap || {})) {
+        if (rel.endsWith('.json')) {
+            JSON.parse(code);
+            continue;
+        }
         if (!code.includes(SIGNATURE_START) || !code.includes(SIGNATURE_END)) throw new Error(`补丁产物校验失败: ${rel} 缺少签名标记`);
         new vm.Script(code, { filename: rel });
     }
@@ -305,23 +291,34 @@ function generatePatchMap(asarReader) {
     const agentsDict = byFile['agents.json'] || {};
     const { hubConfig, frameConfig, frameExtraDict, frameExtraRules } = buildScopedConfigs(config);
 
-    const frameDict = Object.keys(frameExtraDict).length ? Object.assign({}, agentsDict, frameExtraDict) : agentsDict;
-    const frameRules = frameExtraRules.length ? [...frameExtraRules, ...rules] : rules;
-
-    const framePayload = buildFramePayload(frameDict, frameRules, frameConfig);
-    const mainPayload = buildMainPayload(menusDict, rules, hubConfig, framePayload);
-    const rendererPayload = buildRendererPayload(allDict, rules, hubConfig);
+    const l10nData = {
+        dictsHash: utils.getDictsHash(),
+        allDict,
+        menusDict,
+        agentsDict,
+        rules,
+        hubConfig,
+        frameConfig,
+        frameExtraDict,
+        frameExtraRules
+    };
 
     const patchMap = {};
+    patchMap['dist/l10n/data.json'] = JSON.stringify(l10nData);
+    for (const file of RUNTIME_L10N_FILES) {
+        const rawMod = fs.readFileSync(path.join(__dirname, 'runtime', file), 'utf8');
+        patchMap[`dist/l10n/${file}`] = `${rawMod}${rawMod.endsWith('\n') ? '' : '\n'}${SIGNATURE_START}\n${SIGNATURE_END}\n`;
+    }
+
     const rawMain = cleanInjectedPatches(asarReader.readFile('dist/main.js'));
-    if (rawMain) patchMap['dist/main.js'] = insertAfterPrologue(rawMain, mainPayload);
+    if (rawMain) patchMap['dist/main.js'] = insertAfterPrologue(rawMain, buildMainBootstrap());
 
     const rawPreload = cleanInjectedPatches(asarReader.readFile('dist/preload.js'));
-    if (rawPreload) patchMap['dist/preload.js'] = `${rawPreload}${rawPreload.endsWith('\n') ? '' : '\n'}${rendererPayload}`;
+    if (rawPreload) patchMap['dist/preload.js'] = `${rawPreload}${rawPreload.endsWith('\n') ? '' : '\n'}${buildRendererPayload()}`;
 
     patchStaticTemplates(asarReader, patchMap, allDict, rules, hubConfig);
-    verifyPatchOutputs(patchMap, [['framePayload.js', framePayload]]);
+    verifyPatchOutputs(patchMap, [['framePayload.js', buildFrameScript(l10nData)]]);
     return patchMap;
 }
 
-module.exports = { STATIC_TEMPLATES, insertAfterPrologue, buildRendererPayload, buildFramePayload, auditStaticTemplates, generatePatchMap };
+module.exports = { STATIC_TEMPLATES, auditStaticTemplates, generatePatchMap };
