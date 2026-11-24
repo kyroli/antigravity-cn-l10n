@@ -119,7 +119,7 @@ async function openEphemeralMarketplace(resourcesDir, ideVersion, startupTimeout
     if (!livePort) { await close(); return null; }
 
     const agent = new https.Agent({ rejectUnauthorized: false });
-    const callRpc = (pathUrl, reqBody, timeoutMs = 10000) => new Promise((resolve, reject) => {
+    const callRpc = (pathUrl, reqBody, timeoutMs = 25000) => new Promise((resolve, reject) => {
         const req = https.request({
             hostname: '127.0.0.1', port: livePort, path: pathUrl, method: 'POST', agent, timeout: timeoutMs,
             headers: { 'x-codeium-csrf-token': csrf, 'Content-Type': 'application/json', 'Connect-Protocol-Version': '1' }

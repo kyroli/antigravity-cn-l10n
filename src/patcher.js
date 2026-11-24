@@ -146,30 +146,6 @@ const STATIC_TEMPLATES = {
         "`Antigravity couldn't reach ${host} to finish signing in. Sign in again from Antigravity.`",
         "`This sign-in came back from another server than the sign-in page you agreed to, so Antigravity didn't pass it on to ${host}.`",
         "`Antigravity on ${host} couldn't finish signing in (HTTP ${status}). Sign in again from Antigravity.`"
-    ],
-    'dist/computer/hud.js': [
-        '<title>AGY Desktop HUD</title>',
-        '<div id="status">AGY is controlling your Mac</div>',
-        '>Stop</button>',
-        '"Let agents use this Mac again. The stopped task does not restart."',
-        '>Allow again</button>',
-        "'Stopped'",
-        "'Stop'",
-        "'AGY Desktop HUD'"
-    ],
-    'dist/computer/hudState.js': [
-        "'You took over — agent stopped'",
-        "'Agent stopped'",
-        "'Agent idle'",
-        '`AGY working in ${name} (background)`',
-        "'AGY working in the background'",
-        "'AGY is controlling your Mac'"
-    ],
-    'dist/computer/hudAgents.js': [
-        '`${working} AGY agents working`',
-        "'Agent stopped'",
-        '`${stopped} agents stopped`',
-        '`${text} (+${stopped} stopped)`'
     ]
 };
 

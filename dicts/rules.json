@@ -2342,27 +2342,6 @@
         ]
     },
     {
-        "pattern": "^AGY working in (.+?) \\(background\\)$",
-        "replacement": "AGY 正在 $1 中运行（后台）",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^(\\d+) AGY agents working$",
-        "replacement": "$1 个 AGY Agent 正在运行",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^(\\d+) agents stopped$",
-        "replacement": "$1 个 Agent 已停止",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
         "pattern": "^(.+?) \\(\\+(\\d+) stopped\\)$",
         "replacement": "$1（另有 $2 个已停止）",
         "rawGroups": [
@@ -2978,13 +2957,6 @@
     {
         "pattern": "^Searching as (.+)$",
         "replacement": "正以 $1 身份搜索",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^Uses your local clone, (.+)$",
-        "replacement": "使用您的本地克隆：$1",
         "rawGroups": [
             1
         ]
@@ -4085,5 +4057,114 @@
         "rawGroups": [
             1
         ]
+    },
+    {
+        "pattern": "^Move (.+) earlier$",
+        "replacement": "将 $1 向前移动"
+    },
+    {
+        "pattern": "^Move (.+) later$",
+        "replacement": "将 $1 向后移动"
+    },
+    {
+        "pattern": "^Revoke: (.+)$",
+        "replacement": "撤销：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Revoke all: (.+)$",
+        "replacement": "全部撤销：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^All (\\d+) will be revoked\\. The plugin will ask before doing this again\\.$",
+        "replacement": "将撤销全部 $1 项。下次执行此类操作前，插件会重新询问您。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) waiting on you$",
+        "replacement": "$1 项等待您处理",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Dismiss: (.+)$",
+        "replacement": "忽略：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Applied (.+)$",
+        "replacement": "已应用 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Apply (.+)$",
+        "replacement": "应用 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^New ([^.!?\\n]{1,30})(?:\\.{3}|…)$",
+        "replacement": "新建$1..."
+    },
+    {
+        "pattern": "^Remove from ([^.!?\\n]{1,30})$",
+        "replacement": "从$1中移除"
+    },
+    {
+        "pattern": "^Move to ([^.!?\\n]{1,30})$",
+        "replacement": "移动到$1"
+    },
+    {
+        "pattern": "^No ([^.!?\\n]{1,30}) found$",
+        "replacement": "未找到$1"
+    },
+    {
+        "pattern": "^Model: ([^,]+), (.+)$",
+        "replacement": "模型：$1，$2",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Remove this conversation from its (workspace|project)\\?$",
+        "replacement": "要将此对话从所属$1中移除吗？"
+    },
+    {
+        "pattern": "^Move this conversation to \"(.+?)\"\\?$",
+        "replacement": "要将此对话移动到“$1”吗？",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(incompatible with current filter\\)$",
+        "replacement": "$1（与当前筛选条件不兼容）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(excluded by current filter\\)$",
+        "replacement": "$1（已被当前筛选条件排除）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Show ([^.!?\\n]{1,30})$",
+        "replacement": "显示 $1"
     }
 ]

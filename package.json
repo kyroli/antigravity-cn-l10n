@@ -1,7 +1,7 @@
 {
   "name": "antigravity-cn-l10n",
   "version": "1.0.0",
-  "targetVersion": "2.34.0",
+  "targetVersion": "2.35.0",
   "description": "Antigravity (Windows) 简体中文汉化补丁",
   "main": "patch.js",
   "scripts": {

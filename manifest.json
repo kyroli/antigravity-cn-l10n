@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
-  "targetVersion": "2.34.0",
-  "revision": "7d80cf231eb5",
+  "targetVersion": "2.35.0",
+  "revision": "fe36318748a7",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
@@ -14,27 +14,27 @@
       "size": 488
     },
     "dicts/agents.json": {
-      "sha256": "5b2dbf7811caf3c0529a7d9c3571561da330be972ec841737f7d47fa39843ec7",
-      "size": 41592
+      "sha256": "2bdd76dfb117a5c9d51dd06ffd8a5af212459d64066955cac3d330b32429235b",
+      "size": 43014
     },
     "dicts/common.json": {
-      "sha256": "02aeb42c2d3948edf637e93da845c21d6e19b42f5e1111b19a24234e3c9c53c8",
-      "size": 284002
+      "sha256": "568b84fdae11595194b0d1b4f8197f6bb2fc13624f006fdab99434a4a323b00c",
+      "size": 291118
     },
     "dicts/config.json": {
-      "sha256": "7eb49c2abbf799305fc7ba22c30b7faa573cb0631b49da987f67b55f24a6f594",
-      "size": 67973
+      "sha256": "caacee8f39b22579fa7c726ad4a670f416313cfc4afeb9101d9dc4f7a0872601",
+      "size": 73463
     },
     "dicts/menus.json": {
-      "sha256": "7f09dff433588c0d81d58affad603ec99ed0f06be8de2d2e144040c41b64ad13",
-      "size": 21320
+      "sha256": "be146fbadd879840e3f2db029c23bb7f1f08ab288dcbfaec04dc0e55bea71080",
+      "size": 20856
     },
     "dicts/rules.json": {
-      "sha256": "e00a20bc661accc76f6285e9c7c7c595287200d46d6726759c9989851a5dacd3",
-      "size": 117734
+      "sha256": "fee1f806c8f9fc6197e2e29f7cea5ca7acce82a9bfe35af9a5df2d546160f364",
+      "size": 119758
     },
     "package.json": {
-      "sha256": "6be2b6277972b2b73d9b9e040754e961e5e335305e820b53a13afa57aedc3abe",
+      "sha256": "a4c0af0e2fdfb4637f42ff8a13c40e1b19cd0e9fe13aa679f9ddd98646f21268",
       "size": 591
     },
     "patch.js": {
@@ -46,8 +46,8 @@
       "size": 10766
     },
     "src/patcher.js": {
-      "sha256": "71e1abb1a2d363332d531bb7f60133e269b6921a635ffa82c2e9e91541cf2599",
-      "size": 13904
+      "sha256": "1ae3a03de09df531199a5066c376a4a2e9f9b75170362609173bfa741002691a",
+      "size": 13094
     },
     "src/runtime/bundleProxy.js": {
       "sha256": "65e1a723b777989c3c38a86c895f2ab3122654223f5d7205da7b41c80ea3dd43",

@@ -1412,6 +1412,133 @@
                     "replace": " 中。该内容在 Agent 沙盒中不可见，并在您的所有项目间共享。"
                 }
             ]
+        },
+        {
+            "containerPattern": "^.+?\\s+(?:can now|现在可以)\\s+.+$",
+            "nodeReplacements": [
+                {
+                    "match": "^\\s*can now\\s*$",
+                    "replace": " 现在可以 "
+                }
+            ]
+        },
+        {
+            "containerPattern": "^,\\s*(?:from\\s+.+|来自.+)$",
+            "nodeReplacements": [
+                {
+                    "match": "^from a plugin$",
+                    "replace": "来自插件"
+                },
+                {
+                    "match": "^from\\s+(.+)$",
+                    "replace": "来自 $1"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, allow downloads from\\s+.+?\\s+for this run|是，仅此次运行允许从\\s+.+?\\s+下载)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, allow downloads from\\s+$",
+                    "replace": "是，仅此次运行允许从 "
+                },
+                {
+                    "match": "^\\s+for this run$",
+                    "replace": " 下载"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, allow downloads from\\s+.+?\\s+in this conversation|是，在此对话中允许从\\s+.+?\\s+下载)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, allow downloads from\\s+$",
+                    "replace": "是，在此对话中允许从 "
+                },
+                {
+                    "match": "^\\s+in this conversation$",
+                    "replace": " 下载"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, always allow downloads from|是，始终允许从)\\s+.+$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, always allow downloads from\\s+$",
+                    "replace": "是，始终允许从 "
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, allow\\s+.+?\\s+in this conversation|是，在此对话中允许\\s+.+?)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, allow\\s+$",
+                    "replace": "是，在此对话中允许 "
+                },
+                {
+                    "match": "^\\s+in this conversation$",
+                    "replace": ""
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, always allow|是，始终允许)\\s+.+$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, always allow\\s+$",
+                    "replace": "是，始终允许 "
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, save rule for '.+?' globally|是，全局保存针对 '.+?' 的规则)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, save rule for '$",
+                    "replace": "是，全局保存针对 '"
+                },
+                {
+                    "match": "^' globally$",
+                    "replace": "' 的规则"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, save rule for '.+?' in this conversation|是，在此对话中保存针对 '.+?' 的规则)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, save rule for '$",
+                    "replace": "是，在此对话中保存针对 '"
+                },
+                {
+                    "match": "^' in this conversation$",
+                    "replace": "' 的规则"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, and always allow '.+?' in this conversation|是，且在此对话中始终允许 '.+?')$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, and always allow '$",
+                    "replace": "是，且在此对话中始终允许 '"
+                },
+                {
+                    "match": "^' in this conversation$",
+                    "replace": "'"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:Yes, and always allow|是，且始终允许)\\s+'.+'$",
+            "nodeReplacements": [
+                {
+                    "match": "^Yes, and always allow '$",
+                    "replace": "是，且始终允许 '"
+                }
+            ]
         }
     ],
     "frame": {
@@ -1626,13 +1753,20 @@
     },
     "audit": {
         "preservedTerms": [
+            "[data-step-list] > :not([data-step-rows]):not(:has([data-step-rows])):not([role=\"separator\"]), [data-step-rows] > :not([role=\"separator\"])",
+            "@all 2",
+            "~/.ssh/config (default)",
+            "actuator-wide fence lifted at subscribe",
             "ADEX",
             "Agent",
-            "@all 2",
+            "already canceling",
             "Amend",
             "Antigravity",
             "Artifact",
             "Artifacts",
+            "AudioContext closed before fallback capture could start",
+            "AudioWorklet and ScriptProcessorNode are unavailable",
+            "Bahasa Indonesia",
             "Better Stack",
             "Branch",
             "Buganizer",
@@ -1644,7 +1778,12 @@
             "Command Shift A",
             "Commit",
             "Critique",
+            "Dansk",
+            "Descrybe Legal Engine",
             "Desktop",
+            "Deutsch",
+            "Either cascadeId or draftCascadeId must be provided",
+            "Electron",
             "Electron (Android Desktop)",
             "Electron (Desktop)",
             "Electron (Gemini App)",
@@ -1669,15 +1808,20 @@
             "Google3",
             "Google3 Configuration",
             "incident.io",
+            "Italiano",
             "Jetski",
             "JJ worktree",
+            "Kling AI",
             "Levels.fyi",
             "Linux",
             "MacOS",
             "MCP",
             "n8n",
+            "Nederlands",
             "New",
+            "Norsk",
             "Orchestrator",
+            "Polski",
             "Pro",
             "Project + Worktree",
             "Project 4K",
@@ -1688,12 +1832,16 @@
             "Sidecar",
             "sonarqube",
             "Spacefast",
-            "~/.ssh/config (default)",
             "Stage",
+            "stop handled; the LS ends the turn",
+            "Suomi",
+            "Svenska",
             "Swarm",
             "Tavily",
             "TestMu AI",
+            "tieng viet",
             "Turbo",
+            "VS Code",
             "Web (desktop)",
             "Web (mobile)",
             "WIF Config",
@@ -1780,10 +1928,13 @@
             "Submit${0}",
             "Continue${0}",
             "Disable Word Wrap${0}",
-            "Enable Word Wrap${0}"
+            "Enable Word Wrap${0}",
+            "from ${0}",
+            "Move ${0} ${1}"
         ],
         "ignoredMultiChild": [
-            "{x} See {x}."
+            "{x} See {x}.",
+            "WSL: {x}"
         ]
     }
 }
