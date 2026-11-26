@@ -251,102 +251,6 @@
     },
     "fragmentPatterns": [
         {
-            "containerPattern": "^(?:Show|显示另外)\\s+\\d+\\s+(?:more|个)(?:\\.\\.\\.|…)?$",
-            "nodeReplacements": [
-                {
-                    "match": "^Show\\s*$",
-                    "replace": "显示另外 "
-                },
-                {
-                    "match": "^\\s*more(\\.\\.\\.|…)?$",
-                    "replace": " 个$1",
-                    "normalizeEllipsis": true
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:No\\s+|暂无).+\\s+yet$",
-            "nodeReplacements": [
-                {
-                    "match": "^No\\s*$",
-                    "replace": "暂无"
-                },
-                {
-                    "match": "^\\s*yet\\s*$",
-                    "replace": ""
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:No\\s+|没有).+(?:\\s+match\\s+|匹配)[“\"].+[”\"]\\.?$",
-            "nodeReplacements": [
-                {
-                    "match": "^No\\s*$",
-                    "replace": "没有"
-                },
-                {
-                    "match": "^\\s*match\\s+[“\"]$",
-                    "replace": "匹配“"
-                },
-                {
-                    "match": "^\\s*[”\"]\\.\\s*$",
-                    "replace": "”。"
-                },
-                {
-                    "match": "^\\s*[”\"]\\s*$",
-                    "replace": "”"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:No\\s+|未找到\\s*).+\\s+found$",
-            "nodeReplacements": [
-                {
-                    "match": "^No\\s*$",
-                    "replace": "未找到 "
-                },
-                {
-                    "match": "^\\s*found\\s*$",
-                    "replace": ""
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Customize your experience across the agent|在设置和插件市场中自定义您在 Agent).+(?:says\\.?|的回答。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Customize your experience.*influence what\\s*$",
-                    "replace": "在设置和插件市场中自定义您在 Agent、插件和产品中的体验。我们绝不会向您展示广告，也不会让广告商影响 "
-                },
-                {
-                    "match": "^\\s*says\\.?\\s*$",
-                    "replace": " 的回答。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Attackers might be trying to steal your information from\\s+|攻击者可能正试图窃取您在\\s*).+\\s+(?:\\(for example, passwords, messages, or credit cards\\)\\.|上的信息（例如密码、消息或信用卡信息）。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Attackers might be trying to steal your information from\\s*$",
-                    "replace": "攻击者可能正试图窃取您在"
-                },
-                {
-                    "match": "^\\s*\\(for example, passwords, messages, or credit cards\\)\\.\\s*$",
-                    "replace": " 上的信息（例如密码、消息或信用卡信息）。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Get Anything Done with(?:\\s+the)?|高效完成任何任务，尽在)\\s+.+$",
-            "nodeReplacements": [
-                {
-                    "match": "^Get Anything Done with(?:\\s+the)?\\s+$",
-                    "replace": "高效完成任何任务，尽在 "
-                }
-            ]
-        },
-        {
             "containerPattern": "^(?:(?:Powered by Gemini Live\\s*·|由 Gemini Live 提供支持\\s*·)\\s*)?(?:You can change this in|您稍后可在)\\s+(?:Settings|设置)\\s+(?:later\\.|中更改此设置。)$",
             "nodeReplacements": [
                 {
@@ -364,268 +268,19 @@
             ]
         },
         {
-            "containerPattern": "^(?:Stream and control|直接在侧边栏中流式传输与控制)\\s+.+(?:\\s+directly in the side pane\\.|。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Stream and control\\s+$",
-                    "replace": "直接在侧边栏中流式传输与控制 "
-                },
-                {
-                    "match": "^\\s+directly in the side pane\\.$",
-                    "replace": "。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Remote Control isn't active on this instance\\. Enable it in|远程控制未在此实例上启用。请(?:在|前往))\\s+(?:Settings|设置)(?:,\\s*then reopen this dialog\\.|\\s+中启用，然后重新打开此对话框。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Remote Control isn't active on this instance\\. Enable it in\\s*$",
-                    "replace": "远程控制未在此实例上启用。请在"
-                },
-                {
-                    "match": "^,\\s*then reopen this dialog\\.\\s*$",
-                    "replace": " 中启用，然后重新打开此对话框。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:To switch accounts, sign out in the|要切换账户，请先在)\\s+.+?(?:\\s+and sign in again\\.|\\s+中退出登录，然后重新登录。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^To switch accounts, sign out in the\\s*$",
-                    "replace": "要切换账户，请先在 "
-                },
-                {
-                    "match": "^\\s*and sign in again\\.\\s*$",
-                    "replace": " 中退出登录，然后重新登录。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Hold|按住)\\s+.+(?:\\s+to add to Agent|\\s+to upload|\\s+以添加到 Agent|\\s+以上传)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Hold\\s+$",
-                    "replace": "按住 "
-                },
-                {
-                    "match": "^\\s+to add to Agent$",
-                    "replace": " 以添加到 Agent"
-                },
-                {
-                    "match": "^\\s+to upload$",
-                    "replace": " 以上传"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:An\\s+|此电脑上已存在同名的\\s*).+(?:\\s+with this name already exists on this computer\\. Run it remotely, or go back and rename it\\.|。请改为远程运行，或返回并重命名。)$",
+            "containerPattern": "^(?:An\\s+(?:automation|自动化任务)\\s+with this name already exists on this computer\\. Run it remotely, or go back and rename it\\.|此电脑上已存在同名的\\s*.+?。请改为远程运行，或返回并重命名。)$",
             "nodeReplacements": [
                 {
                     "match": "^An\\s+$",
                     "replace": "此电脑上已存在同名的 "
                 },
                 {
+                    "match": "^automation$",
+                    "replace": "自动化任务"
+                },
+                {
                     "match": "^\\s+with this name already exists on this computer\\. Run it remotely, or go back and rename it\\.$",
                     "replace": "。请改为远程运行，或返回并重命名。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:A\\s+|已存在同名的\\s*).+(?:\\s+with this name already exists\\.|。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^A\\s+$",
-                    "replace": "已存在同名的 "
-                },
-                {
-                    "match": "^\\s+with this name already exists\\.$",
-                    "replace": "。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Microphone blocked\\. Allow in|麦克风已被阻止。请在)\\s+(?:Privacy Settings|System Settings|隐私设置|系统设置)(?:\\.|\\s+中允许。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Microphone blocked\\. Allow in\\s*$",
-                    "replace": "麦克风已被阻止。请在 "
-                },
-                {
-                    "match": "^\\.$",
-                    "replace": " 中允许。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Click|点击)\\s*(?:Open|打开)\\s*↗\\s*(?:to open macOS Privacy & Security\\.|打开 macOS[“\"]隐私与安全性[””]。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Click\\s*$",
-                    "replace": "点击 "
-                },
-                {
-                    "match": "^\\s*to open macOS Privacy & Security\\.\\s*$",
-                    "replace": " 打开 macOS“隐私与安全性”。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:No hosts in\\s+|在\\s*).+(?:\\s+yet\\. Type one above\\.|\\s*中尚无主机。请在上方输入。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^No hosts in\\s*$",
-                    "replace": "在 "
-                },
-                {
-                    "match": "^\\s*yet\\. Type one above\\.\\s*$",
-                    "replace": " 中尚无主机。请在上方输入。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Always open|总是直接打开)\\s+.+?:\\s*(?:links without asking|链接而不再询问)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Always open\\s*$",
-                    "replace": "总是直接打开 "
-                },
-                {
-                    "match": "^\\s*links without asking\\s*$",
-                    "replace": " 链接而不再询问"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Couldn't delete cookies for|无法删除)\\s+.+?(?:\\. Try again\\.|的 Cookie，请重试。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Couldn't delete cookies for\\s*$",
-                    "replace": "无法删除 "
-                },
-                {
-                    "match": "^\\s*\\. Try again\\.\\s*$",
-                    "replace": " 的 Cookie，请重试。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Inspect live bindings or record custom key chords filtered to|查看实时键位绑定，或录制筛选为)\\s+antigravity\\.\\s*(?:commands\\.|命令的自定义快捷键。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Inspect live bindings or record custom key chords filtered to\\s*$",
-                    "replace": "查看实时键位绑定，或录制筛选为 "
-                },
-                {
-                    "match": "^\\s*commands\\.\\s*$",
-                    "replace": " 命令的自定义快捷键。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Zipping|正在打包)\\s*.+(?:\\.\\.\\.|…)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Zipping\\s*$",
-                    "replace": "正在打包"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\d+\\s+(?:plugins?|个插件)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s*plugins?\\s*$",
-                    "replace": " 个插件"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Open\\s*|打开\\s*).+?\\s*(?:panel|面板)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Open\\s*$",
-                    "replace": "打开 "
-                },
-                {
-                    "match": "^\\s*panel\\s*$",
-                    "replace": " 面板"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:No sites match\\s*|没有匹配\\s*)[“\"].+[”\"](?:\\.|的站点。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^No sites match\\s*[“\"]$",
-                    "replace": "没有匹配“"
-                },
-                {
-                    "match": "^[”\"]\\.\\s*$",
-                    "replace": "”的站点。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Messages now send immediately\\. Configure in|消息现已默认立即发送。可在)\\s+(?:settings|设置)(?:\\.|\\s*中配置。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Messages now send immediately\\. Configure in\\s*$",
-                    "replace": "消息现已默认立即发送。可在 "
-                },
-                {
-                    "match": "^\\.$",
-                    "replace": " 中配置。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:In System Settings, (?:turn on|click)|在系统设置中(?:开启|点击)).+(?:drag it in from the small window next to System Settings\\.|then turn it on\\.|将其拖入。|将其开启。)(?:\\s*(?:Already on\\? Select|已开启？请先选中).+(?:drag it back in from the small window\\.|and add it again\\.|拖回。|重新添加。))?$",
-            "nodeReplacements": [
-                {
-                    "match": "^In System Settings, turn on\\s*$",
-                    "replace": "在系统设置中开启 "
-                },
-                {
-                    "match": "^\\. If it isn't in the list, drag it in from the small window next to System Settings\\.$",
-                    "replace": "。如果未在列表中看到，请从“系统设置”旁的小窗口中将其拖入。"
-                },
-                {
-                    "match": "^In System Settings, click\\s*$",
-                    "replace": "在系统设置中点击 "
-                },
-                {
-                    "match": "^,\\s*choose\\s*$",
-                    "replace": "，选择 "
-                },
-                {
-                    "match": "^,\\s*then turn it on\\.$",
-                    "replace": "，然后将其开启。"
-                },
-                {
-                    "match": "^Already on\\? Select\\s*$",
-                    "replace": "已开启？请先选中 "
-                },
-                {
-                    "match": "^, click\\s*$",
-                    "replace": "，点击 "
-                },
-                {
-                    "match": "^,\\s*then\\s*$",
-                    "replace": "，然后"
-                },
-                {
-                    "match": "^\\s*drag it back in from the small window\\.\\s*$",
-                    "replace": "从“系统设置”旁的小窗口中将其拖回。"
-                },
-                {
-                    "match": "^click\\s*$",
-                    "replace": "点击 "
-                },
-                {
-                    "match": "^\\s*and add it again\\.\\s*$",
-                    "replace": " 并重新添加。"
                 }
             ]
         },
@@ -643,63 +298,7 @@
             ]
         },
         {
-            "containerPattern": "^(?:Many external websites \\(such as Google Search, GitHub, or Wikipedia\\) restrict iframe embedding via|许多外部网站（例如 Google 搜索、GitHub 或 Wikipedia）通过).+(?:icon in the URL bar\\.|图标。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Many external websites \\(such as Google Search, GitHub, or Wikipedia\\) restrict iframe embedding via\\s*$",
-                    "replace": "许多外部网站（例如 Google 搜索、GitHub 或 Wikipedia）通过 "
-                },
-                {
-                    "match": "^\\s*or\\s*$",
-                    "replace": " 或 "
-                },
-                {
-                    "match": "^\\. If a page fails to load, use the\\s*$",
-                    "replace": " 限制 iframe 嵌入。如果页面加载失败，请使用 URL 地址栏中的 "
-                },
-                {
-                    "match": "^icon in the URL bar\\.\\s*$",
-                    "replace": "图标。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^.+?\\s+(?:normally uses encryption to protect your information\\. When the browser tried to connect to|通常会使用加密技术来保护您的信息。但浏览器此次尝试连接到)\\s+.+?\\s+(?:this time, the website sent back unusual and incorrect credentials\\.|时，该网站发回了异常且无效的凭据。).*$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s*normally uses encryption to protect your information\\. When the browser tried to connect to\\s*$",
-                    "replace": " 通常会使用加密技术来保护您的信息。但浏览器此次尝试连接到 "
-                },
-                {
-                    "match": "^\\s*this time, the website sent back unusual and incorrect credentials\\.\\s*$",
-                    "replace": " 时，该网站发回了异常且无效的凭据。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Not referenced by any feature|未被任何功能引用)\\s*\\(.+?\\)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Not referenced by any feature \\($",
-                    "replace": "未被任何功能引用 ("
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Active environment: os=|当前环境：os=).+?(?:\\. Reload the window if a change does not take effect\\.|。如更改未生效，请重新加载窗口。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Active environment: os=$",
-                    "replace": "当前环境：os="
-                },
-                {
-                    "match": "^\\. Reload the window if a change does not take effect\\.\\s*$",
-                    "replace": "。如更改未生效，请重新加载窗口。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Current parameter:|当前参数：).+?(?:\\(still loading(?:\\.\\.\\.|…)\\)\\.|（仍在加载...）。)$",
+            "containerPattern": "^(?:Current parameter:|当前参数：).+?(?:\\(still loading(?:\\.\\.\\.|…)\\)\\.?|（仍在加载...）。?)$",
             "nodeReplacements": [
                 {
                     "match": "^Current parameter:\\s*$",
@@ -716,63 +315,24 @@
                 {
                     "match": "^\\s*\\(still loading(?:\\.\\.\\.|…)\\)$",
                     "replace": "（仍在加载...）"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:and\\s+\\d+\\s+more|还有其他\\s+\\d+\\s+项)$",
-            "nodeReplacements": [
-                {
-                    "match": "^and\\s*$",
-                    "replace": "还有其他 "
-                },
-                {
-                    "match": "^\\s*more\\s*$",
-                    "replace": " 项"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\((?:[\\d,]+|1)\\s+(?:tokens\\)|个 Token\\)).*$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s*tokens\\)$",
-                    "replace": " 个 Token)"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^[\\d,.]+[A-Za-z]?\\s+/\\s+[\\d,.]+[A-Za-z]?\\s+(?:tokens|个 Token)\\s+\\([\\d.]+%\\)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s*tokens \\($",
-                    "replace": " 个 Token ("
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Also includes|此外还包含)\\s+.+?(?:when working\\s+.+?\\.|（范围：.+?）。).*$",
-            "nodeReplacements": [
-                {
-                    "match": "^Also includes\\s*$",
-                    "replace": "此外还包含 "
-                },
-                {
-                    "match": "^when working\\s*$",
-                    "replace": "（范围："
                 },
                 {
                     "match": "^\\.$",
-                    "replace": "）。"
+                    "replace": "。"
                 }
             ]
         },
         {
             "containerPattern": "^(?:This project was created for|此项目专为).+?(?:automation\\.|自动化任务创建。).*$",
+            "matchNested": true,
             "nodeReplacements": [
                 {
                     "match": "^This project was created for$",
                     "replace": "此项目专为"
+                },
+                {
+                    "match": "^the\\s*$",
+                    "replace": ""
                 },
                 {
                     "match": "^an$",
@@ -781,105 +341,6 @@
                 {
                     "match": "^automation\\.\\s*$",
                     "replace": "自动化任务创建。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Plugins are packaged collections of skills and MCPs to help the Agent|插件是技能和 MCP 的打包集合，可帮助 Agent).+(?:work with Google developer products\\. You can always change your choices in Settings\\.|配合 Google 开发者产品使用。您可以随时在设置中更改您的选择。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Plugins are packaged collections of skills and MCPs to help the Agent$",
-                    "replace": "插件是技能和 MCP 的打包集合，可帮助 Agent"
-                },
-                {
-                    "match": "^work with Google developer products\\. You can always change your choices in Settings\\.$",
-                    "replace": " 配合 Google 开发者产品使用。您可以随时在设置中更改您的选择。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:There are currently no Build with|当前暂无可用的 Build with)\\s+.+?(?:\\s+plugins available\\.|\\s*插件。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^There are currently no Build with\\s+$",
-                    "replace": "当前暂无可用的 Build with "
-                },
-                {
-                    "match": "^\\s+plugins available\\.$",
-                    "replace": " 插件。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Handler #|处理程序 #)\\d+$",
-            "nodeReplacements": [
-                {
-                    "match": "^Handler #$",
-                    "replace": "处理程序 #"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Avoid uploading highly sensitive data and verify actions taken by your agent\\.|请避免上传高度敏感的数据，并仔细核实 Agent 执行的操作。).+(?:and\\s+.+?\\.|以及.+?。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Avoid uploading highly sensitive data and verify actions taken by your agent\\. Make sure you have the$",
-                    "replace": "请避免上传高度敏感的数据，并仔细核实 Agent 执行的操作。请确保您对上传的任何内容或文件（包括未成年人相关内容）均拥有"
-                },
-                {
-                    "match": "^to any content or files that you upload, including content of minors\\. Don't generate content that infringes on others' rights, including content that deceives, harasses, or harms\\. When using Antigravity, you must comply with Google's$",
-                    "replace": "。请勿生成侵犯他人权利的内容，包括具有欺骗性、骚扰性或伤害性的内容。使用 Antigravity 时，您必须遵守 Google 的"
-                },
-                {
-                    "match": "^\\. Your use is subject to the$",
-                    "replace": "。您的使用需受"
-                },
-                {
-                    "match": "^and$",
-                    "replace": "和"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:This will permanently delete|这将永久删除其中的)\\s+.+?(?:\\s*within it\\.|。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^This will permanently delete\\s*$",
-                    "replace": "这将永久删除其中的 "
-                },
-                {
-                    "match": "^\\s*within it\\.\\s*$",
-                    "replace": "。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:This|此)\\s+.+?(?:is managed by the\\s+.+?\\s+automation and can only be deleted by deleting that automation\\.|由\\s+.+?\\s+自动化任务管理，只能通过删除该自动化任务来删除。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^This\\s+$",
-                    "replace": "此"
-                },
-                {
-                    "match": "^\\s+is managed by the$",
-                    "replace": "由"
-                },
-                {
-                    "match": "^\\s+automation and can only be deleted by deleting that automation\\.$",
-                    "replace": " 自动化任务管理，只能通过删除该自动化任务来删除。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Successfully imported project:|已成功从 AI Studio 导入项目：).+(?:from AI Studio|)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Successfully imported project:$",
-                    "replace": "已成功从 AI Studio 导入项目："
-                },
-                {
-                    "match": "^\\s+from AI Studio$",
-                    "replace": ""
                 }
             ]
         },
@@ -893,19 +354,6 @@
                 {
                     "match": "^lines?$",
                     "replace": "行"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:click|点击)\\s+.+?(?:\\s+and add it again\\.|\\s+并重新添加。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^click\\s*$",
-                    "replace": "点击 "
-                },
-                {
-                    "match": "^\\s*and add it again\\.\\s*$",
-                    "replace": " 并重新添加。"
                 }
             ]
         },
@@ -957,237 +405,8 @@
             ]
         },
         {
-            "containerPattern": "^(?:Go to|前往顶部菜单中的)\\s+.+?(?:\\s+in the top menu\\.|。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Go to\\s+$",
-                    "replace": "前往顶部菜单中的 "
-                },
-                {
-                    "match": "^\\s+in the top menu\\.$",
-                    "replace": "。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\d+\\s+(?:results?(?:results)?|条结果\\s*s?)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s+results?$",
-                    "replace": " 条结果"
-                },
-                {
-                    "match": "^results?$",
-                    "replace": "条结果"
-                },
-                {
-                    "match": "^s$",
-                    "replace": ""
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\d+\\s+(?:image(?:images|s)?|张图片)$",
-            "nodeReplacements": [
-                {
-                    "match": "^images?$",
-                    "replace": "张图片"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:In this case,|在这种情况下，有)\\s+\\d+\\s+(?:chunks were collapsed into one\\. Chunks included in this read:|个分块被合并为一个。本次读取包含的分块：)$",
-            "nodeReplacements": [
-                {
-                    "match": "^In this case,\\s+$",
-                    "replace": "在这种情况下，有 "
-                },
-                {
-                    "match": "^\\s+chunks were collapsed into one\\. Chunks included in this read:$",
-                    "replace": " 个分块被合并为一个。本次读取包含的分块："
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\d+\\s+(?:text resources?(?:text resources)?|个文本资源)$",
-            "nodeReplacements": [
-                {
-                    "match": "^text resources?$",
-                    "replace": "个文本资源"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:.+?\\s+in Browser|.+?（在浏览器中）)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s+in Browser$",
-                    "replace": "（在浏览器中）"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Web search prioritized results from|网页搜索优先从)\\s+.+?(?:\\. The LLM decided that this would yield the best results\\. If this is not desired, you can simply tell the agent to search without a domain filter\\.|检索结果。LLM 判断这样能获得最佳结果。如果不需要此过滤条件，您可以直接告诉 Agent 不带域名过滤条件进行搜索。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Web search prioritized results from\\s+$",
-                    "replace": "网页搜索优先从 "
-                },
-                {
-                    "match": "^\\. The LLM decided that this would yield the best results\\. If this is not desired, you can simply tell the agent to search without a domain filter\\.$",
-                    "replace": " 检索结果。LLM 判断这样能获得最佳结果。如果不需要此过滤条件，您可以直接告诉 Agent 不带域名过滤条件进行搜索。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Generation Steps|生成步骤)\\s*\\(\\d+\\)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Generation Steps \\($",
-                    "replace": "生成步骤 ("
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\d+\\s+(?:questions?|个问题\\s*s?)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s+questions?$",
-                    "replace": " 个问题"
-                },
-                {
-                    "match": "^s$",
-                    "replace": ""
-                }
-            ]
-        },
-        {
-            "containerPattern": "^.+?\\s+(?:needs a few details from you before it can run\\.|需要您先提供一些详细信息才能运行。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s+needs a few details from you before it can run\\.$",
-                    "replace": " 需要您先提供一些详细信息才能运行。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Agents created by|由).+?(?:run in a dedicated.+?with its own permissions, which you can change anytime in the\\s+.+?\\s+settings page\\.|创建的 Agent 将在专属.+?中运行并拥有独立权限，您可随时在.+?设置页面中更改。).*$",
-            "nodeReplacements": [
-                {
-                    "match": "^Agents created by\\s+$",
-                    "replace": "由 "
-                },
-                {
-                    "match": "^\\s+run in a dedicated$",
-                    "replace": " 创建的 Agent 将在专属"
-                },
-                {
-                    "match": "^\\s+with its own permissions, which you can change anytime in the\\s+$",
-                    "replace": "中运行并拥有独立权限，您可随时在"
-                },
-                {
-                    "match": "^\\s+settings page\\.$",
-                    "replace": "设置页面中更改。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Are you sure you want to delete|确定要删除)\\s+.+?(?:\\? This action cannot be undone\\.|\\s*吗？此操作无法撤销。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Are you sure you want to delete\\s+$",
-                    "replace": "确定要删除 "
-                },
-                {
-                    "match": "^\\? This action cannot be undone\\.$",
-                    "replace": " 吗？此操作无法撤销。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Allow Google to collect and use your Interactions data, subject to the|允许 Google 根据).+?(?:You can control this from your settings at any point\\.|收集并使用您的交互数据。您可随时在设置中管理此选项。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Allow Google to collect and use your Interactions data, subject to the$",
-                    "replace": "允许 Google 根据"
-                },
-                {
-                    "match": "^\\s+You can control this from your settings at any point\\.$",
-                    "replace": "收集并使用您的交互数据。您可随时在设置中管理此选项。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:\\d+\\s+)?(?:Press\\s+.+?\\s+to switch to the Gemini app\\. Your agents keep working in the background\\.|按下\\s+.+?\\s+以切换到 Gemini 应用。您的 Agent 会继续在后台运行。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s*Press$",
-                    "replace": "按下"
-                },
-                {
-                    "match": "^to switch to the Gemini app\\. Your agents keep working in the background\\.$",
-                    "replace": " 切换到 Gemini 应用。您的 Agent 会继续在后台运行。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^\\.\\.\\.\\s+\\d+\\s+(?:lines|行)$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\.\\.\\.\\s+$",
-                    "replace": "... "
-                },
-                {
-                    "match": "^\\s+lines$",
-                    "replace": " 行"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Finish signing in to|请在浏览器中完成登录)\\s+.+?(?:\\s+in your browser\\.|。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Finish signing in to\\s+$",
-                    "replace": "请在浏览器中完成 "
-                },
-                {
-                    "match": "^\\s+in your browser\\.$",
-                    "replace": " 登录。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Signed in as|已登录账号：).+?(?:To use another account, add it in the|如需使用其他账号，请在).+(?:and make it the default\\.|中添加并设为默认。).*$",
-            "nodeReplacements": [
-                {
-                    "match": "^Signed in as\\s+$",
-                    "replace": "已登录账号："
-                },
-                {
-                    "match": "^\\. To use another account, add it in the$",
-                    "replace": "。如需使用其他账号，请在"
-                },
-                {
-                    "match": "^\\s+and make it the default\\.$",
-                    "replace": "中添加并设为默认。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Signed in as|已登录账号：).+?(?:\\. To add another account, go to the|。如需添加其他账号，请前往).+$",
-            "nodeReplacements": [
-                {
-                    "match": "^Signed in as$",
-                    "replace": "已登录账号："
-                },
-                {
-                    "match": "^\\. To add another account, go to the\\s+$",
-                    "replace": "。如需添加其他账号，请前往 "
-                }
-            ]
-        },
-        {
             "containerPattern": "^(?:For corp passwords \\(such as|对于公司内网密码（如).+?(?:allow the next prompt and re-run your command\\.|请允许下一个提示并重新运行您的命令。)$",
+            "matchNested": true,
             "nodeReplacements": [
                 {
                     "match": "^For corp passwords \\(such as\\s+$",
@@ -1198,77 +417,16 @@
                     "replace": " 或"
                 },
                 {
+                    "match": "^or\\s+$",
+                    "replace": "或 "
+                },
+                {
                     "match": "^\\), use an external SSH session$",
                     "replace": "），请使用外部 SSH 会话"
                 },
                 {
                     "match": "^\\. For non-corp passwords or SSH passphrases, allow the next prompt and re-run your command\\.$",
                     "replace": "。对于非公司内网密码或 SSH 密钥口令，请允许下一个提示并重新运行您的命令。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Start|开始多路并行) Best-of-.+$",
-            "nodeReplacements": [
-                {
-                    "match": "^Start Best-of-$",
-                    "replace": "开始多路并行 Best-of-"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Go to|前往)\\s*.+?(?:that runs Jetski Web\\.|运行 Jetski Web 的 Chrome。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Go to$",
-                    "replace": "前往"
-                },
-                {
-                    "match": "^, open Chrome\\s+$",
-                    "replace": "，打开"
-                },
-                {
-                    "match": "^\\s+that runs Jetski Web\\.$",
-                    "replace": " 上运行 Jetski Web 的 Chrome。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^.+(?:Learn more by visiting our\\s+.+?\\.|请访问我们的\\s+.+?\\s*了解更多。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Learn more by visiting our$",
-                    "replace": "请访问我们的"
-                },
-                {
-                    "match": "^\\.$",
-                    "replace": "了解更多。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Are you sure you want to delete|确定要删除)\\s+.+?(?:\\? This will remove it from your MCP configuration\\.|\\s*吗？这将从您的 MCP 配置中移除它。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Are you sure you want to delete\\s+$",
-                    "replace": "确定要删除 "
-                },
-                {
-                    "match": "^\\? This will remove it from your MCP configuration\\.$",
-                    "replace": " 吗？这将从您的 MCP 配置中移除它。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Delete|删除)\\s+.+?(?:\\? This removes it from your config directory\\.|\\s*吗？这将从您的配置目录中移除它。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Delete\\s+$",
-                    "replace": "删除 "
-                },
-                {
-                    "match": "^\\? This removes it from your config directory\\.$",
-                    "replace": " 吗？这将从您的配置目录中移除它。"
                 }
             ]
         },
@@ -1298,97 +456,15 @@
             ]
         },
         {
-            "containerPattern": "^(?:Runs\\s+.+?\\s+with\\s+.+?\\s+on this computer\\.|在本机运行\\s+.+?\\s+（使用模型\\s+.+?）。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Runs$",
-                    "replace": "在本机运行"
-                },
-                {
-                    "match": "^with$",
-                    "replace": "（使用模型"
-                },
-                {
-                    "match": "^on this computer\\.$",
-                    "replace": "）。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Reads\\s+.+?, read-only|读取\\s+.+?（只读）)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Reads\\s+$",
-                    "replace": "读取 "
-                },
-                {
-                    "match": "^, read-only$",
-                    "replace": "（只读）"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:— specify at least one user, team, component, or resource \\(joined with|—— 请至少指定一个用户、团队、组件或资源（使用).+?\\)$",
-            "nodeReplacements": [
-                {
-                    "match": "^— specify at least one user, team, component, or resource \\(joined with$",
-                    "replace": "—— 请至少指定一个用户、团队、组件或资源（使用"
-                },
-                {
-                    "match": "^\\)$",
-                    "replace": " 连接）"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Task|未找到任务)\\s*[\"“].+?[\"”](?:\\s+not found\\.|。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Task \"$",
-                    "replace": "未找到任务“"
-                },
-                {
-                    "match": "^\" not found\\.$",
-                    "replace": "”。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Runs a command.*?, always on\\.|持续运行命令.*?（常驻运行）。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Runs a command$",
-                    "replace": "持续运行命令"
-                },
-                {
-                    "match": "^, always on\\.$",
-                    "replace": "（常驻运行）。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:A\\s+.+?\\s+with ID\\s+.+?\\s+already exists\\.|已存在 ID 为\\s+.+?\\s+的.+?。)$",
-            "nodeReplacements": [
-                {
-                    "match": "^A\\s+$",
-                    "replace": "已存在"
-                },
-                {
-                    "match": "^\\s+with ID\\s+$",
-                    "replace": "（ID："
-                },
-                {
-                    "match": "^\\s+already exists\\.$",
-                    "replace": "）。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:An\\s+(?:automation|自动化任务)\\s+with the ID [“\"].+?[”\"] already exists\\.|已存在 ID 为“.+?”的自动化任务。)$",
+            "containerPattern": "^(?:An\\s+(?:automation|自动化任务)\\s+with the ID [“\"].+?[”\"] already exists\\.|已存在(?:自动化任务（ID：[“\"].+?[”\"]）| ID 为[“\"].+?[”\"]的自动化任务)。)$",
             "nodeReplacements": [
                 {
                     "match": "^An\\s+$",
                     "replace": "已存在"
+                },
+                {
+                    "match": "^automation$",
+                    "replace": "自动化任务"
                 },
                 {
                     "match": "^\\s+with the ID [“\"]$",
@@ -1397,28 +473,6 @@
                 {
                     "match": "^[”\"] already exists\\.$",
                     "replace": "”）。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Validated with GitHub and stored in|已通过 GitHub 验证并存储在).+(?:It is not visible in the agent's sandbox and is shared across all your projects\\.|在 Agent 沙盒中不可见，并在您的所有项目间共享。).*$",
-            "nodeReplacements": [
-                {
-                    "match": "^Validated with GitHub and stored in$",
-                    "replace": "已通过 GitHub 验证并存储在"
-                },
-                {
-                    "match": "^\\. It is not visible in the agent's sandbox and is shared across all your projects\\.$",
-                    "replace": " 中。该内容在 Agent 沙盒中不可见，并在您的所有项目间共享。"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^.+?\\s+(?:can now|现在可以)\\s+.+$",
-            "nodeReplacements": [
-                {
-                    "match": "^\\s*can now\\s*$",
-                    "replace": " 现在可以 "
                 }
             ]
         },
@@ -1436,107 +490,79 @@
             ]
         },
         {
-            "containerPattern": "^(?:Yes, allow downloads from\\s+.+?\\s+for this run|是，仅此次运行允许从\\s+.+?\\s+下载)$",
+            "containerPattern": "^(?:Commit\\s+.+?\\s+file\\s+(?:changes?|changechanges)\\s+to|提交\\s+.+?\\s+个文件变更至)$",
             "nodeReplacements": [
                 {
-                    "match": "^Yes, allow downloads from\\s+$",
-                    "replace": "是，仅此次运行允许从 "
+                    "match": "^Commit\\s+$",
+                    "replace": "提交 "
                 },
                 {
-                    "match": "^\\s+for this run$",
-                    "replace": " 下载"
+                    "match": "^\\s+file$",
+                    "replace": " 个文件"
+                },
+                {
+                    "match": "^\\s+$",
+                    "replace": ""
+                },
+                {
+                    "match": "^changes?$",
+                    "replace": "变更"
+                },
+                {
+                    "match": "^\\s+to$",
+                    "replace": "至"
                 }
             ]
         },
         {
-            "containerPattern": "^(?:Yes, allow downloads from\\s+.+?\\s+in this conversation|是，在此对话中允许从\\s+.+?\\s+下载)$",
+            "containerPattern": "^\\((?:\\d+\\s+subagents?|\\d+\\s+个子 Agent)\\)$",
             "nodeReplacements": [
                 {
-                    "match": "^Yes, allow downloads from\\s+$",
-                    "replace": "是，在此对话中允许从 "
+                    "match": "^\\s+subagent$",
+                    "replace": " 个子 Agent"
                 },
                 {
-                    "match": "^\\s+in this conversation$",
-                    "replace": " 下载"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Yes, always allow downloads from|是，始终允许从)\\s+.+$",
-            "nodeReplacements": [
-                {
-                    "match": "^Yes, always allow downloads from\\s+$",
-                    "replace": "是，始终允许从 "
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Yes, allow\\s+.+?\\s+in this conversation|是，在此对话中允许\\s+.+?)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Yes, allow\\s+$",
-                    "replace": "是，在此对话中允许 "
-                },
-                {
-                    "match": "^\\s+in this conversation$",
+                    "match": "^s$",
                     "replace": ""
                 }
             ]
         },
         {
-            "containerPattern": "^(?:Yes, always allow|是，始终允许)\\s+.+$",
+            "containerPattern": "^(?:Permanently delete\\s+.+?\\.|永久删除\\s+.+?。)$",
+            "matchNested": true,
             "nodeReplacements": [
                 {
-                    "match": "^Yes, always allow\\s+$",
-                    "replace": "是，始终允许 "
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Yes, save rule for '.+?' globally|是，全局保存针对 '.+?' 的规则)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Yes, save rule for '$",
-                    "replace": "是，全局保存针对 '"
+                    "match": "^Permanently delete$",
+                    "replace": "永久删除"
                 },
                 {
-                    "match": "^' globally$",
-                    "replace": "' 的规则"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Yes, save rule for '.+?' in this conversation|是，在此对话中保存针对 '.+?' 的规则)$",
-            "nodeReplacements": [
-                {
-                    "match": "^Yes, save rule for '$",
-                    "replace": "是，在此对话中保存针对 '"
+                    "match": "^\\s*including\\s+$",
+                    "replace": "，包括 "
                 },
                 {
-                    "match": "^' in this conversation$",
-                    "replace": "' 的规则"
+                    "match": "^\\.$",
+                    "replace": "。"
                 }
             ]
         },
         {
-            "containerPattern": "^(?:Yes, and always allow '.+?' in this conversation|是，且在此对话中始终允许 '.+?')$",
+            "containerPattern": "^(?:Previous chats live under a deprecated Google3 Project\\s+\\(.+?\\)\\.\\s+New chats will be grouped by workspace\\.|历史聊天记录归属于已废弃的 Google3 项目（.+?）。新对话将按工作区进行分组归类。)$",
             "nodeReplacements": [
                 {
-                    "match": "^Yes, and always allow '$",
-                    "replace": "是，且在此对话中始终允许 '"
+                    "match": "^Previous chats live under a deprecated Google3 Project$",
+                    "replace": "历史聊天记录归属于已废弃的 Google3 项目"
                 },
                 {
-                    "match": "^' in this conversation$",
-                    "replace": "'"
-                }
-            ]
-        },
-        {
-            "containerPattern": "^(?:Yes, and always allow|是，且始终允许)\\s+'.+'$",
-            "nodeReplacements": [
+                    "match": "^\\s+\\($",
+                    "replace": "（"
+                },
                 {
-                    "match": "^Yes, and always allow '$",
-                    "replace": "是，且始终允许 '"
+                    "match": "^\\)\\.\\s+$",
+                    "replace": "）。"
+                },
+                {
+                    "match": "^New chats will be grouped by workspace\\.$",
+                    "replace": "新对话将按工作区进行分组归类。"
                 }
             ]
         }
@@ -1763,6 +789,7 @@
             "already canceling",
             "Amend",
             "Antigravity",
+            "Any.do",
             "Artifact",
             "Artifacts",
             "AudioContext closed before fallback capture could start",

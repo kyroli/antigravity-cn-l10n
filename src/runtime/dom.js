@@ -10,21 +10,26 @@ function installDomTranslator(translator, config) {
         if (markTarget) {
             try {
                 Object.defineProperty(markTarget, '_agL10nInstalled', { value: true });
-            } catch (e) {
+            } catch {
                 if (markTarget !== docEl && docEl && (typeof Object.isExtensible !== 'function' || Object.isExtensible(docEl))) {
                     Object.defineProperty(docEl, '_agL10nInstalled', { value: true });
                 }
             }
         }
 
+        const VERDICT_ALLOW = 0;
+        const VERDICT_SOFT_BLOCK = 1;
+        const VERDICT_HARD_BLOCK = 2;
+        const VERDICT_BYPASS = 3;
+
         const cfg = config || {};
-        const normFn = typeof translator.norm === 'function'
+        const normalize = typeof translator.norm === 'function'
             ? translator.norm
             : (s => (s ? String(s).replace(/[\s\u00A0\u2009\u202F]+/g, ' ').trim() : ''));
-        const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const cleanList = arr => (arr || []).map(c => c.trim()).filter(Boolean);
         const buildClassWordRe = list => (list.length
-            ? new RegExp(`(?:^|\\s)(?:${list.map(escRe).join('|')})(?=\\s|$)`, 'i')
+            ? new RegExp(`(?:^|\\s)(?:${list.map(escapeRegExp).join('|')})(?=\\s|$)`, 'i')
             : null);
 
         const BLOCKED_TAG_SET = new Set((cfg.blockedTags || []).map(t => t.toUpperCase()));
@@ -39,9 +44,9 @@ function installDomTranslator(translator, config) {
         const CONV_ROW_ALLOWED = new Set(cfg.conversationRowAllowedTexts || []);
 
         const hardClassParts = [];
-        if (BLOCKED_CLASS_SUBSTRINGS.length) hardClassParts.push(BLOCKED_CLASS_SUBSTRINGS.map(escRe).join('|'));
+        if (BLOCKED_CLASS_SUBSTRINGS.length) hardClassParts.push(BLOCKED_CLASS_SUBSTRINGS.map(escapeRegExp).join('|'));
         if (CODE_EDITOR_KEYWORDS.length) {
-            hardClassParts.push(`(?:^|\\s)(?!(?:bg-|text-|border-|decoration-|scrollbar-))[^\\s:\\[\\]]*(?:${CODE_EDITOR_KEYWORDS.map(escRe).join('|')})[^\\s:\\[\\]]*(?=\\s|$)`);
+            hardClassParts.push(`(?:^|\\s)(?!(?:bg-|text-|border-|decoration-|scrollbar-))[^\\s:\\[\\]]*(?:${CODE_EDITOR_KEYWORDS.map(escapeRegExp).join('|')})[^\\s:\\[\\]]*(?=\\s|$)`);
         }
         const HARD_BLOCKED_CLASS_RE = hardClassParts.length ? new RegExp(hardClassParts.join('|'), 'i') : null;
         const SOFT_BLOCKED_CLASS_RE = buildClassWordRe(BLOCKED_CLASS_LIST);
@@ -75,47 +80,47 @@ function installDomTranslator(translator, config) {
         const elementVerdictCache = new WeakMap();
 
         function getClassString(el) {
-            const cn = el.className;
-            if (typeof cn === 'string') return cn;
-            if (cn && typeof cn.baseVal === 'string') return cn.baseVal;
+            const className = el.className;
+            if (typeof className === 'string') return className;
+            if (className && typeof className.baseVal === 'string') return className.baseVal;
             return '';
         }
 
         function computeStaticVerdict(el, cls) {
             const tag = el.tagName ? el.tagName.toUpperCase() : '';
-            if (BLOCKED_TAG_SET.has(tag)) return 2;
+            if (BLOCKED_TAG_SET.has(tag)) return VERDICT_HARD_BLOCK;
             for (let i = 0; i < BLOCKED_DATA_ATTRS.length; i++) {
-                if (el.hasAttribute?.(BLOCKED_DATA_ATTRS[i])) return 2;
+                if (el.hasAttribute?.(BLOCKED_DATA_ATTRS[i])) return VERDICT_HARD_BLOCK;
             }
-            const ce = el.getAttribute?.('contenteditable');
-            if (ce === 'true' || ce === 'plaintext-only' || ce === '') return 2;
-            if (el.getAttribute?.('translate') === 'no') return 2;
+            const contentEditable = el.getAttribute?.('contenteditable');
+            if (contentEditable === 'true' || contentEditable === 'plaintext-only' || contentEditable === '') return VERDICT_HARD_BLOCK;
+            if (el.getAttribute?.('translate') === 'no') return VERDICT_HARD_BLOCK;
 
             const testId = el.getAttribute?.('data-testid') || '';
             let lowerTestId = '';
             if (testId) {
                 lowerTestId = testId.toLowerCase();
-                if (BLOCKED_TESTID_SET.has(lowerTestId)) return 2;
+                if (BLOCKED_TESTID_SET.has(lowerTestId)) return VERDICT_HARD_BLOCK;
                 for (let i = 0; i < BLOCKED_TESTID_SUBSTRINGS.length; i++) {
-                    if (lowerTestId.includes(BLOCKED_TESTID_SUBSTRINGS[i])) return 2;
+                    if (lowerTestId.includes(BLOCKED_TESTID_SUBSTRINGS[i])) return VERDICT_HARD_BLOCK;
                 }
             }
-            if (cls && HARD_BLOCKED_CLASS_RE && HARD_BLOCKED_CLASS_RE.test(cls)) return 2;
+            if (cls && HARD_BLOCKED_CLASS_RE && HARD_BLOCKED_CLASS_RE.test(cls)) return VERDICT_HARD_BLOCK;
 
-            if (lowerTestId.startsWith('conversation-row-')) return 1;
-            if (cls && SOFT_BLOCKED_CLASS_RE && SOFT_BLOCKED_CLASS_RE.test(cls)) return 1;
+            if (lowerTestId.startsWith('conversation-row-')) return VERDICT_SOFT_BLOCK;
+            if (cls && SOFT_BLOCKED_CLASS_RE && SOFT_BLOCKED_CLASS_RE.test(cls)) return VERDICT_SOFT_BLOCK;
 
-            if (tag === 'DIALOG' || tag === 'BUTTON') return 3;
+            if (tag === 'DIALOG' || tag === 'BUTTON') return VERDICT_BYPASS;
             const role = el.getAttribute?.('role');
-            if (role && BYPASS_ROLE_SET.has(role.toLowerCase())) return 3;
-            if (el.getAttribute?.('aria-modal') === 'true') return 3;
-            if (el.hasAttribute?.('data-radix-popper-content-wrapper')) return 3;
-            if (cls && BYPASS_CLASS_RE && BYPASS_CLASS_RE.test(cls)) return 3;
-            return 0;
+            if (role && BYPASS_ROLE_SET.has(role.toLowerCase())) return VERDICT_BYPASS;
+            if (el.getAttribute?.('aria-modal') === 'true') return VERDICT_BYPASS;
+            if (el.hasAttribute?.('data-radix-popper-content-wrapper')) return VERDICT_BYPASS;
+            if (cls && BYPASS_CLASS_RE && BYPASS_CLASS_RE.test(cls)) return VERDICT_BYPASS;
+            return VERDICT_ALLOW;
         }
 
         function getSelfVerdict(el) {
-            if (!el || el.nodeType !== Node.ELEMENT_NODE) return 0;
+            if (!el || el.nodeType !== Node.ELEMENT_NODE) return VERDICT_ALLOW;
             const cls = getClassString(el);
             const cached = elementVerdictCache.get(el);
             if (cached && cached.cls === cls) return cached.verdict;
@@ -124,67 +129,64 @@ function installDomTranslator(translator, config) {
             return verdict;
         }
 
-        function getParentOrHost(n) {
-            return n.parentElement
-                || (n.parentNode && n.parentNode.nodeType === Node.ELEMENT_NODE ? n.parentNode : null)
-                || n.getRootNode?.()?.host
+        function getParentOrHost(node) {
+            return node.parentElement
+                || (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE ? node.parentNode : null)
+                || node.getRootNode?.()?.host
                 || null;
         }
-
-        let lastZoneConvBypass = false;
 
         function isConvRowAllowed(el, fallbackText) {
             if (CONV_ROW_ALLOWED.size === 0) return false;
             if (el && el.childElementCount === 0) {
                 const raw = el.textContent;
-                const t = raw ? raw.trim() : '';
-                if (t && CONV_ROW_ALLOWED.has(t)) return true;
+                const trimmed = raw ? raw.trim() : '';
+                if (trimmed && CONV_ROW_ALLOWED.has(trimmed)) return true;
             }
             return Boolean(fallbackText && CONV_ROW_ALLOWED.has(fallbackText.trim()));
         }
 
-        function getZoneState(node) {
-            lastZoneConvBypass = false;
+        function resolveZoneState(node) {
             try {
-                if (!node) return 0;
+                if (!node) return { state: VERDICT_ALLOW, cacheable: true };
                 const isText = node.nodeType === Node.TEXT_NODE;
                 const fallbackText = isText ? node.nodeValue : '';
                 let curr = isText ? getParentOrHost(node) : node;
                 const originEl = curr;
                 let softResult = null;
+                let convBypass = false;
                 while (curr && curr.nodeType === Node.ELEMENT_NODE) {
-                    const v = getSelfVerdict(curr);
-                    if (v === 2) {
-                        lastZoneConvBypass = false;
-                        return 2;
+                    const verdict = getSelfVerdict(curr);
+                    if (verdict === VERDICT_HARD_BLOCK) {
+                        return { state: VERDICT_HARD_BLOCK, cacheable: true };
                     }
                     if (softResult === null) {
-                        if (v === 3) {
-                            softResult = 0;
-                        } else if (v === 1) {
+                        if (verdict === VERDICT_BYPASS) {
+                            softResult = VERDICT_ALLOW;
+                        } else if (verdict === VERDICT_SOFT_BLOCK) {
                             const isConvRow = (curr.getAttribute?.('data-testid') || '').toLowerCase().startsWith('conversation-row-');
                             if (isConvRow && isConvRowAllowed(originEl, fallbackText)) {
-                                softResult = 0;
-                                lastZoneConvBypass = true;
+                                softResult = VERDICT_ALLOW;
+                                convBypass = true;
                             } else {
-                                softResult = 1;
+                                softResult = VERDICT_SOFT_BLOCK;
                             }
                         }
                     }
                     curr = getParentOrHost(curr);
                 }
-                return softResult === null ? 0 : softResult;
-            } catch (e) {}
-            return 0;
+                return { state: softResult === null ? VERDICT_ALLOW : softResult, cacheable: !convBypass };
+            } catch {}
+            return { state: VERDICT_ALLOW, cacheable: true };
         }
 
         function translateSingleAttribute(node, attr) {
-            const v = node.getAttribute(attr);
-            if (!v || (attr === 'aria-label' && v.trim() === 'Cancel')) return;
+            const val = node.getAttribute(attr);
+            if (!val || (attr === 'aria-label' && val.trim() === 'Cancel')) return;
             let attrMap = translatedAttrs.get(node);
-            if (attrMap && attrMap[attr] === v) return;
-            const trans = translator.translateString(v);
-            if (trans !== null && trans !== v) {
+            if (attrMap && attrMap[attr] === val) return;
+            const trans = translator.translateString(val);
+            if (trans !== null && trans !== val) {
                 if (!attrMap) {
                     attrMap = Object.create(null);
                     translatedAttrs.set(node, attrMap);
@@ -212,31 +214,31 @@ function installDomTranslator(translator, config) {
                 const rule = FRAGMENT_RULES[i];
                 if (rule.containerSelector && !parentEl.matches?.(rule.containerSelector)) continue;
                 if (parentText === null) {
-                    parentText = normFn(parentEl.textContent);
+                    parentText = normalize(parentEl.textContent);
                     if (!parentText) return false;
                 }
                 if (!rule.containerRe.test(parentText)) continue;
                 for (let j = 0; j < rule.replacements.length; j++) {
                     const rep = rule.replacements[j];
-                    const m = val.match(rep.matchRe);
-                    if (!m) continue;
-                    let newV = rep.replace;
+                    const match = val.match(rep.matchRe);
+                    if (!match) continue;
+                    let replaced = rep.replace;
                     if (rep.normalizeEllipsis) {
-                        newV = newV.replace('$1', (val.includes('...') || val.includes('…')) ? '...' : '');
-                    } else if (m.length > 1) {
-                        for (let g = m.length - 1; g >= 1; g--) {
-                            let gVal = m[g] !== undefined ? m[g] : '';
-                            if (gVal && (rep.formatAll || (rep.formatGroupSet && rep.formatGroupSet.has(g)))) {
+                        replaced = replaced.replace('$1', (val.includes('...') || val.includes('…')) ? '...' : '');
+                    } else if (match.length > 1) {
+                        for (let g = match.length - 1; g >= 1; g--) {
+                            let groupVal = match[g] !== undefined ? match[g] : '';
+                            if (groupVal && (rep.formatAll || (rep.formatGroupSet && rep.formatGroupSet.has(g)))) {
                                 const formatted = typeof translator.formatDuration === 'function'
-                                    ? translator.formatDuration(gVal)
+                                    ? translator.formatDuration(groupVal)
                                     : null;
-                                if (formatted) gVal = formatted;
+                                if (formatted) groupVal = formatted;
                             }
-                            newV = newV.split('$' + g).join(gVal);
+                            replaced = replaced.split('$' + g).join(groupVal);
                         }
                     }
-                    node.nodeValue = newV;
-                    translatedValues.set(node, newV);
+                    node.nodeValue = replaced;
+                    translatedValues.set(node, replaced);
                     return true;
                 }
             }
@@ -265,20 +267,22 @@ function installDomTranslator(translator, config) {
             if (!node) return;
             try {
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    if (parentState === 2) return;
+                    if (parentState === VERDICT_HARD_BLOCK) return;
                     const tag = node.tagName ? node.tagName.toUpperCase() : '';
-                    const v = getSelfVerdict(node);
-                    if (v === 2) {
-                        if ((tag === 'INPUT' || tag === 'TEXTAREA') && parentState === 0) {
+                    const verdict = getSelfVerdict(node);
+                    if (verdict === VERDICT_HARD_BLOCK) {
+                        if ((tag === 'INPUT' || tag === 'TEXTAREA') && parentState === VERDICT_ALLOW) {
                             translateElementAttributes(node, false);
                         }
                         return;
                     }
-                    let nextState = v === 1 ? 1 : (v === 3 ? 0 : parentState);
-                    if (nextState === 1 && parentState === 1 && isConvRowAllowed(node)) {
-                        nextState = 0;
+                    let nextState = verdict === VERDICT_SOFT_BLOCK
+                        ? VERDICT_SOFT_BLOCK
+                        : (verdict === VERDICT_BYPASS ? VERDICT_ALLOW : parentState);
+                    if (nextState === VERDICT_SOFT_BLOCK && parentState === VERDICT_SOFT_BLOCK && isConvRowAllowed(node)) {
+                        nextState = VERDICT_ALLOW;
                     }
-                    translateElementAttributes(node, nextState !== 0);
+                    translateElementAttributes(node, nextState !== VERDICT_ALLOW);
                     if (node.shadowRoot) translateNode(node.shadowRoot, nextState);
                     const childNodes = node.childNodes;
                     if (childNodes) {
@@ -287,7 +291,7 @@ function installDomTranslator(translator, config) {
                         }
                     }
                 } else if (node.nodeType === Node.TEXT_NODE) {
-                    if (parentState === 0 || (parentState === 1 && isConvRowAllowed(null, node.nodeValue))) {
+                    if (parentState === VERDICT_ALLOW || (parentState === VERDICT_SOFT_BLOCK && isConvRowAllowed(null, node.nodeValue))) {
                         translateTextNode(node);
                     }
                 } else if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === (Node.DOCUMENT_NODE || 9)) {
@@ -298,16 +302,16 @@ function installDomTranslator(translator, config) {
                         }
                     }
                 }
-            } catch (e) {}
+            } catch {}
         }
 
         const observer = new MutationObserver(mutations => {
             const parentCache = new Map();
             function getStateCached(el) {
-                if (!el || el.nodeType !== Node.ELEMENT_NODE) return 0;
+                if (!el || el.nodeType !== Node.ELEMENT_NODE) return VERDICT_ALLOW;
                 if (parentCache.has(el)) return parentCache.get(el);
-                const state = getZoneState(el);
-                if (!lastZoneConvBypass) {
+                const { state, cacheable } = resolveZoneState(el);
+                if (cacheable) {
                     parentCache.set(el, state);
                 }
                 return state;
@@ -315,13 +319,13 @@ function installDomTranslator(translator, config) {
             let addedElemSet = null;
             if (mutations.length > 1) {
                 for (let k = 0; k < mutations.length; k++) {
-                    const m = mutations[k];
-                    if (m.type === 'childList' && m.addedNodes.length > 0) {
-                        for (let n = 0; n < m.addedNodes.length; n++) {
-                            const nd = m.addedNodes[n];
-                            if (nd && nd.nodeType === Node.ELEMENT_NODE) {
+                    const mutation = mutations[k];
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        for (let n = 0; n < mutation.addedNodes.length; n++) {
+                            const addedNode = mutation.addedNodes[n];
+                            if (addedNode && addedNode.nodeType === Node.ELEMENT_NODE) {
                                 if (!addedElemSet) addedElemSet = new Set();
-                                addedElemSet.add(nd);
+                                addedElemSet.add(addedNode);
                             }
                         }
                     }
@@ -337,36 +341,36 @@ function installDomTranslator(translator, config) {
                 return false;
             }
             for (let k = 0; k < mutations.length; k++) {
-                const m = mutations[k];
-                if (m.type === 'childList') {
-                    for (let n = 0; n < m.addedNodes.length; n++) {
-                        const node = m.addedNodes[n];
+                const mutation = mutations[k];
+                if (mutation.type === 'childList') {
+                    for (let n = 0; n < mutation.addedNodes.length; n++) {
+                        const node = mutation.addedNodes[n];
                         if (hasAddedAncestor(node)) continue;
                         const parent = getParentOrHost(node);
-                        translateNode(node, parent ? getStateCached(parent) : 0);
+                        translateNode(node, parent ? getStateCached(parent) : VERDICT_ALLOW);
                     }
-                } else if (m.type === 'characterData') {
-                    const node = m.target;
+                } else if (mutation.type === 'characterData') {
+                    const node = mutation.target;
                     if (!node || translatedValues.get(node) === node.nodeValue) continue;
-                    if (getZoneState(node) === 0) {
+                    if (resolveZoneState(node).state === VERDICT_ALLOW) {
                         translateTextNode(node);
                     }
-                } else if (m.type === 'attributes') {
-                    const el = m.target;
-                    if (el && el.nodeType === Node.ELEMENT_NODE && m.attributeName) {
+                } else if (mutation.type === 'attributes') {
+                    const el = mutation.target;
+                    if (el && el.nodeType === Node.ELEMENT_NODE && mutation.attributeName) {
                         const attrMap = translatedAttrs.get(el);
-                        if (attrMap && attrMap[m.attributeName] === el.getAttribute(m.attributeName)) continue;
+                        if (attrMap && attrMap[mutation.attributeName] === el.getAttribute(mutation.attributeName)) continue;
                         const tag = el.tagName ? el.tagName.toUpperCase() : '';
                         const checkTarget = (tag === 'INPUT' || tag === 'TEXTAREA') ? (getParentOrHost(el) || el) : el;
-                        if (getStateCached(checkTarget) === 0) {
-                            translateSingleAttribute(el, m.attributeName);
+                        if (getStateCached(checkTarget) === VERDICT_ALLOW) {
+                            translateSingleAttribute(el, mutation.attributeName);
                         }
                     }
                 }
             }
         });
 
-        const obsOpts = {
+        const observerOptions = {
             childList: true,
             subtree: true,
             characterData: true,
@@ -375,16 +379,16 @@ function installDomTranslator(translator, config) {
         };
 
         const target = document.documentElement || document;
-        observer.observe(target, obsOpts);
-        translateNode(target, 0);
+        observer.observe(target, observerOptions);
+        translateNode(target, VERDICT_ALLOW);
 
         if (document.readyState === 'loading' && typeof document.addEventListener === 'function') {
             document.addEventListener('DOMContentLoaded', () => {
-                translateNode(document.documentElement || document, 0);
+                translateNode(document.documentElement || document, VERDICT_ALLOW);
             }, { once: true });
         }
-    } catch (e) {
-        console.error('[ANTIGRAVITY_DOM_TRANSLATOR_ERROR]', e);
+    } catch (err) {
+        console.error('[ANTIGRAVITY_DOM_TRANSLATOR_ERROR]', err);
     }
 }
 

@@ -5,11 +5,14 @@ const utils = require('./utils');
 const { normalizeText, createTranslator } = require('./runtime/translator');
 const { installDomTranslator } = require('./runtime/dom');
 const { buildFrameScript } = require('./runtime/main');
+const { resolveFragmentPatterns } = require('./fragmentCompiler');
 const { SIGNATURE_START, SIGNATURE_END, cleanInjectedPatches } = utils;
 
 const RUNTIME_L10N_FILES = ['translator.js', 'dom.js', 'bundleRewriter.js', 'bundleProxy.js', 'main.js'];
 const SLOT_PREFIX = 'AGSLOT';
-const escapeTpl = str => String(str).replace(/[`\\]|\$\{/g, m => '\\' + m);
+const NUMERIC_PROBE_BASE = 99100;
+const NUMERIC_PROBE_GUARD = '9910';
+const escapeTemplateBody = str => String(str).replace(/[`\\]|\$\{/g, match => '\\' + match);
 
 function insertAfterPrologue(source, injectedCode) {
     if (!source) return injectedCode;
@@ -23,16 +26,25 @@ function mergeArrayField(baseArr, extraArr, byJson = false) {
     const combined = [...(Array.isArray(baseArr) ? baseArr : []), ...(Array.isArray(extraArr) ? extraArr : [])];
     if (!byJson) return Array.from(new Set(combined));
     const seen = new Set();
-    return combined.filter(item => { const k = JSON.stringify(item); return seen.has(k) ? false : (seen.add(k), true); });
+    return combined.filter(item => {
+        const key = JSON.stringify(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
 }
 
-function buildScopedConfigs(config) {
-    const { frame: frameCfg = {}, audit: _auditCfg, ...hubConfig } = config || {};
+function buildScopedConfigs(config, fragmentsObj) {
+    const { frame: frameCfg = {}, audit: _auditCfg, ...rawHubConfig } = config || {};
+    const resolvedHubPatterns = resolveFragmentPatterns(rawHubConfig, fragmentsObj);
+    const hubConfig = Object.assign({}, rawHubConfig, {
+        fragmentPatterns: resolvedHubPatterns
+    });
     const frameConfig = Object.assign({}, hubConfig, {
         blockedClasses: mergeArrayField(hubConfig.blockedClasses, frameCfg.blockedClasses),
         blockedTestIds: mergeArrayField(hubConfig.blockedTestIds, frameCfg.blockedTestIds),
         bypassClasses: mergeArrayField(hubConfig.bypassClasses, frameCfg.bypassClasses),
-        fragmentPatterns: mergeArrayField(hubConfig.fragmentPatterns, frameCfg.fragmentPatterns, true)
+        fragmentPatterns: mergeArrayField(resolvedHubPatterns, frameCfg.fragmentPatterns, true)
     });
     return {
         hubConfig,
@@ -42,7 +54,7 @@ function buildScopedConfigs(config) {
     };
 }
 
-const pickTranslatorCfg = cfg => ({
+const pickTranslatorConfig = cfg => ({
     lowerWordsExclude: (cfg && cfg.lowerWordsExclude) || [],
     protectedFiles: (cfg && cfg.protectedFiles) || [],
     toolStatVerbs: cfg && cfg.toolStatVerbs,
@@ -68,7 +80,9 @@ function buildRendererPayload() {
         ${installDomTranslator.toString()}
         const translator = createTranslator(new Map(Object.entries(boot.allDict)), boot.rules || [], cleanCfg);
         installDomTranslator(translator, cleanCfg);
-    } catch (e) { console.error('[ANTIGRAVITY_RENDERER_LOCALIZATION_ERROR]', e); }
+    } catch (err) {
+        console.error('[ANTIGRAVITY_RENDERER_LOCALIZATION_ERROR]', err);
+    }
 })();
 ${SIGNATURE_END}`;
 }
@@ -152,37 +166,39 @@ const STATIC_TEMPLATES = {
 function translateStaticTarget(target, translator) {
     const withSlot = (str, open, close, literalJson) => {
         if (literalJson) {
-            const t = translator.translateString(str);
-            return t ? JSON.stringify(t) : null;
+            const translated = translator.translateString(str);
+            return translated ? JSON.stringify(translated) : null;
         }
         const slotRe = /\$\{[^}]+\}|<[a-z0-9]+\b[^>]*><\/[a-z0-9]+>/gi;
         const slots = str.match(slotRe) || [];
-        const tryTranslate = mkTok => {
-            const toks = [];
+        const tryTranslate = makeToken => {
+            const tokens = [];
             const key = str.replace(slotRe, () => {
-                const tok = mkTok(toks.length);
-                toks.push(tok);
-                return tok;
+                const token = makeToken(tokens.length);
+                tokens.push(token);
+                return token;
             });
-            const t = translator.translateString(key);
-            return t && toks.every(tok => t.includes(tok)) ? { t, toks } : null;
+            const translated = translator.translateString(key);
+            return translated && tokens.every(token => translated.includes(token)) ? { translated, tokens } : null;
         };
         const hit = tryTranslate(idx => `${SLOT_PREFIX}${idx}`)
-            || (slots.length > 0 && !str.includes('9910') ? tryTranslate(idx => String(99100 + idx)) : null);
+            || (slots.length > 0 && !str.includes(NUMERIC_PROBE_GUARD) ? tryTranslate(idx => String(NUMERIC_PROBE_BASE + idx)) : null);
         if (!hit) return null;
-        let body = escapeTpl(hit.t);
-        hit.toks.forEach((tok, idx) => { body = body.split(tok).join(slots[idx]); });
+        let body = escapeTemplateBody(hit.translated);
+        hit.tokens.forEach((token, idx) => {
+            body = body.split(token).join(slots[idx]);
+        });
         return open + body + close;
     };
-    const q = target[0];
-    if ((q === "'" || q === '"' || q === '`') && target.endsWith(q)) {
+    const quote = target[0];
+    if ((quote === "'" || quote === '"' || quote === '`') && target.endsWith(quote)) {
         const inner = target.slice(1, -1)
             .replace(/\\u2026/g, '…')
             .replace(/\\(['"\\])/g, '$1');
-        return (q === '`' && inner.includes('${')) ? withSlot(inner, '`', '`') : withSlot(inner, '', '', true);
+        return (quote === '`' && inner.includes('${')) ? withSlot(inner, '`', '`') : withSlot(inner, '', '', true);
     }
-    const hm = target.match(/^(<[^>]+>|>)(.+)(<\/[a-z0-9]+>)$/i);
-    return hm ? withSlot(hm[2], hm[1], hm[3]) : null;
+    const htmlMatch = target.match(/^(<[^>]+>|>)(.+)(<\/[a-z0-9]+>)$/i);
+    return htmlMatch ? withSlot(htmlMatch[2], htmlMatch[1], htmlMatch[3]) : null;
 }
 
 function resolveStaticTarget(entry, translator) {
@@ -193,11 +209,12 @@ function resolveStaticTarget(entry, translator) {
 }
 
 function patchStaticTemplates(asarReader, patchMap, dict, rules, hubConfig) {
-    const translator = createTranslator(dict, rules, pickTranslatorCfg(hubConfig));
+    const translator = createTranslator(dict, rules, pickTranslatorConfig(hubConfig));
     for (const [file, targets] of Object.entries(STATIC_TEMPLATES)) {
         const raw = asarReader.readFile(file);
         if (!raw || raw.includes(SIGNATURE_START)) continue;
-        let next = utils.foldAdjacentJsStrings(raw), changed = false;
+        let next = utils.foldAdjacentJsStrings(raw);
+        let changed = false;
         for (const entry of targets) {
             const { target, replacement } = resolveStaticTarget(entry, translator);
             if (replacement && replacement !== target && next.includes(target)) {
@@ -210,7 +227,7 @@ function patchStaticTemplates(asarReader, patchMap, dict, rules, hubConfig) {
 }
 
 function auditStaticTemplates(asarReader, dict, rules, hubConfig) {
-    const translator = createTranslator(dict, rules, pickTranslatorCfg(hubConfig));
+    const translator = createTranslator(dict, rules, pickTranslatorConfig(hubConfig));
     const issues = [];
     for (const [file, targets] of Object.entries(STATIC_TEMPLATES)) {
         const raw = cleanInjectedPatches(asarReader.readFile(file));
@@ -236,7 +253,9 @@ function buildMainBootstrap() {
 (() => {
     try {
         require('./l10n/main').installFromAsar(require('electron'));
-    } catch (e) { console.error('[ANTIGRAVITY_MAIN_LOCALIZATION_ERROR]', e); }
+    } catch (err) {
+        console.error('[ANTIGRAVITY_MAIN_LOCALIZATION_ERROR]', err);
+    }
 })();
 ${SIGNATURE_END}`;
 }
@@ -244,7 +263,9 @@ ${SIGNATURE_END}`;
 function verifyPatchOutputs(patchMap, extraScripts = []) {
     for (const [name, code] of extraScripts) {
         if (!code) continue;
-        if (code.includes(SIGNATURE_START) || code.includes(SIGNATURE_END)) throw new Error(`补丁产物校验失败: ${name} 不应包含签名边界标记`);
+        if (code.includes(SIGNATURE_START) || code.includes(SIGNATURE_END)) {
+            throw new Error(`补丁产物校验失败: ${name} 不应包含签名边界标记`);
+        }
         new vm.Script(code, { filename: name });
     }
     for (const [rel, code] of Object.entries(patchMap || {})) {
@@ -252,7 +273,9 @@ function verifyPatchOutputs(patchMap, extraScripts = []) {
             JSON.parse(code);
             continue;
         }
-        if (!code.includes(SIGNATURE_START) || !code.includes(SIGNATURE_END)) throw new Error(`补丁产物校验失败: ${rel} 缺少签名标记`);
+        if (!code.includes(SIGNATURE_START) || !code.includes(SIGNATURE_END)) {
+            throw new Error(`补丁产物校验失败: ${rel} 缺少签名标记`);
+        }
         new vm.Script(code, { filename: rel });
     }
 }
@@ -262,10 +285,11 @@ function generatePatchMap(asarReader) {
     const byFile = utils.loadDictionariesByFile();
     const rules = utils.loadRules();
     const config = utils.loadConfig();
+    const fragments = utils.loadFragments();
 
     const menusDict = byFile['menus.json'] || {};
     const agentsDict = byFile['agents.json'] || {};
-    const { hubConfig, frameConfig, frameExtraDict, frameExtraRules } = buildScopedConfigs(config);
+    const { hubConfig, frameConfig, frameExtraDict, frameExtraRules } = buildScopedConfigs(config, fragments);
 
     const l10nData = {
         dictsHash: utils.getDictsHash(),
@@ -297,4 +321,8 @@ function generatePatchMap(asarReader) {
     return patchMap;
 }
 
-module.exports = { STATIC_TEMPLATES, auditStaticTemplates, generatePatchMap };
+module.exports = {
+    STATIC_TEMPLATES,
+    auditStaticTemplates,
+    generatePatchMap
+};

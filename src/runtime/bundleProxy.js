@@ -13,17 +13,25 @@ const isLoopbackHost = hostname => LOOPBACK_HOSTS.has(String(hostname || '').toL
 function validateUpstreamBundleUrl(rawSrc) {
     if (!rawSrc || typeof rawSrc !== 'string') return null;
     try {
-        const u = new URL(rawSrc);
-        return (u.protocol === 'https:' && isLoopbackHost(u.hostname) && u.pathname === '/main.js') ? u : null;
-    } catch (e) { return null; }
+        const url = new URL(rawSrc);
+        return (url.protocol === 'https:' && isLoopbackHost(url.hostname) && url.pathname === '/main.js') ? url : null;
+    } catch {
+        return null;
+    }
 }
 
 function writeAtomic(filePath, content) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     const tmp = `${filePath}.${process.pid}.${Date.now()}.tmp`;
     fs.writeFileSync(tmp, content);
-    try { fs.renameSync(tmp, filePath); }
-    catch (e) { try { fs.rmSync(tmp, { force: true }); } catch (_) {} throw e; }
+    try {
+        fs.renameSync(tmp, filePath);
+    } catch (err) {
+        try {
+            fs.rmSync(tmp, { force: true });
+        } catch {}
+        throw err;
+    }
 }
 
 function fetchUpstreamBundle(targetUrl, etag, timeoutMs = 15000) {
@@ -39,9 +47,13 @@ function fetchUpstreamBundle(targetUrl, etag, timeoutMs = 15000) {
         }, res => {
             const status = res.statusCode || 0;
             const respEtag = typeof res.headers.etag === 'string' ? res.headers.etag : '';
-            if (status === 304) { res.resume(); return resolve({ status: 304, etag: respEtag || etag, body: null }); }
+            if (status === 304) {
+                res.resume();
+                resolve({ status: 304, etag: respEtag || etag, body: null });
+                return;
+            }
             const chunks = [];
-            res.on('data', c => chunks.push(c));
+            res.on('data', chunk => chunks.push(chunk));
             res.on('end', () => resolve({ status, etag: respEtag, body: Buffer.concat(chunks) }));
             res.on('error', reject);
         });
@@ -68,7 +80,9 @@ function createBundleProxyServer(opts = {}) {
 
     async function resolveRewrittenBundle(upstreamUrl) {
         let meta = null;
-        try { if (fs.existsSync(cacheMetaPath)) meta = JSON.parse(fs.readFileSync(cacheMetaPath, 'utf8')); } catch (_) {}
+        try {
+            if (fs.existsSync(cacheMetaPath)) meta = JSON.parse(fs.readFileSync(cacheMetaPath, 'utf8'));
+        } catch {}
         const hasCache = Boolean(meta?.etag && fs.existsSync(cacheJsPath));
         const upstream = await fetchUpstreamBundle(upstreamUrl, hasCache ? meta.etag : '');
         if (upstream.status === 304 && hasCache) return fs.readFileSync(cacheJsPath);
@@ -83,7 +97,7 @@ function createBundleProxyServer(opts = {}) {
                 try {
                     writeAtomic(cacheJsPath, outBuf);
                     writeAtomic(cacheMetaPath, JSON.stringify({ etag: upstream.etag, dictsHash, stats: rewritten.stats, updatedAt: Date.now() }));
-                } catch (_) {}
+                } catch {}
             }
             return outBuf;
         } catch (err) {
@@ -95,13 +109,27 @@ function createBundleProxyServer(opts = {}) {
     const server = http.createServer(async (req, res) => {
         try {
             const reqUrl = new URL(req.url || '/', 'http://127.0.0.1');
-            if (reqUrl.pathname !== `/${token}/main.js`) { res.writeHead(403); res.end('Forbidden'); return; }
-            if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
+            if (reqUrl.pathname !== `/${token}/main.js`) {
+                res.writeHead(403);
+                res.end('Forbidden');
+                return;
+            }
+            if (req.method !== 'GET') {
+                res.writeHead(405);
+                res.end();
+                return;
+            }
             const upstreamUrl = validateUpstreamBundleUrl(reqUrl.searchParams.get('src'));
-            if (!upstreamUrl) { res.writeHead(403); res.end('Forbidden'); return; }
+            if (!upstreamUrl) {
+                res.writeHead(403);
+                res.end('Forbidden');
+                return;
+            }
 
             if (!inFlightBuild) {
-                inFlightBuild = resolveRewrittenBundle(upstreamUrl).finally(() => { inFlightBuild = null; });
+                inFlightBuild = resolveRewrittenBundle(upstreamUrl).finally(() => {
+                    inFlightBuild = null;
+                });
             }
             const payload = await inFlightBuild;
             res.writeHead(200, {
@@ -127,7 +155,14 @@ function createBundleProxyServer(opts = {}) {
             resolve({ port: server.address().port, token, cacheJsPath, cacheMetaPath });
         });
     });
-    const close = () => new Promise(resolve => { try { server.close(() => resolve()); } catch (e) { resolve(); } });
+
+    const close = () => new Promise(resolve => {
+        try {
+            server.close(() => resolve());
+        } catch {
+            resolve();
+        }
+    });
 
     return { server, token, cacheJsPath, cacheMetaPath, start, close };
 }
@@ -135,28 +170,31 @@ function createBundleProxyServer(opts = {}) {
 function installBundleProxy(electron, opts = {}) {
     if (!electron || electron._agL10nBundleProxyInstalled) return null;
     const { app, session } = electron;
-    const defaultSes = session?.defaultSession;
-    if (!app || typeof defaultSes?.webRequest?.onBeforeRequest !== 'function') return null;
+    const defaultSession = session?.defaultSession;
+    if (!app || typeof defaultSession?.webRequest?.onBeforeRequest !== 'function') return null;
 
     Object.defineProperty(electron, '_agL10nBundleProxyInstalled', { value: true });
     let cacheDir;
-    try { cacheDir = path.join(app.getPath('userData'), 'ag-l10n-cache'); }
-    catch (e) { cacheDir = path.join(os.tmpdir(), 'ag-l10n-cache'); }
+    try {
+        cacheDir = path.join(app.getPath('userData'), 'ag-l10n-cache');
+    } catch {
+        cacheDir = path.join(os.tmpdir(), 'ag-l10n-cache');
+    }
 
     const proxy = createBundleProxyServer({ ...opts, cacheDir });
     const ready = proxy.start().then(({ port, token }) => {
-        defaultSes.webRequest.onBeforeRequest(
+        defaultSession.webRequest.onBeforeRequest(
             { urls: ['https://127.0.0.1:*/main.js*', 'https://localhost:*/main.js*'] },
             (details, callback) => {
                 try {
                     if (details?.method === 'GET') {
-                        const u = new URL(details.url);
-                        if (u.pathname === '/main.js' && isLoopbackHost(u.hostname)) {
+                        const url = new URL(details.url);
+                        if (url.pathname === '/main.js' && isLoopbackHost(url.hostname)) {
                             callback({ redirectURL: `http://127.0.0.1:${port}/${token}/main.js?src=${encodeURIComponent(details.url)}` });
                             return;
                         }
                     }
-                } catch (e) {}
+                } catch {}
                 callback({});
             }
         );
@@ -166,8 +204,14 @@ function installBundleProxy(electron, opts = {}) {
         return null;
     });
 
-    app.on?.('will-quit', () => { proxy.close(); });
+    app.on?.('will-quit', () => {
+        proxy.close();
+    });
     return { proxy, ready };
 }
 
-module.exports = { validateUpstreamBundleUrl, createBundleProxyServer, installBundleProxy };
+module.exports = {
+    validateUpstreamBundleUrl,
+    createBundleProxyServer,
+    installBundleProxy
+};

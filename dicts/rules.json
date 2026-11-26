@@ -254,8 +254,8 @@
         ]
     },
     {
-        "pattern": "^No MCP servers found for (.+)$",
-        "replacement": "未找到匹配 '$1' 的 MCP 服务器",
+        "pattern": "^No MCP servers found for [\"']?(.+?)[\"']?$",
+        "replacement": "未找到匹配“$1”的 MCP 服务器",
         "rawGroups": [
             1
         ]
@@ -3746,6 +3746,13 @@
     {
         "pattern": "^Pin Entire ([^.!?\\n]{1,30})$",
         "replacement": "固定整个$1"
+    },
+    {
+        "pattern": "^No matching languages for \"(.+)\"$",
+        "replacement": "没有匹配“$1”的语言",
+        "rawGroups": [
+            1
+        ]
     },
     {
         "pattern": "^No matching ([^.!?\\n]{1,30})$",

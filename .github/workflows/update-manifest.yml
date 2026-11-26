@@ -10,6 +10,7 @@ on:
       - 'Antigravity-L10n.bat'
       - 'Antigravity-Restore.bat'
       - 'src/asar.js'
+      - 'src/fragmentCompiler.js'
       - 'src/patcher.js'
       - 'src/updater.js'
       - 'src/utils.js'

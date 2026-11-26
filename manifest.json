@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
-  "targetVersion": "2.35.1",
-  "revision": "9b79e150c14d",
+  "targetVersion": "2.35.2",
+  "revision": "488bf70eb854",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
@@ -18,64 +18,72 @@
       "size": 43014
     },
     "dicts/common.json": {
-      "sha256": "041888250a844a8da9280585d3cc545dcc1117b07bd73d6ddf7bad1cfb98d5ae",
-      "size": 293434
+      "sha256": "61a1679223c58a4b8e7c5f6e354ffb0d8bcfb561ddfd8c3b73705301657e3774",
+      "size": 294622
     },
     "dicts/config.json": {
-      "sha256": "3544f98d6c5c4ba2982420ba4f3339254ef137c364f54005b6d87e755d2818ac",
-      "size": 73679
+      "sha256": "0b306392ca458770c0e4543c96cc4feaff0f205aff7ec88bdaaf45266857dcb3",
+      "size": 32523
+    },
+    "dicts/fragments.json": {
+      "sha256": "99bd95b39d1832a0ee24a8a439a51eed7d6ec328af2e35ebe08f65ae3f573d5a",
+      "size": 13943
     },
     "dicts/menus.json": {
       "sha256": "be146fbadd879840e3f2db029c23bb7f1f08ab288dcbfaec04dc0e55bea71080",
       "size": 20856
     },
     "dicts/rules.json": {
-      "sha256": "fee1f806c8f9fc6197e2e29f7cea5ca7acce82a9bfe35af9a5df2d546160f364",
-      "size": 119758
+      "sha256": "22ac766ac60ab5d87f2e7737b9d0be49078e238a1b930587c6af8684e510d819",
+      "size": 119948
     },
     "package.json": {
-      "sha256": "86708fcdb9ae51154c9eee984b6c2dfa78406431646b327dcf30eccf24c18b41",
+      "sha256": "ace9aa21a121f6114d30a4e2122d6aed071de3f7011a74659108e84c829c433f",
       "size": 591
     },
     "patch.js": {
-      "sha256": "014490107cd07f844bad222df73b895122372d5378f3e07b49745960a72ceecf",
-      "size": 5679
+      "sha256": "7d66a8ea480e9f518079f9f363b2afc772810cf095b26d1acdd93098966c51fe",
+      "size": 5705
     },
     "src/asar.js": {
-      "sha256": "9d3ffd5bc3b12034c6ce6fff3805ce78b747b5ad67191d52d4a82101ad814214",
-      "size": 10766
+      "sha256": "366e6893ea684942156aca856d22d65dcc11e79d3bc601362a2aae3ae5e423f7",
+      "size": 11065
+    },
+    "src/fragmentCompiler.js": {
+      "sha256": "f49bac7824afe31bd59360193f420bb3b94891e614303aa361f64af174c240ef",
+      "size": 10714
     },
     "src/patcher.js": {
-      "sha256": "1ae3a03de09df531199a5066c376a4a2e9f9b75170362609173bfa741002691a",
-      "size": 13094
+      "sha256": "89f8fdea1f604e888217b5973264b20d054724d7bf8039cf42a0ff1bfcd09bab",
+      "size": 13891
     },
     "src/runtime/bundleProxy.js": {
-      "sha256": "65e1a723b777989c3c38a86c895f2ab3122654223f5d7205da7b41c80ea3dd43",
-      "size": 7604
+      "sha256": "cbcd398dc69d63011e543718cc08f22ef845f4c1c74a840b6dfc7a120e88a2ff",
+      "size": 8070
     },
     "src/runtime/bundleRewriter.js": {
-      "sha256": "a21fdb27dd451e1fcf157e1e4e0d9cdd8af8ae3e67d9652100dd5359b5d53256",
-      "size": 30268
+      "sha256": "3b9b668b93eea6d3cc32b20b2746c5af70a632c8f98448510e3b5330a393e4ac",
+      "size": 41405
     },
     "src/runtime/dom.js": {
-      "sha256": "0d78ae544e8f988cd6e9aa541834d8d8c3eda616bbac1d721934370fe21230e8",
-      "size": 18561
+      "sha256": "8504c047278f4f934877901d3bbd5da777575d8bb6846c1b7f81f4e7d9bd175c",
+      "size": 19892
     },
     "src/runtime/main.js": {
-      "sha256": "efedbcac58c2e6b21499b8447a8992e727ba4e867b688cdd8badf6cabce4cfe2",
-      "size": 18080
+      "sha256": "3c8baa19776740a2110e85a4116ac03df49ccae962938d2c3e5f09024f34f1b3",
+      "size": 18775
     },
     "src/runtime/translator.js": {
-      "sha256": "24a2824957fda464ecc0e0505251eaef6ec6701492c0982d13d8172110eb0142",
-      "size": 13752
+      "sha256": "3030927f36890559c1eff1574214a54f642937e86b2bdfa0922984a49599a22e",
+      "size": 14382
     },
     "src/updater.js": {
-      "sha256": "23b99e239db4cd88a6c7238e7f3d7515fd4610b528111356c58f43a16bacfefe",
-      "size": 17076
+      "sha256": "8c7e63219ed3a470bc21d9c2f10fa84930030191a1b3976c8c59fc25c7859b8d",
+      "size": 17123
     },
     "src/utils.js": {
-      "sha256": "32236183acd6c692e40e9787ea250df80bd2ebcf59591758d5393213b68f334a",
-      "size": 15357
+      "sha256": "fff60dca4a3a321a93044ec57327b6930f81a148f29bf922e78cd49c597f2891",
+      "size": 16546
     }
   }
 }

@@ -21,11 +21,11 @@ function parseAsar(asarBuf) {
     const header = JSON.parse(asarBuf.toString('utf8', 16, 16 + jsonLen));
     const oldData = asarBuf.subarray(dataStart);
 
-    const getNode = (relPath) => {
+    const getNode = relPath => {
         let cur = header;
-        for (const p of relPath.replace(/\\/g, '/').split('/').filter(Boolean)) {
-            if (!cur.files || !cur.files[p]) return null;
-            cur = cur.files[p];
+        for (const seg of relPath.replace(/\\/g, '/').split('/').filter(Boolean)) {
+            if (!cur.files || !cur.files[seg]) return null;
+            cur = cur.files[seg];
         }
         return cur;
     };
@@ -33,8 +33,8 @@ function parseAsar(asarBuf) {
     const readFile = (relPath, encoding = 'utf8') => {
         const node = getNode(relPath);
         if (!node || node.unpacked || node.offset === undefined) return null;
-        const off = Number(node.offset);
-        const slice = oldData.subarray(off, off + node.size);
+        const offset = Number(node.offset);
+        const slice = oldData.subarray(offset, offset + node.size);
         return encoding ? slice.toString(encoding) : slice;
     };
 
@@ -57,11 +57,16 @@ function walkDistJs(parsedAsar, options = {}) {
             const rel = `${prefix}/${name}`;
             if (rel === 'dist/l10n') continue;
             if (!includeTests && (rel === 'dist/__mocks__' || rel === 'dist/test')) continue;
-            if (child.files) { walk(child, rel); continue; }
+            if (child.files) {
+                walk(child, rel);
+                continue;
+            }
             if (!rel.endsWith('.js') || (!includeTests && rel.endsWith('.test.js'))) continue;
             if (isExcluded && isExcluded(rel)) continue;
             const content = parsed.readFile(rel, 'utf8');
-            if (content !== null) filesMap.set(stripPrefix ? rel.slice(5) : rel, clean ? utils.cleanInjectedPatches(content) : content);
+            if (content !== null) {
+                filesMap.set(stripPrefix ? rel.slice(5) : rel, clean ? utils.cleanInjectedPatches(content) : content);
+            }
         }
     };
     walk(distNode, 'dist');
@@ -75,14 +80,18 @@ function ensureAsarFileNode(header, relPath) {
     let cur = header;
     for (let i = 0; i < parts.length - 1; i++) {
         const seg = parts[i];
-        if (!cur.files || typeof cur.files !== 'object') throw new Error(`ASAR 路径冲突，父节点不是目录: ${parts.slice(0, i).join('/')}`);
+        if (!cur.files || typeof cur.files !== 'object') {
+            throw new Error(`ASAR 路径冲突，父节点不是目录: ${parts.slice(0, i).join('/')}`);
+        }
         if (!cur.files[seg]) cur.files[seg] = { files: {} };
         else if (!cur.files[seg].files) throw new Error(`ASAR 路径冲突，文件被当作目录: ${parts.slice(0, i + 1).join('/')}`);
         cur = cur.files[seg];
     }
 
     const leaf = parts[parts.length - 1];
-    if (!cur.files || typeof cur.files !== 'object') throw new Error(`ASAR 路径冲突，父节点不是目录: ${parts.slice(0, -1).join('/')}`);
+    if (!cur.files || typeof cur.files !== 'object') {
+        throw new Error(`ASAR 路径冲突，父节点不是目录: ${parts.slice(0, -1).join('/')}`);
+    }
     if (cur.files[leaf] && cur.files[leaf].files) throw new Error(`ASAR 路径冲突，目标路径已是目录: ${relPath}`);
     if (!cur.files[leaf]) cur.files[leaf] = {};
     delete cur.files[leaf].unpacked;
@@ -146,7 +155,9 @@ function readAsarFile(asarPathOrBuf, relPath, encoding = 'utf8') {
     try {
         const buf = Buffer.isBuffer(asarPathOrBuf) ? asarPathOrBuf : fs.readFileSync(asarPathOrBuf);
         return parseAsar(buf).readFile(relPath, encoding);
-    } catch (e) { return null; }
+    } catch {
+        return null;
+    }
 }
 
 function getAsarVersion(asarPath) {
@@ -154,15 +165,25 @@ function getAsarVersion(asarPath) {
     try {
         const pkgStr = readAsarFile(asarPath, 'package.json', 'utf8');
         return pkgStr ? (JSON.parse(pkgStr).version || null) : null;
-    } catch (e) { return null; }
+    } catch {
+        return null;
+    }
 }
 
 function writeAtomic(targetPath, buf) {
     const tmp = `${targetPath}.tmp`;
     fs.writeFileSync(tmp, buf);
-    try { fs.renameSync(tmp, targetPath); }
-    catch (e) { fs.copyFileSync(tmp, targetPath); }
-    finally { if (fs.existsSync(tmp)) try { fs.unlinkSync(tmp); } catch (_) {} }
+    try {
+        fs.renameSync(tmp, targetPath);
+    } catch {
+        fs.copyFileSync(tmp, targetPath);
+    } finally {
+        if (fs.existsSync(tmp)) {
+            try {
+                fs.unlinkSync(tmp);
+            } catch {}
+        }
+    }
 }
 
 function isPatchUpToDate(asarPath, state, currentDictsHash) {
@@ -192,7 +213,8 @@ function prepareOfficialAsar(resourcesDir, state) {
     if (fs.existsSync(bakPath)) {
         const bakBuffer = readCleanBackup(bakPath, '无法作为构建基线。');
         if (!bakBuffer) return null;
-        const bakHash = sha256(bakBuffer), currentAsarHash = sha256(asarBuffer);
+        const bakHash = sha256(bakBuffer);
+        const currentAsarHash = sha256(asarBuffer);
         if (!isAlreadyPatched && currentAsarHash !== bakHash) {
             writeAtomic(bakPath, asarBuffer);
             state.officialHash = currentAsarHash;
@@ -200,7 +222,10 @@ function prepareOfficialAsar(resourcesDir, state) {
             console.log('[备份] 检测到客户端版本更新，已同步更新官方基线备份 (app.asar.bak)。');
             return asarBuffer;
         }
-        if (state.officialHash !== bakHash) { state.officialHash = bakHash; utils.saveState(state); }
+        if (state.officialHash !== bakHash) {
+            state.officialHash = bakHash;
+            utils.saveState(state);
+        }
         return bakBuffer;
     }
 
@@ -234,14 +259,22 @@ function restoreOfficialAsar(resourcesDir, state, onBeforeWrite) {
         utils.saveState(state);
         console.log('[完成] 已恢复为官方原始版本。');
         return true;
-    } catch (e) {
-        console.error(`[错误] 恢复官方文件失败: ${e.message}`);
+    } catch (err) {
+        console.error(`[错误] 恢复官方文件失败: ${err.message}`);
         return false;
     }
 }
 
 module.exports = {
-    parseAsar, walkDistJs, ensureAsarFileNode, patchAsarInMemory,
-    verifyPatchedAsar, readAsarFile, getAsarVersion, writeAtomic,
-    isPatchUpToDate, prepareOfficialAsar, restoreOfficialAsar
+    parseAsar,
+    walkDistJs,
+    ensureAsarFileNode,
+    patchAsarInMemory,
+    verifyPatchedAsar,
+    readAsarFile,
+    getAsarVersion,
+    writeAtomic,
+    isPatchUpToDate,
+    prepareOfficialAsar,
+    restoreOfficialAsar
 };

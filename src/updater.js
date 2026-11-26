@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const https = require('https');
-const child_process = require('child_process');
+const childProcess = require('child_process');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const REPO = 'kyroli/antigravity-cn-l10n';
@@ -17,6 +17,7 @@ const STATIC_MANAGED_FILES = [
     'Antigravity-L10n.bat',
     'Antigravity-Restore.bat',
     'src/asar.js',
+    'src/fragmentCompiler.js',
     'src/patcher.js',
     'src/updater.js',
     'src/utils.js'
@@ -44,15 +45,15 @@ function isSafeRelPath(relPath) {
     return !normalized.split('/').includes('..') && normalized !== 'dicts/state.json';
 }
 
-function writeAtomicFile(targetPath, buf) {
+function writeAtomic(targetPath, buf) {
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
     const tmp = `${targetPath}.${process.pid}.tmp`;
     fs.writeFileSync(tmp, buf);
     try {
         fs.renameSync(tmp, targetPath);
-    } catch (e) {
+    } catch (err) {
         fs.rmSync(tmp, { force: true });
-        throw e;
+        throw err;
     }
 }
 
@@ -106,20 +107,20 @@ function writeManifest(rootDir = ROOT_DIR) {
             return { changed: false, manifest: prev, path: manifestPath };
         }
     }
-    writeAtomicFile(manifestPath, Buffer.from(JSON.stringify(nextManifest, null, 2) + '\n', 'utf8'));
+    writeAtomic(manifestPath, Buffer.from(JSON.stringify(nextManifest, null, 2) + '\n', 'utf8'));
     return { changed: true, manifest: nextManifest, path: manifestPath };
 }
 
 function hasWindowsSystemProxy() {
     if (process.platform !== 'win32') return false;
     try {
-        const out = child_process.execFileSync(
+        const out = childProcess.execFileSync(
             'reg',
             ['query', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings', '/v', 'ProxyEnable'],
             { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 2000 }
         );
         return /ProxyEnable\s+REG_DWORD\s+0x1/i.test(out);
-    } catch (e) {
+    } catch {
         return false;
     }
 }
@@ -176,7 +177,7 @@ function fetchViaPowerShell(url, timeoutMs = REQUEST_TIMEOUT_MS) {
     ].join('; ');
     const encoded = Buffer.from(script, 'utf16le').toString('base64');
     return new Promise((resolve, reject) => {
-        child_process.execFile(
+        childProcess.execFile(
             'powershell.exe',
             ['-NoProfile', '-NonInteractive', '-EncodedCommand', encoded],
             { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: timeoutMs + 4000 },
@@ -197,8 +198,8 @@ async function fetchUrlText(url, { usePowerShellFirst = false, timeoutMs = REQUE
     for (const fn of fetchers) {
         try {
             return await fn(url, timeoutMs);
-        } catch (e) {
-            lastErr = e;
+        } catch (err) {
+            lastErr = err;
         }
     }
     throw lastErr;
@@ -211,7 +212,10 @@ function parseMainShaFromInfoRefs(pktText, branch = BRANCH) {
         const lenHex = pktText.slice(pos, pos + 4);
         if (!/^[0-9a-f]{4}$/i.test(lenHex)) break;
         const len = parseInt(lenHex, 16);
-        if (len === 0) { pos += 4; continue; }
+        if (len === 0) {
+            pos += 4;
+            continue;
+        }
         if (len < 4 || pos + len > pktText.length) break;
         const line = pktText.slice(pos + 4, pos + len).replace(/\r?\n$/, '').split('\0', 1)[0];
         pos += len;
@@ -227,7 +231,7 @@ async function resolveRemoteRef({ usePowerShellFirst = false, timeoutMs = REQUES
     try {
         const pktText = await fetchUrlText(INFO_REFS_URL, { usePowerShellFirst, timeoutMs });
         return parseMainShaFromInfoRefs(pktText, BRANCH) || BRANCH;
-    } catch (e) {
+    } catch {
         return BRANCH;
     }
 }
@@ -252,7 +256,7 @@ function readLocalManifest(rootDir = ROOT_DIR) {
 }
 
 function runGit(rootDir, args, timeoutMs = 15000) {
-    return child_process.execFileSync('git', args, {
+    return childProcess.execFileSync('git', args, {
         cwd: rootDir,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -275,8 +279,8 @@ function syncWithGit(rootDir) {
         }
         console.log('[更新] 当前仓库已是最新版本。');
         return { updated: false, reason: 'up-to-date' };
-    } catch (e) {
-        console.warn(`[提示] Git 检查更新失败，将使用本地文件继续: ${e.message}`);
+    } catch (err) {
+        console.warn(`[提示] Git 检查更新失败，将使用本地文件继续: ${err.message}`);
         return { updated: false, reason: 'git-failed' };
     }
 }
@@ -324,7 +328,7 @@ async function syncWithManifest(rootDir = ROOT_DIR, { bootstrap = false, fetcher
 
         if (toDownload.length === 0 && toRemove.length === 0) {
             if (prevManifest?.revision !== remoteManifest.revision || (isCommitSha && prevManifest?.remoteCommit !== remoteRef)) {
-                writeAtomicFile(path.join(rootDir, MANIFEST_FILE), Buffer.from(JSON.stringify(localManifest, null, 2) + '\n', 'utf8'));
+                writeAtomic(path.join(rootDir, MANIFEST_FILE), Buffer.from(JSON.stringify(localManifest, null, 2) + '\n', 'utf8'));
             }
             console.log(`[更新] 当前汉化补丁已是最新版本（${verLabel}）。`);
             return { updated: false, failed: false, reason: 'up-to-date', manifest: remoteManifest };
@@ -339,17 +343,17 @@ async function syncWithManifest(rootDir = ROOT_DIR, { bootstrap = false, fetcher
         }
 
         for (const [relPath, buf] of staged) {
-            writeAtomicFile(path.join(rootDir, relPath), buf);
+            writeAtomic(path.join(rootDir, relPath), buf);
         }
         for (const oldRel of toRemove) {
             fs.rmSync(path.join(rootDir, oldRel), { force: true });
         }
-        writeAtomicFile(path.join(rootDir, MANIFEST_FILE), Buffer.from(JSON.stringify(localManifest, null, 2) + '\n', 'utf8'));
+        writeAtomic(path.join(rootDir, MANIFEST_FILE), Buffer.from(JSON.stringify(localManifest, null, 2) + '\n', 'utf8'));
 
         console.log(`[更新] 已更新 ${staged.length} 个文件${toRemove.length ? `，清理 ${toRemove.length} 个旧文件` : ''}（${verLabel}）。`);
         return { updated: true, failed: false, count: staged.length, manifest: remoteManifest };
-    } catch (e) {
-        const msg = `云端更新失败（${e.message}）`;
+    } catch (err) {
+        const msg = `云端更新失败（${err.message}）`;
         if (bootstrap) {
             console.error(`[错误] ${msg}，无法继续部署。`);
             return { updated: false, failed: true, reason: 'update-failed' };

@@ -1,10 +1,11 @@
 function normalizeText(text) {
     if (!text || typeof text !== 'string') return '';
-    return text.replace(/[\s\u00A0\u2009\u202F]+/g, ' ')
-               .replace(/['\u2018\u2019\u02bc]/g, "'")
-               .replace(/["\u201c\u201d]/g, '"')
-               .replace(/…/g, '...')
-               .trim();
+    return text
+        .replace(/[\s\u00A0\u2009\u202F]+/g, ' ')
+        .replace(/['\u2018\u2019\u02bc]/g, "'")
+        .replace(/["\u201c\u201d]/g, '"')
+        .replace(/…/g, '...')
+        .trim();
 }
 
 function createTranslator(rawDict, rawRules, config) {
@@ -39,20 +40,20 @@ function createTranslator(rawDict, rawRules, config) {
     const WORD_PREFIX_RE = /^\^([a-zA-Z]+)(?:\\b|\\s|[ :/,.\-!'?])/;
     const DIGIT_PREFIX_RE = /^\^(?:\(\\d\+\)|\\d\+)/;
     for (let i = 0; i < rules.length; i++) {
-        const r = rules[i];
-        const wm = typeof r.pattern === 'string' ? r.pattern.match(WORD_PREFIX_RE) : null;
-        if (wm) {
-            const w = wm[1].toLowerCase();
-            let bucket = wordBuckets.get(w);
+        const rule = rules[i];
+        const wordMatch = typeof rule.pattern === 'string' ? rule.pattern.match(WORD_PREFIX_RE) : null;
+        if (wordMatch) {
+            const word = wordMatch[1].toLowerCase();
+            let bucket = wordBuckets.get(word);
             if (!bucket) {
                 bucket = [];
-                wordBuckets.set(w, bucket);
+                wordBuckets.set(word, bucket);
             }
-            bucket.push(r);
-        } else if (typeof r.pattern === 'string' && DIGIT_PREFIX_RE.test(r.pattern)) {
-            digitRules.push(r);
+            bucket.push(rule);
+        } else if (typeof rule.pattern === 'string' && DIGIT_PREFIX_RE.test(rule.pattern)) {
+            digitRules.push(rule);
         } else {
-            wildRules.push(r);
+            wildRules.push(rule);
         }
     }
     const digitPrefilter = digitRules.length > 0
@@ -131,24 +132,24 @@ function createTranslator(rawDict, rawRules, config) {
         let out = rule.replacement;
         for (let g = match.length - 1; g >= 1; g--) {
             const rawGroup = match[g];
-            let gVal = '';
+            let groupValue = '';
             if (rawGroup !== undefined) {
                 const isRaw = rule.rawAll || (rule.rawGroupSet && rule.rawGroupSet.has(g));
                 if (isRaw) {
-                    gVal = rawGroup;
+                    groupValue = rawGroup;
                 } else {
                     const isSafe = Boolean(rule.safeGroupSet && rule.safeGroupSet.has(g));
-                    const gNorm = normalizeText(rawGroup);
-                    const skipTextLookup = isSafe && (!gNorm.includes(' ') || isProtectedOrPath(gNorm));
-                    gVal = skipTextLookup ? null : lookupStatic(gNorm);
-                    if (gVal === null) gVal = formatDuration(gNorm);
-                    if (gVal === null && depth < 2 && !skipTextLookup && !isProtectedOrPath(gNorm) && /[a-zA-Z]/.test(gNorm)) {
-                        gVal = matchRules(gNorm, depth + 1);
+                    const normalizedGroup = normalizeText(rawGroup);
+                    const skipTextLookup = isSafe && (!normalizedGroup.includes(' ') || isProtectedOrPath(normalizedGroup));
+                    groupValue = skipTextLookup ? null : lookupStatic(normalizedGroup);
+                    if (groupValue === null) groupValue = formatDuration(normalizedGroup);
+                    if (groupValue === null && depth < 2 && !skipTextLookup && !isProtectedOrPath(normalizedGroup) && /[a-zA-Z]/.test(normalizedGroup)) {
+                        groupValue = matchRules(normalizedGroup, depth + 1);
                     }
-                    if (gVal === null) gVal = rawGroup;
+                    if (groupValue === null) groupValue = rawGroup;
                 }
             }
-            out = out.split('$' + g).join(gVal);
+            out = out.split('$' + g).join(groupValue);
         }
         return out
             .replace(/\s{2,}/g, ' ')
@@ -159,46 +160,46 @@ function createTranslator(rawDict, rawRules, config) {
 
     function matchRules(valNorm, depth) {
         if (rules.length === 0 || !valNorm) return null;
-        const c0 = valNorm.charCodeAt(0);
+        const firstCharCode = valNorm.charCodeAt(0);
         let primary = null;
-        if ((c0 >= 65 && c0 <= 90) || (c0 >= 97 && c0 <= 122)) {
+        if ((firstCharCode >= 65 && firstCharCode <= 90) || (firstCharCode >= 97 && firstCharCode <= 122)) {
             let end = 1;
             while (end < valNorm.length) {
-                const c = valNorm.charCodeAt(end);
-                if (!((c >= 65 && c <= 90) || (c >= 97 && c <= 122))) break;
+                const code = valNorm.charCodeAt(end);
+                if (!((code >= 65 && code <= 90) || (code >= 97 && code <= 122))) break;
                 end++;
             }
             primary = wordBuckets.get(valNorm.slice(0, end).toLowerCase()) || null;
-        } else if (c0 >= 48 && c0 <= 57) {
+        } else if (firstCharCode >= 48 && firstCharCode <= 57) {
             if (digitPrefilter && digitPrefilter.test(valNorm)) {
                 primary = digitRules;
             }
         }
-        let pRule = null;
-        let pMatch = null;
+        let primaryRule = null;
+        let primaryMatch = null;
         if (primary) {
             for (let i = 0; i < primary.length; i++) {
-                const m = valNorm.match(primary[i].regex);
-                if (m) {
-                    pRule = primary[i];
-                    pMatch = m;
+                const match = valNorm.match(primary[i].regex);
+                if (match) {
+                    primaryRule = primary[i];
+                    primaryMatch = match;
                     break;
                 }
             }
         }
-        if (pRule && (wildRules.length === 0 || pRule.idx < wildRules[0].idx)) {
-            return applyRuleMatch(pRule, pMatch, depth);
+        if (primaryRule && (wildRules.length === 0 || primaryRule.idx < wildRules[0].idx)) {
+            return applyRuleMatch(primaryRule, primaryMatch, depth);
         }
         if (wildPrefilter && wildPrefilter.test(valNorm)) {
-            const maxIdx = pRule ? pRule.idx : Infinity;
+            const maxIdx = primaryRule ? primaryRule.idx : Infinity;
             for (let i = 0; i < wildRules.length; i++) {
-                const r = wildRules[i];
-                if (r.idx >= maxIdx) break;
-                const m = valNorm.match(r.regex);
-                if (m) return applyRuleMatch(r, m, depth);
+                const rule = wildRules[i];
+                if (rule.idx >= maxIdx) break;
+                const match = valNorm.match(rule.regex);
+                if (match) return applyRuleMatch(rule, match, depth);
             }
         }
-        return pRule ? applyRuleMatch(pRule, pMatch, depth) : null;
+        return primaryRule ? applyRuleMatch(primaryRule, primaryMatch, depth) : null;
     }
 
     function lookupLongPrefix(valNorm) {
@@ -206,16 +207,16 @@ function createTranslator(rawDict, rawRules, config) {
         if (prefix.length < 15) return null;
         if (!longBuckets) {
             longBuckets = new Map();
-            for (const [k, v] of map.entries()) {
-                if (k.length <= 15) continue;
-                const lowerK = k.toLowerCase();
-                const bKey = lowerK.slice(0, 4);
-                let bucket = longBuckets.get(bKey);
+            for (const [key, val] of map.entries()) {
+                if (key.length <= 15) continue;
+                const lowerKey = key.toLowerCase();
+                const bucketKey = lowerKey.slice(0, 4);
+                let bucket = longBuckets.get(bucketKey);
                 if (!bucket) {
                     bucket = [];
-                    longBuckets.set(bKey, bucket);
+                    longBuckets.set(bucketKey, bucket);
                 }
-                bucket.push([k, lowerK, v]);
+                bucket.push([key, lowerKey, val]);
             }
             for (const bucket of longBuckets.values()) {
                 if (bucket.length > 1) bucket.sort((a, b) => b[0].length - a[0].length);
@@ -239,11 +240,11 @@ function createTranslator(rawDict, rawRules, config) {
         const direct = lookupStatic(valNorm);
         if (direct !== null) return direct;
 
-        const scMatch = valNorm.match(SHORTCUT_RE);
-        if (scMatch) {
-            const prefTrans = lookupStatic(normalizeText(scMatch[1]));
-            if (prefTrans !== null) {
-                return prefTrans + ' (' + scMatch[2] + (scMatch[3] ? '+' + scMatch[3] : '') + ')';
+        const shortcutMatch = valNorm.match(SHORTCUT_RE);
+        if (shortcutMatch) {
+            const prefixTranslation = lookupStatic(normalizeText(shortcutMatch[1]));
+            if (prefixTranslation !== null) {
+                return prefixTranslation + ' (' + shortcutMatch[2] + (shortcutMatch[3] ? '+' + shortcutMatch[3] : '') + ')';
             }
         }
 
@@ -254,11 +255,11 @@ function createTranslator(rawDict, rawRules, config) {
             const parts = valNorm.split(/\s*,\s*/);
             const transParts = [];
             for (let pi = 0; pi < parts.length; pi++) {
-                const pm = parts[pi].match(toolStatItemRe);
-                if (!pm) break;
-                const v = pm[1] ? (verbMap[pm[1].toLowerCase()] || pm[1]) + ' ' : '';
-                const n = nounMap[pm[3].toLowerCase()] || pm[3];
-                transParts.push(v + pm[2] + ' ' + n);
+                const itemMatch = parts[pi].match(toolStatItemRe);
+                if (!itemMatch) break;
+                const verb = itemMatch[1] ? (verbMap[itemMatch[1].toLowerCase()] || itemMatch[1]) + ' ' : '';
+                const noun = nounMap[itemMatch[3].toLowerCase()] || itemMatch[3];
+                transParts.push(verb + itemMatch[2] + ' ' + noun);
             }
             if (transParts.length === parts.length) {
                 return transParts.join('，');
@@ -276,8 +277,8 @@ function createTranslator(rawDict, rawRules, config) {
         if (!val || typeof val !== 'string' || !/[a-zA-Z]/.test(val)) return null;
         const valNorm = normalizeText(val);
         if (!valNorm) return null;
-        const hasNl = typeof val === 'string' && val.includes('\n');
-        const cacheKey = hasNl ? 'ML:' + val.trim() : valNorm;
+        const hasNewline = typeof val === 'string' && val.includes('\n');
+        const cacheKey = hasNewline ? 'ML:' + val.trim() : valNorm;
         if (hotCache.has(cacheKey)) return hotCache.get(cacheKey);
         if (coldCache.has(cacheKey)) {
             const cached = coldCache.get(cacheKey);
@@ -285,18 +286,18 @@ function createTranslator(rawDict, rawRules, config) {
             return cached;
         }
         let res = translateCore(valNorm);
-        if (res === null && hasNl) {
+        if (res === null && hasNewline) {
             const lines = val.split('\n');
             if (lines.length >= 2 && lines.length <= 8) {
                 let changed = false;
-                const out = lines.map(l => {
-                    const n = normalizeText(l);
-                    const t = n && translateCore(n);
-                    if (t && t !== n) {
+                const out = lines.map(line => {
+                    const normLine = normalizeText(line);
+                    const translated = normLine && translateCore(normLine);
+                    if (translated && translated !== normLine) {
                         changed = true;
-                        return t;
+                        return translated;
                     }
-                    return l;
+                    return line;
                 });
                 if (changed) res = out.join('\n');
             }

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const child_process = require('child_process');
+const childProcess = require('child_process');
 const utils = require('./src/utils');
 const asar = require('./src/asar');
 const patcher = require('./src/patcher');
@@ -38,9 +38,10 @@ async function installPatch(resourcesDir, onBeforeWrite) {
 
     if (onBeforeWrite && !onBeforeWrite()) return false;
 
-    try { asar.writeAtomic(asarPath, patchedBuf); }
-    catch (e) {
-        console.error(`[错误] 写入 app.asar 失败（文件被占用或权限不足）: ${e.message}`);
+    try {
+        asar.writeAtomic(asarPath, patchedBuf);
+    } catch (err) {
+        console.error(`[错误] 写入 app.asar 失败（文件被占用或权限不足）: ${err.message}`);
         return false;
     }
 
@@ -64,7 +65,7 @@ async function main() {
         const updateRes = await updater.updateIfNeeded();
         if (updateRes && updateRes.updated) {
             console.log('[更新] 正在使用最新补丁代码继续执行...');
-            const childRes = child_process.spawnSync(
+            const childRes = childProcess.spawnSync(
                 process.execPath,
                 [__filename, '--no-update', ...rawArgs],
                 { stdio: 'inherit', cwd: process.cwd() }
@@ -119,14 +120,19 @@ async function main() {
             const rootDir = path.basename(resourcesDir).toLowerCase() === 'resources' ? path.dirname(resourcesDir) : resourcesDir;
             const exePath = path.join(rootDir, 'Antigravity.exe');
             if (fs.existsSync(exePath)) {
-                child_process.spawn(exePath, [], { detached: true, stdio: 'ignore', cwd: rootDir }).unref();
+                childProcess.spawn(exePath, [], { detached: true, stdio: 'ignore', cwd: rootDir }).unref();
                 console.log('[进程] 客户端已启动。');
             }
-        } catch (e) {
-            console.warn(`[警告] 自动启动客户端失败，请手动打开软件: ${e.message}`);
+        } catch (err) {
+            console.warn(`[警告] 自动启动客户端失败，请手动打开软件: ${err.message}`);
         }
     }
 }
 
 if (require.main === module) main();
-module.exports = { parseArgs, installPatch, restoreOfficial };
+
+module.exports = {
+    parseArgs,
+    installPatch,
+    restoreOfficial
+};

@@ -7,6 +7,8 @@ const extractor = require('./src/inspector/extractor');
 const auditor = require('./src/inspector/auditor');
 const patcher = require('./src/patcher');
 const bundleRewriter = require('./src/runtime/bundleRewriter');
+const { createTranslator } = require('./src/runtime/translator');
+const { compileSlotFragmentEntries } = require('./src/fragmentCompiler');
 
 const SNAPSHOT_DIR = path.join(__dirname, '_inspect_app');
 const SNAPSHOT_LS_ASSETS = path.join(SNAPSHOT_DIR, 'ls_assets_combined.txt');
@@ -66,7 +68,7 @@ const MCP_ENDPOINTS = [
         path: '/exa.language_server_pb.LanguageServerService/GetAvailableCascadePlugins',
         body: { os: 'windows', searchQuery: '' },
         extract: v => v?.plugins,
-        hasData: s => Array.isArray(s) && s.length > 0,
+        hasData: s => Array.isArray(s) && s.length > 0
     },
     {
         key: 'buildWithGoogle',
@@ -74,19 +76,29 @@ const MCP_ENDPOINTS = [
         path: '/exa.language_server_pb.LanguageServerService/GetBuildWithGooglePlugins',
         body: {},
         extract: v => v?.plugins,
-        hasData: s => Array.isArray(s) && s.length > 0,
+        hasData: s => Array.isArray(s) && s.length > 0
     },
     {
         key: 'marketplace',
         label: 'SearchMarketplace',
         fetch: fetchFullMarketplace,
         extract: v => v,
-        hasData: s => Boolean(s && ((Array.isArray(s.groups) && s.groups.length > 0) || (Array.isArray(s.customizations) && s.customizations.length > 0))),
-    },
+        hasData: s => Boolean(s && ((Array.isArray(s.groups) && s.groups.length > 0) || (Array.isArray(s.customizations) && s.customizations.length > 0)))
+    }
 ];
 
-const addCandidate = (map, str, src) => { if (!map.has(str)) map.set(str, []); map.get(str).push(src); };
-const readJsonSafe = (fp, fb) => { try { return fs.existsSync(fp) ? JSON.parse(fs.readFileSync(fp, 'utf-8')) : fb; } catch (e) { return fb; } };
+const addCandidate = (map, str, src) => {
+    if (!map.has(str)) map.set(str, []);
+    map.get(str).push(src);
+};
+
+const readJsonSafe = (fp, fallback) => {
+    try {
+        return fs.existsSync(fp) ? JSON.parse(fs.readFileSync(fp, 'utf8')) : fallback;
+    } catch {
+        return fallback;
+    }
+};
 
 function assertRegex(pattern, label) {
     if (typeof pattern !== 'string' || pattern.length === 0) {
@@ -94,8 +106,8 @@ function assertRegex(pattern, label) {
     }
     try {
         return new RegExp(pattern, 'i');
-    } catch (e) {
-        throw new Error(`${label} 编译失败 (${pattern}): ${e.message}`);
+    } catch (err) {
+        throw new Error(`${label} 编译失败 (${pattern}): ${err.message}`);
     }
 }
 
@@ -156,33 +168,35 @@ function writeBaselineSnapshot(ver, pkgRaw, newFilesMap, lsExt, mcpData, skillsD
     fs.mkdirSync(snapDistDir, { recursive: true });
     for (const oldRel of listLocalDistJs(snapDistDir)) {
         if (!newFilesMap.has(oldRel)) {
-            try { fs.unlinkSync(path.join(snapDistDir, oldRel)); } catch (e) {}
+            try {
+                fs.unlinkSync(path.join(snapDistDir, oldRel));
+            } catch {}
         }
     }
     for (const [subRel, content] of newFilesMap.entries()) {
         const tp = path.join(snapDistDir, subRel);
         fs.mkdirSync(path.dirname(tp), { recursive: true });
-        fs.writeFileSync(tp, content, 'utf-8');
+        fs.writeFileSync(tp, content, 'utf8');
     }
-    if (pkgRaw) fs.writeFileSync(path.join(SNAPSHOT_DIR, 'package.json'), pkgRaw, 'utf-8');
-    if (lsExt.combined) fs.writeFileSync(SNAPSHOT_LS_ASSETS, lsExt.combined, 'utf-8');
+    if (pkgRaw) fs.writeFileSync(path.join(SNAPSHOT_DIR, 'package.json'), pkgRaw, 'utf8');
+    if (lsExt.combined) fs.writeFileSync(SNAPSHOT_LS_ASSETS, lsExt.combined, 'utf8');
     if (mcpData && MCP_ENDPOINTS.every(ep => ep.hasData(mcpData[ep.key]))) {
         const outMcp = {};
         for (const ep of MCP_ENDPOINTS) outMcp[ep.key] = mcpData[ep.key];
-        fs.writeFileSync(SNAPSHOT_MCP, JSON.stringify(outMcp, null, 2), 'utf-8');
+        fs.writeFileSync(SNAPSHOT_MCP, JSON.stringify(outMcp, null, 2), 'utf8');
     }
-    if (Object.keys(skillsData).length > 0) fs.writeFileSync(SNAPSHOT_BUILTIN_SKILLS, JSON.stringify(skillsData, null, 2), 'utf-8');
-    if (Object.keys(sidecarsData).length > 0) fs.writeFileSync(SNAPSHOT_BUILTIN_SIDECARS, JSON.stringify(sidecarsData, null, 2), 'utf-8');
+    if (Object.keys(skillsData).length > 0) fs.writeFileSync(SNAPSHOT_BUILTIN_SKILLS, JSON.stringify(skillsData, null, 2), 'utf8');
+    if (Object.keys(sidecarsData).length > 0) fs.writeFileSync(SNAPSHOT_BUILTIN_SIDECARS, JSON.stringify(sidecarsData, null, 2), 'utf8');
 
     const state = utils.loadState();
     state.targetVersion = ver;
     utils.saveState(state);
 
     const pkgPath = path.join(__dirname, 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     if (pkg.targetVersion !== ver) {
         pkg.targetVersion = ver;
-        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
     }
 }
 
@@ -205,7 +219,9 @@ function scanDistJs(parsedAsar, corpus, isAuditOnly) {
     const oldDistDir = path.join(SNAPSHOT_DIR, 'dist');
     const oldFiles = listLocalDistJs(oldDistDir);
     const newFilesMap = asar.walkDistJs(parsedAsar, { stripPrefix: true, clean: true });
-    let added = 0, modified = 0, unchanged = 0;
+    let added = 0;
+    let modified = 0;
+    let unchanged = 0;
 
     for (const [f, newClean] of newFilesMap.entries()) {
         const fileStrings = extractor.extractStringsFromJs(newClean);
@@ -220,7 +236,7 @@ function scanDistJs(parsedAsar, corpus, isAuditOnly) {
             for (const s of fileStrings) addCandidate(corpus.candidates, s, `壳层新增: ${f}`);
             continue;
         }
-        const oldClean = utils.cleanInjectedPatches(fs.readFileSync(path.join(oldDistDir, f), 'utf-8'));
+        const oldClean = utils.cleanInjectedPatches(fs.readFileSync(path.join(oldDistDir, f), 'utf8'));
         const oldStrings = extractor.extractStringsFromJs(oldClean);
         for (const s of oldStrings) corpus.old.add(s);
         if (oldClean !== newClean) {
@@ -232,7 +248,7 @@ function scanDistJs(parsedAsar, corpus, isAuditOnly) {
     }
     for (const f of oldFiles) {
         if (newFilesMap.has(f)) continue;
-        const oldClean = utils.cleanInjectedPatches(fs.readFileSync(path.join(oldDistDir, f), 'utf-8'));
+        const oldClean = utils.cleanInjectedPatches(fs.readFileSync(path.join(oldDistDir, f), 'utf8'));
         for (const s of extractor.extractStringsFromJs(oldClean)) corpus.old.add(s);
     }
     console.log(`  未变动: ${unchanged} | 新增: ${added} | 修改: ${modified}\n`);
@@ -265,12 +281,15 @@ function scanLanguageServer(resourcesDir, corpus, isAuditOnly) {
 
     let lsAdded = 0;
     if (fs.existsSync(SNAPSHOT_LS_ASSETS)) {
-        const oldLsRaw = fs.readFileSync(SNAPSHOT_LS_ASSETS, 'utf-8');
+        const oldLsRaw = fs.readFileSync(SNAPSHOT_LS_ASSETS, 'utf8');
         const oldLsStrings = extractor.extractStringsFromJs(oldLsRaw);
         for (const s of unpacker.extractStringsFromHtml(oldLsRaw)) oldLsStrings.add(s);
         for (const s of oldLsStrings) corpus.old.add(s);
         for (const s of newLsStrings) {
-            if (!oldLsStrings.has(s)) { addCandidate(corpus.candidates, s, 'Web 内嵌资产新增'); lsAdded++; }
+            if (!oldLsStrings.has(s)) {
+                addCandidate(corpus.candidates, s, 'Web 内嵌资产新增');
+                lsAdded++;
+            }
         }
     }
     console.log(`  已解压 ${lsExtracted.zipFiles.length} 个资产包，提取 ${newLsStrings.size} 条文案 (+${lsAdded} 增量)\n`);
@@ -287,7 +306,10 @@ async function scanMarketplaceRpc(corpus, { resourcesDir, newVersion, isAuditOnl
         if (!snapMcp && isPrune) {
             throw new Error('Language Server 启动失败且缺少插件市场历史快照，已中止 --prune 以防误删词条');
         }
-        for (const s of oldMcpStrings) { corpus.current.add(s); corpus.old.add(s); }
+        for (const s of oldMcpStrings) {
+            corpus.current.add(s);
+            corpus.old.add(s);
+        }
         console.log(`  [提示] 无法启动 Language Server，沿用本地快照 (${oldMcpStrings.size} 条)。\n`);
         return null;
     }
@@ -351,7 +373,8 @@ async function scanMarketplaceRpc(corpus, { resourcesDir, newVersion, isAuditOnl
 function scanBuiltinContent(corpus, { isAuditOnly, loaded }) {
     console.log('[4/5] 内置技能与 Sidecar 扫描');
     const builtinBase = path.join(process.env.USERPROFILE || '', '.gemini', 'antigravity', 'builtin');
-    const skillsDir = path.join(builtinBase, 'skills'), pluginsDir = path.join(builtinBase, 'plugins');
+    const skillsDir = path.join(builtinBase, 'skills');
+    const pluginsDir = path.join(builtinBase, 'plugins');
     const currentSkillsData = unpacker.scanBuiltinSkills(skillsDir);
     const currentSidecarsData = unpacker.scanBuiltinSidecars(pluginsDir);
 
@@ -415,7 +438,9 @@ function makeLinearTplMatcher(quasis, unescapeFn) {
         if (idx === quasis.length - 1) s = s.trimEnd();
         return s;
     });
-    const first = qs[0] || '', last = qs[qs.length - 1] || '', mids = qs.slice(1, -1);
+    const first = qs[0] || '';
+    const last = qs[qs.length - 1] || '';
+    const mids = qs.slice(1, -1);
     if (!first && !last) return null;
     const anchorText = qs.join(' ').trim();
     const anchorAlpha = anchorText.replace(/[^a-z]/g, '').length;
@@ -522,7 +547,8 @@ async function main() {
         process.exit(1);
     }
 
-    const asarPath = path.join(resourcesDir, 'app.asar'), bakPath = path.join(resourcesDir, 'app.asar.bak');
+    const asarPath = path.join(resourcesDir, 'app.asar');
+    const bakPath = path.join(resourcesDir, 'app.asar.bak');
     const isAsarUnpatched = fs.existsSync(asarPath) && !fs.readFileSync(asarPath).includes(Buffer.from(utils.SIGNATURE_START, 'utf8'));
     const sourcePkg = isAsarUnpatched ? asarPath : (fs.existsSync(bakPath) ? bakPath : asarPath);
     if (!fs.existsSync(sourcePkg)) {
@@ -538,7 +564,13 @@ async function main() {
     console.log(`[探测] 安装路径: ${installDir}\n[版本] 旧版快照 ${oldVersion} -> 当前版本 ${newVersion}\n`);
 
     const loaded = auditor.loadExistingTranslations();
-    const config = utils.loadConfig();
+    const rawConfig = utils.loadConfig();
+    const fragments = utils.loadFragments();
+    const fragmentEntries = compileSlotFragmentEntries(fragments);
+    const config = {
+        ...rawConfig,
+        fragmentPatterns: [...fragmentEntries.map(e => e.rule), ...(rawConfig.fragmentPatterns || [])]
+    };
     const { frameRules, fragmentRules } = validateConfigPatterns(config);
     const isCoveredInFrame = buildFrameMatcher(config, frameRules);
     const corpus = { current: new Set(), old: new Set(), candidates: new Map() };
@@ -560,7 +592,10 @@ async function main() {
         const normStr = utils.normalizeText(str);
         if (!normStr || loaded.translated.has(normStr.toLowerCase()) || loaded.rules.some(re => re.test(normStr))) continue;
         if (fragmentRules.some(re => re.test(normStr) || re.test(' ' + normStr) || re.test(normStr + ' '))) continue;
-        if (preservedSet.has(normStr.toLowerCase())) { preservedSkipped.add(normStr); continue; }
+        if (preservedSet.has(normStr.toLowerCase())) {
+            preservedSkipped.add(normStr);
+            continue;
+        }
         const isFrameOnly = sources.length > 0 && sources.every(src => src.startsWith('内置 Sidecar'));
         if (isFrameOnly && isCoveredInFrame(normStr)) continue;
         untranslated.set(str, sources);
@@ -629,6 +664,22 @@ async function main() {
             console.log(`  [未覆盖多子节点拼接句 (${uncoveredMultiChild.length} 处)]:`);
             for (const m of uncoveredMultiChild) console.log(`      - ${JSON.stringify(m.slotView)}  (lits: ${JSON.stringify(m.lits)})`);
         }
+
+        const auditTranslator = createTranslator(utils.loadDictionary(), utils.loadRules(), config);
+        const { mixedTemplates, deadSubRules, idempotencyIssues } = auditor.auditBundleRewriteQuality({
+            mainJs,
+            translator: auditTranslator,
+            config,
+            fragmentEntries,
+            fragments
+        });
+        console.log(`  [门禁校验] 重写语法: 通过 | 模板中英混杂: ${mixedTemplates.length} | 命中容器的死子规则: ${deadSubRules.length} | 译态回环异常: ${idempotencyIssues.length}`);
+        if (mixedTemplates.length > 0 || deadSubRules.length > 0 || idempotencyIssues.length > 0) {
+            for (const mt of mixedTemplates) console.log(`      - [模板混杂] ${mt.raw} -> ${JSON.stringify(mt.residual)}`);
+            for (const ds of deadSubRules) console.log(`      - [死子规则] "${ds.sourceKey}" -> ${ds.match}`);
+            for (const iv of idempotencyIssues) console.log(`      - [译态回环] ${iv}`);
+            throw new Error(`质量门禁未通过: 模板混杂 ${mixedTemplates.length} | 死子规则 ${deadSubRules.length} | 译态回环 ${idempotencyIssues.length}`);
+        }
     }
 
     if (auditRes.redundancies.length > 0 || auditRes.deadKeys.length > 0) {
@@ -651,5 +702,8 @@ async function main() {
 }
 
 if (require.main === module) {
-    main().catch(err => { console.error(`[失败] ${err.message || err}`); process.exit(1); });
+    main().catch(err => {
+        console.error(`[失败] ${err.message || err}`);
+        process.exit(1);
+    });
 }

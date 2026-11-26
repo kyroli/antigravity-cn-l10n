@@ -53,6 +53,7 @@ const REJECT_PATTERNS = [
 const CSS_PART_RE = /^(?:\*|[a-z][a-z0-9_-]*|[.#][a-zA-Z_-][a-zA-Z0-9_-]*|\[[a-z][a-z0-9_-]*(?:[~|^$*]?=[^\]]*)?\]|:[a-z-]+(?:\([^)]+\))?)+$/;
 const CSS_STRONG_RE = /(?:^[.#][a-zA-Z_-]|\[[a-z][a-z0-9_-]*(?:-[a-z0-9_-]+|[~|^$*]?=[^\]]+)\]|:[a-z-]+(?:\([^)]+\))?)/;
 const CSS_COMBINATOR_RE = /^\s*(?:[,>+~]|\s)\s*/;
+const PROSE_JOINER_RE = /^(?:a|an|the|is|are|was|were|be|in|on|at|to|for|with|from|of|by|as|into|and|or|not|this|that|your|you|it|its|our|if|can)$/i;
 
 function isCssSelectorNoise(str) {
     if (!str || (str[0] !== '.' && str[0] !== '#' && !str.includes('['))) return false;
@@ -111,7 +112,6 @@ function isLikelyUserFacingText(str) {
     if (tokens.length >= 4 && tokens.every(t => /^[a-z][a-z0-9_]*$/.test(t))) {
         return false;
     }
-    const PROSE_JOINER_RE = /^(?:a|an|the|is|are|was|were|be|in|on|at|to|for|with|from|of|by|as|into|and|or|not|this|that|your|you|it|its|our|if|can)$/i;
     if (tokens.length >= 5 &&
         !tokens.some(t => PROSE_JOINER_RE.test(t)) &&
         (tokens.every(t => /^[a-z][a-z0-9_-]*$/.test(t)) ||
@@ -147,50 +147,92 @@ function extractStringsFromJs(content) {
     content = stripBundledNoiseBlocks(content);
 
     const len = content.length;
-    let i = 0, inQuote = null, strStart = -1, inRegex = false, inCharClass = false, inLineComment = false, inBlockComment = false;
+    let index = 0;
+    let inQuote = null;
+    let strStart = -1;
+    let inRegex = false;
+    let inCharClass = false;
+    let inLineComment = false;
+    let inBlockComment = false;
 
-    while (i < len) {
-        const ch = content[i];
-        if (ch === '\\' && (inQuote || inRegex)) { i += (content[i + 1] === '\r' && content[i + 2] === '\n') ? 3 : 2; continue; }
-        if (inLineComment) { if (ch === '\n') inLineComment = false; i++; continue; }
-        if (inBlockComment) { if (ch === '*' && content[i + 1] === '/') { inBlockComment = false; i += 2; continue; } i++; continue; }
+    while (index < len) {
+        const ch = content[index];
+        if (ch === '\\' && (inQuote || inRegex)) {
+            index += (content[index + 1] === '\r' && content[index + 2] === '\n') ? 3 : 2;
+            continue;
+        }
+        if (inLineComment) {
+            if (ch === '\n') inLineComment = false;
+            index++;
+            continue;
+        }
+        if (inBlockComment) {
+            if (ch === '*' && content[index + 1] === '/') {
+                inBlockComment = false;
+                index += 2;
+                continue;
+            }
+            index++;
+            continue;
+        }
         if (inQuote) {
             if (ch === inQuote) {
-                const normStr = utils.normalizeText(unescapeJsString(content.slice(strStart, i)));
+                const normStr = utils.normalizeText(unescapeJsString(content.slice(strStart, index)));
                 if (isLikelyUserFacingText(normStr)) strings.add(normStr);
                 inQuote = null;
             } else if (inQuote !== '`' && ch === '\n') {
                 inQuote = null;
             }
-            i++;
+            index++;
             continue;
         }
         if (inRegex) {
             if (ch === '[' && !inCharClass) inCharClass = true;
             else if (ch === ']' && inCharClass) inCharClass = false;
             else if (ch === '/' && !inCharClass) inRegex = false;
-            else if (ch === '\n') { inRegex = false; inCharClass = false; }
-            i++;
+            else if (ch === '\n') {
+                inRegex = false;
+                inCharClass = false;
+            }
+            index++;
             continue;
         }
-        if (ch === '/' && content[i + 1] === '/') { inLineComment = true; i += 2; continue; }
-        if (ch === '/' && content[i + 1] === '*') { inBlockComment = true; i += 2; continue; }
-        if (ch === '"' || ch === "'" || ch === '`') { inQuote = ch; strStart = i + 1; i++; continue; }
+        if (ch === '/' && content[index + 1] === '/') {
+            inLineComment = true;
+            index += 2;
+            continue;
+        }
+        if (ch === '/' && content[index + 1] === '*') {
+            inBlockComment = true;
+            index += 2;
+            continue;
+        }
+        if (ch === '"' || ch === "'" || ch === '`') {
+            inQuote = ch;
+            strStart = index + 1;
+            index++;
+            continue;
+        }
         if (ch === '/') {
-            let p = i - 1;
-            while (p >= 0 && /\s/.test(content[p])) p--;
-            if (p >= 0) {
-                const pc = content[p];
-                let isRe = '(=:[!&|?{};\n,+-*<>~^%'.includes(pc);
-                if (!isRe && /[a-zA-Z]/.test(pc)) {
-                    let ws = p;
-                    while (ws >= 0 && /[a-zA-Z]/.test(content[ws])) ws--;
-                    if (/^(?:return|case|yield|await|typeof|void|delete|in|instanceof)$/.test(content.slice(ws + 1, p + 1))) isRe = true;
+            let prevIdx = index - 1;
+            while (prevIdx >= 0 && /\s/.test(content[prevIdx])) prevIdx--;
+            if (prevIdx >= 0) {
+                const prevChar = content[prevIdx];
+                let isRegexStart = '(=:[!&|?{};\n,+-*<>~^%'.includes(prevChar);
+                if (!isRegexStart && /[a-zA-Z]/.test(prevChar)) {
+                    let wordStart = prevIdx;
+                    while (wordStart >= 0 && /[a-zA-Z]/.test(content[wordStart])) wordStart--;
+                    if (/^(?:return|case|yield|await|typeof|void|delete|in|instanceof)$/.test(content.slice(wordStart + 1, prevIdx + 1))) {
+                        isRegexStart = true;
+                    }
                 }
-                if (isRe) { inRegex = true; inCharClass = false; }
+                if (isRegexStart) {
+                    inRegex = true;
+                    inCharClass = false;
+                }
             }
         }
-        i++;
+        index++;
     }
     return strings;
 }

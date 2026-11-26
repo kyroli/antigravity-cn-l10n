@@ -11,16 +11,20 @@ const OBJ_UI_PROP_KEYS = new Set([
 const OBJ_STRICT_KEYS = new Set(['aria-label', 'placeholder', 'tooltip']);
 const SKIP_TAGS = new Set(['script', 'style', 'path', 'svg', 'code', 'pre', 'symbol', 'defs', 'lineargradient', 'stop']);
 const SCHEMA_SIBLING_KEYS = new Set(['settings', 'prefix', 'hasSections']);
+const TEXT_SLOT_PREFIX = 'AGSLOT';
+const NUMERIC_PROBE_BASE = 99100;
+const NUMERIC_PROBE_GUARD = '9910';
+const RAW_SLOT_PROBES = ['Settings', 'Privacy Policy'];
 const REGEX_PRECEDERS = new Set([
     '', '(', '[', '{', ',', ';', ':', '?', '=', '!', '&', '|', '^', '~', '+', '-', '*', '%', '<', '>',
     '&&', '||', '??', '==', '!=', '===', '!==', '=>',
     'return', 'case', 'throw', 'typeof', 'void', 'delete', 'in', 'of', 'instanceof', 'await', 'yield', 'else', 'do'
 ]);
 
-const isIdStart = c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c === '_' || c === '$';
-const isIdChar = c => isIdStart(c) || (c >= '0' && c <= '9');
-const serializeJsString = s => JSON.stringify(s).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-const escapeTplQuasi = s => String(s)
+const isIdentifierStart = ch => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_' || ch === '$';
+const isIdentifierChar = ch => isIdentifierStart(ch) || (ch >= '0' && ch <= '9');
+const serializeJsString = str => JSON.stringify(str).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+const escapeTemplateQuasi = str => String(str)
     .replace(/\\/g, '\\\\')
     .replace(/`/g, '\\`')
     .replace(/\$\{/g, '\\${')
@@ -33,152 +37,224 @@ function detectReactIdent(source) {
     if (!source || typeof source !== 'string') return null;
     const counts = new Map();
     const exclude = new Set(['document', '_document', 'doc', 'mainDocument', 'ownerDocument', 'treeAdapter']);
-    for (const m of source.matchAll(/\b([A-Za-z_$][\w$]*)\.createElement\(/g)) {
-        if (!exclude.has(m[1])) counts.set(m[1], (counts.get(m[1]) || 0) + 1);
+    for (const match of source.matchAll(/\b([A-Za-z_$][\w$]*)\.createElement\(/g)) {
+        if (!exclude.has(match[1])) counts.set(match[1], (counts.get(match[1]) || 0) + 1);
     }
-    let bestName = null, bestCount = 0;
-    for (const [name, cnt] of counts.entries()) {
-        if (cnt > bestCount) { bestName = name; bestCount = cnt; }
+    let bestName = null;
+    let bestCount = 0;
+    for (const [name, count] of counts.entries()) {
+        if (count > bestCount) {
+            bestName = name;
+            bestCount = count;
+        }
     }
     return bestCount >= 50 ? bestName : null;
 }
 
-function skipStr(s, i, len) {
-    const q = s[i++];
-    while (i < len) {
-        const c = s[i++];
-        if (c === '\\') { i += (s[i] === '\r' && s[i + 1] === '\n') ? 2 : 1; continue; }
-        if (c === q) return i;
+function skipStringLiteral(source, startIndex, length) {
+    let index = startIndex;
+    const quote = source[index++];
+    while (index < length) {
+        const ch = source[index++];
+        if (ch === '\\') {
+            index += (source[index] === '\r' && source[index + 1] === '\n') ? 2 : 1;
+            continue;
+        }
+        if (ch === quote) return index;
     }
-    return len;
+    return length;
 }
 
-function skipRe(s, i, len) {
-    i++;
-    for (let inCC = false; i < len;) {
-        const c = s[i++];
-        if (c === '\\') { i++; continue; }
-        if (c === '[' && !inCC) inCC = true;
-        else if (c === ']' && inCC) inCC = false;
-        else if ((c === '/' && !inCC) || c === '\n') break;
+function skipRegexLiteral(source, startIndex, length) {
+    let index = startIndex + 1;
+    let inCharClass = false;
+    while (index < length) {
+        const ch = source[index++];
+        if (ch === '\\') {
+            index++;
+            continue;
+        }
+        if (ch === '[' && !inCharClass) inCharClass = true;
+        else if (ch === ']' && inCharClass) inCharClass = false;
+        else if ((ch === '/' && !inCharClass) || ch === '\n') break;
     }
-    while (i < len && ((s[i] >= 'a' && s[i] <= 'z') || (s[i] >= 'A' && s[i] <= 'Z'))) i++;
-    return i;
+    while (index < length && ((source[index] >= 'a' && source[index] <= 'z') || (source[index] >= 'A' && source[index] <= 'Z'))) {
+        index++;
+    }
+    return index;
 }
 
-function skipWsComment(s, i, len) {
-    while (i < len) {
-        const c = s[i];
-        if (c === ' ' || c === '\t' || c === '\r' || c === '\n') { i++; continue; }
-        if (c === '/' && s[i + 1] === '/') { i += 2; while (i < len && s[i] !== '\n') i++; continue; }
-        if (c === '/' && s[i + 1] === '*') { i += 2; while (i < len && !(s[i] === '*' && s[i + 1] === '/')) i++; i += 2; continue; }
+function skipWhitespaceAndComments(source, startIndex, length) {
+    let index = startIndex;
+    while (index < length) {
+        const ch = source[index];
+        if (ch === ' ' || ch === '\t' || ch === '\r' || ch === '\n') {
+            index++;
+            continue;
+        }
+        if (ch === '/' && source[index + 1] === '/') {
+            index += 2;
+            while (index < length && source[index] !== '\n') index++;
+            continue;
+        }
+        if (ch === '/' && source[index + 1] === '*') {
+            index += 2;
+            while (index < length && !(source[index] === '*' && source[index + 1] === '/')) index++;
+            index += 2;
+            continue;
+        }
         break;
     }
-    return i;
+    return index;
 }
 
-function readOpOrPunct(s, i) {
-    const t3 = s.slice(i, i + 3);
-    if (t3 === '===' || t3 === '!==') return [t3, i + 3];
-    const t2 = s.slice(i, i + 2);
-    if (t2 === '&&' || t2 === '||' || t2 === '??' || t2 === '==' || t2 === '!=' || t2 === '=>') return [t2, i + 2];
-    return [s[i] || '', i + 1];
+function readOperatorOrPunctuator(source, index) {
+    const threeChar = source.slice(index, index + 3);
+    if (threeChar === '===' || threeChar === '!==') return [threeChar, index + 3];
+    const twoChar = source.slice(index, index + 2);
+    if (twoChar === '&&' || twoChar === '||' || twoChar === '??' || twoChar === '==' || twoChar === '!=' || twoChar === '=>') {
+        return [twoChar, index + 2];
+    }
+    return [source[index] || '', index + 1];
 }
 
-function decodeJsBody(inner) {
+function decodeJsStringBody(inner) {
     if (!inner || !inner.includes('\\')) return inner;
     return inner
         .replace(/\\(?:\r\n|\r|\n)/g, '')
-        .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-        .replace(/\\u([0-9a-fA-F]{4})|\\x([0-9a-fA-F]{2})/g, (_, u, x) => String.fromCharCode(parseInt(u || x, 16)))
+        .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+        .replace(/\\u([0-9a-fA-F]{4})|\\x([0-9a-fA-F]{2})/g, (_, uHex, xHex) => String.fromCharCode(parseInt(uHex || xHex, 16)))
         .replace(/\\(.)/g, (_, ch) => ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v', 0: '\0' }[ch] || ch));
 }
 
 function decodeJsString(raw) {
-    return raw && raw.length >= 2 ? decodeJsBody(raw.slice(1, -1)) : null;
+    return raw && raw.length >= 2 ? decodeJsStringBody(raw.slice(1, -1)) : null;
 }
 
-function parseTpl(s, i, len, collect = false) {
-    i++;
-    let chunkStart = i;
+function parseTemplateLiteral(source, startIndex, length, collect = false) {
+    let index = startIndex + 1;
+    let chunkStart = index;
     const quasis = collect ? [] : null;
     const exprs = collect ? [] : null;
-    while (i < len) {
-        const c = s[i];
-        if (c === '\\') { i += (s[i + 1] === '\r' && s[i + 2] === '\n') ? 3 : 2; continue; }
-        if (c === '`') {
-            if (collect) quasis.push(decodeJsBody(s.slice(chunkStart, i)));
-            return { end: i + 1, quasis, exprs };
-        }
-        if (c === '$' && s[i + 1] === '{') {
-            if (collect) quasis.push(decodeJsBody(s.slice(chunkStart, i)));
-            const exprStart = i;
-            i += 2;
-            for (let depth = 1, prev = '{'; i < len && depth > 0;) {
-                i = skipWsComment(s, i, len);
-                if (i >= len) break;
-                const tc = s[i];
-                if (tc === '"' || tc === "'") { i = skipStr(s, i, len); prev = 'STR'; }
-                else if (tc === '`') { i = parseTpl(s, i, len, false).end; prev = 'STR'; }
-                else if (tc === '/' && REGEX_PRECEDERS.has(prev)) { i = skipRe(s, i, len); prev = 'REG'; }
-                else if (isIdStart(tc)) { const st = i++; while (i < len && isIdChar(s[i])) i++; prev = s.slice(st, i); }
-                else if (tc >= '0' && tc <= '9') { while (i < len && /[0-9a-zA-Z_.]/.test(s[i])) i++; prev = 'NUM'; }
-                else if (tc === '{') { depth++; prev = '{'; i++; }
-                else if (tc === '}') { depth--; prev = '}'; i++; }
-                else { [prev, i] = readOpOrPunct(s, i); }
-            }
-            if (collect) exprs.push({ start: exprStart, end: i });
-            chunkStart = i;
+    while (index < length) {
+        const ch = source[index];
+        if (ch === '\\') {
+            index += (source[index + 1] === '\r' && source[index + 2] === '\n') ? 3 : 2;
             continue;
         }
-        i++;
+        if (ch === '`') {
+            if (collect) quasis.push(decodeJsStringBody(source.slice(chunkStart, index)));
+            return { end: index + 1, quasis, exprs };
+        }
+        if (ch === '$' && source[index + 1] === '{') {
+            if (collect) quasis.push(decodeJsStringBody(source.slice(chunkStart, index)));
+            const exprStart = index;
+            index += 2;
+            let depth = 1;
+            let prev = '{';
+            while (index < length && depth > 0) {
+                index = skipWhitespaceAndComments(source, index, length);
+                if (index >= length) break;
+                const tokenChar = source[index];
+                if (tokenChar === '"' || tokenChar === "'") {
+                    index = skipStringLiteral(source, index, length);
+                    prev = 'STR';
+                } else if (tokenChar === '`') {
+                    index = parseTemplateLiteral(source, index, length, false).end;
+                    prev = 'STR';
+                } else if (tokenChar === '/' && REGEX_PRECEDERS.has(prev)) {
+                    index = skipRegexLiteral(source, index, length);
+                    prev = 'REG';
+                } else if (isIdentifierStart(tokenChar)) {
+                    const tokenStart = index++;
+                    while (index < length && isIdentifierChar(source[index])) index++;
+                    prev = source.slice(tokenStart, index);
+                } else if (tokenChar >= '0' && tokenChar <= '9') {
+                    while (index < length && /[0-9a-zA-Z_.]/.test(source[index])) index++;
+                    prev = 'NUM';
+                } else if (tokenChar === '{') {
+                    depth++;
+                    prev = '{';
+                    index++;
+                } else if (tokenChar === '}') {
+                    depth--;
+                    prev = '}';
+                    index++;
+                } else {
+                    [prev, index] = readOperatorOrPunctuator(source, index);
+                }
+            }
+            if (collect) exprs.push({ start: exprStart, end: index });
+            chunkStart = index;
+            continue;
+        }
+        index++;
     }
-    return { end: len, quasis, exprs };
+    return { end: length, quasis, exprs };
 }
 
-function peekNextToken(s, i, len) {
-    i = skipWsComment(s, i, len);
-    return i < len ? readOpOrPunct(s, i)[0] : '';
+function peekNextToken(source, startIndex, length) {
+    const nextIndex = skipWhitespaceAndComments(source, startIndex, length);
+    return nextIndex < length ? readOperatorOrPunctuator(source, nextIndex)[0] : '';
 }
 
 function extractAllJsTemplates(source) {
     const out = [];
-    const len = source.length;
-    for (let i = 0, prevTok = ''; i < len;) {
-        i = skipWsComment(source, i, len);
-        if (i >= len) break;
-        const ch = source[i];
-        if (ch === '"' || ch === "'") { i = skipStr(source, i, len); prevTok = 'STR'; continue; }
+    const length = source.length;
+    let index = 0;
+    let prevToken = '';
+    while (index < length) {
+        index = skipWhitespaceAndComments(source, index, length);
+        if (index >= length) break;
+        const ch = source[index];
+        if (ch === '"' || ch === "'") {
+            index = skipStringLiteral(source, index, length);
+            prevToken = 'STR';
+            continue;
+        }
         if (ch === '`') {
-            const start = i;
-            const tpl = parseTpl(source, i, len, true);
-            i = tpl.end;
-            prevTok = 'STR';
-            if (tpl.exprs && tpl.exprs.length > 0 && tpl.exprs.length <= 6 && i - start <= 800) {
-                out.push({ start, end: i, quasis: tpl.quasis, exprs: tpl.exprs });
+            const start = index;
+            const parsedTpl = parseTemplateLiteral(source, index, length, true);
+            index = parsedTpl.end;
+            prevToken = 'STR';
+            if (parsedTpl.exprs && parsedTpl.exprs.length > 0 && parsedTpl.exprs.length <= 6 && index - start <= 800) {
+                out.push({ start, end: index, quasis: parsedTpl.quasis, exprs: parsedTpl.exprs });
             }
             continue;
         }
-        if (ch === '/' && REGEX_PRECEDERS.has(prevTok)) { i = skipRe(source, i, len); prevTok = 'REG'; continue; }
-        if (isIdStart(ch)) { const st = i++; while (i < len && isIdChar(source[i])) i++; prevTok = source.slice(st, i); continue; }
-        if (ch >= '0' && ch <= '9') { while (i < len && /[0-9a-zA-Z_.]/.test(source[i])) i++; prevTok = 'NUM'; continue; }
-        [prevTok, i] = readOpOrPunct(source, i);
+        if (ch === '/' && REGEX_PRECEDERS.has(prevToken)) {
+            index = skipRegexLiteral(source, index, length);
+            prevToken = 'REG';
+            continue;
+        }
+        if (isIdentifierStart(ch)) {
+            const tokenStart = index++;
+            while (index < length && isIdentifierChar(source[index])) index++;
+            prevToken = source.slice(tokenStart, index);
+            continue;
+        }
+        if (ch >= '0' && ch <= '9') {
+            while (index < length && /[0-9a-zA-Z_.]/.test(source[index])) index++;
+            prevToken = 'NUM';
+            continue;
+        }
+        [prevToken, index] = readOperatorOrPunctuator(source, index);
     }
     return out;
 }
 
-function classifyStringSite(frame, prevTok, nextCh) {
+function classifyStringSite(frame, prevToken, nextCh) {
     if (!frame || frame.inSkippedSubtree) return null;
-    if (frame.type === 'ce' && frame.argIdx >= 2 && /^[,?:]$|^(&&|\|\||\?\?)$/.test(prevTok) && /^[,):]$/.test(nextCh)) {
+    if (frame.type === 'ce' && frame.argIdx >= 2 && /^[,?:]$|^(&&|\|\||\?\?)$/.test(prevToken) && /^[,):]$/.test(nextCh)) {
         return { kind: 'ce-child', key: null, targetCe: frame };
     }
-    if (frame.type === 'paren' && frame.inCeChild && /^[(?:]$|^(&&|\|\||\?\?)$/.test(prevTok) && (nextCh === ')' || nextCh === ':')) {
+    if (frame.type === 'paren' && frame.inCeChild && /^[(?:]$|^(&&|\|\||\?\?)$/.test(prevToken) && (nextCh === ')' || nextCh === ':')) {
         return { kind: 'ce-child', key: null, targetCe: frame.ceOwner };
     }
-    if (frame.type === 'bracket' && frame.inCeChild && /^[[?:,]$/.test(prevTok) && /^[,:\]]$/.test(nextCh)) {
+    if (frame.type === 'bracket' && frame.inCeChild && /^[[?:,]$/.test(prevToken) && /^[,:\]]$/.test(nextCh)) {
         return { kind: 'ce-child', key: null, targetCe: frame.ceOwner };
     }
-    if (frame.type === 'brace' && frame.curKey && /^[:?]$|^(&&|\|\||\?\?)$/.test(prevTok) && /^[,}:]$/.test(nextCh)) {
+    if (frame.type === 'brace' && frame.curKey && /^[:?]$|^(&&|\|\||\?\?)$/.test(prevToken) && /^[,}:]$/.test(nextCh)) {
         if (frame.isCeProps && UI_PROP_KEYS.has(frame.curKey)) return { kind: 'ce-prop', key: frame.curKey, targetCe: null };
         if (!frame.isCeProps && OBJ_UI_PROP_KEYS.has(frame.curKey)) return { kind: 'obj-prop', key: frame.curKey, targetCe: null };
     }
@@ -186,179 +262,293 @@ function classifyStringSite(frame, prevTok, nextCh) {
 }
 
 function scanUiSites(source, reactIdent) {
-    const len = source.length;
-    const sites = [], tplSites = [], ceFrames = [], objPropCandidates = [], objTplCandidates = [], comparedLiterals = new Set(), stack = [];
-    let i = 0, prevTok = '', lastIdent = '', afterDot = false;
+    const length = source.length;
+    const sites = [];
+    const templateSites = [];
+    const elementFrames = [];
+    const objPropCandidates = [];
+    const objTplCandidates = [];
+    const comparedLiterals = new Set();
+    const stack = [];
+    let index = 0;
+    let prevToken = '';
+    let lastIdent = '';
+    let afterDot = false;
 
     const top = () => (stack.length ? stack[stack.length - 1] : null);
-    const stepTok = (tok, nextI, nextIdent = '') => { prevTok = tok; lastIdent = nextIdent; afterDot = false; i = nextI; };
-    const finalizeCeArg = f => {
-        if (f && f.type === 'ce' && f.argIdx >= 2 && !f.curArgHasSlot) {
-            f.curArgHasSlot = true; f.hasExprSlot = true; f.childParts.push({ type: 'slot', text: '1' });
+    const stepToken = (token, nextIndex, nextIdent = '') => {
+        prevToken = token;
+        lastIdent = nextIdent;
+        afterDot = false;
+        index = nextIndex;
+    };
+    const finalizeCeArg = frame => {
+        if (frame && frame.type === 'ce' && frame.argIdx >= 2 && !frame.curArgHasSlot) {
+            frame.curArgHasSlot = true;
+            frame.hasExprSlot = true;
+            frame.childParts.push({ type: 'slot', text: '1' });
         }
     };
-    const pushLiteralSite = (frame, cls, start, end, val) => {
-        const site = { start, end, val, kind: cls.kind, key: cls.key };
-        if (cls.kind === 'obj-prop') frame.pendingObjProps.push(site);
-        else {
-            sites.push(site);
-            if (cls.kind === 'ce-child' && cls.targetCe) {
-                cls.targetCe.hasLiteral = true; cls.targetCe.curArgHasSlot = true;
-                cls.targetCe.childParts.push({ type: 'lit', site });
-            }
+    const pushLiteralSite = (frame, siteClass, start, end, val) => {
+        const site = { start, end, val, kind: siteClass.kind, key: siteClass.key };
+        if (siteClass.kind === 'obj-prop') {
+            frame.pendingObjProps.push(site);
+            return;
+        }
+        sites.push(site);
+        if (siteClass.kind === 'ce-child' && siteClass.targetCe) {
+            siteClass.targetCe.hasLiteral = true;
+            siteClass.targetCe.curArgHasSlot = true;
+            siteClass.targetCe.childParts.push({ type: 'lit', site });
         }
     };
 
-    while (i < len) {
-        i = skipWsComment(source, i, len);
-        if (i >= len) break;
-        const ch = source[i];
+    while (index < length) {
+        index = skipWhitespaceAndComments(source, index, length);
+        if (index >= length) break;
+        const ch = source[index];
 
         if (ch === '"' || ch === "'") {
-            const start = i, end = skipStr(source, i, len), raw = source.slice(start, end);
-            const nextTok = peekNextToken(source, end, len), nextCh = nextTok[0] || '';
-            if (/^(?:===?|!==?|case)$/.test(prevTok) || /^(?:===?|!==?)$/.test(nextTok)) {
-                const cmpVal = decodeJsString(raw);
-                if (cmpVal !== null) comparedLiterals.add(cmpVal);
+            const start = index;
+            const end = skipStringLiteral(source, index, length);
+            const raw = source.slice(start, end);
+            const nextToken = peekNextToken(source, end, length);
+            const nextCh = nextToken[0] || '';
+            if (/^(?:===?|!==?|case)$/.test(prevToken) || /^(?:===?|!==?)$/.test(nextToken)) {
+                const comparedVal = decodeJsString(raw);
+                if (comparedVal !== null) comparedLiterals.add(comparedVal);
             }
             const frame = top();
-            if (frame && frame.type === 'brace' && nextCh === ':' && (prevTok === '{' || prevTok === ',')) {
+            if (frame && frame.type === 'brace' && nextCh === ':' && (prevToken === '{' || prevToken === ',')) {
                 const key = decodeJsString(raw);
-                if (key !== null) { frame.curKey = key; frame.siblingKeys?.add(key); }
+                if (key !== null) {
+                    frame.curKey = key;
+                    frame.siblingKeys?.add(key);
+                }
             } else if (frame && frame.type === 'ce' && frame.argIdx === 0 && !frame.tagSet) {
                 const tag = (decodeJsString(raw) || '').toLowerCase();
-                if (tag && SKIP_TAGS.has(tag)) { frame.inSkippedSubtree = true; if (tag === 'code') frame.collectFlatOnly = true; }
+                if (tag && SKIP_TAGS.has(tag)) {
+                    frame.inSkippedSubtree = true;
+                    if (tag === 'code') frame.collectFlatOnly = true;
+                }
                 frame.tagSet = true;
             } else if (frame && !frame.inSkippedSubtree) {
-                const cls = classifyStringSite(frame, prevTok, nextCh);
-                const val = cls ? decodeJsString(raw) : null;
-                if (val) pushLiteralSite(frame, cls, start, end, val);
+                const siteClass = classifyStringSite(frame, prevToken, nextCh);
+                const val = siteClass ? decodeJsString(raw) : null;
+                if (val) pushLiteralSite(frame, siteClass, start, end, val);
             } else if (frame && frame.type === 'ce' && frame.collectFlatOnly && frame.argIdx >= 2 &&
-                (prevTok === ',' || prevTok === '?' || prevTok === ':') && (nextCh === ',' || nextCh === ')')) {
+                (prevToken === ',' || prevToken === '?' || prevToken === ':') && (nextCh === ',' || nextCh === ')')) {
                 const val = decodeJsString(raw);
-                if (val) { frame.curArgHasSlot = true; frame.childParts.push({ type: 'slot', text: val }); }
+                if (val) {
+                    frame.curArgHasSlot = true;
+                    frame.childParts.push({ type: 'slot', text: val });
+                }
             }
-            stepTok('STR', end); continue;
+            stepToken('STR', end);
+            continue;
         }
         if (ch === '`') {
-            const start = i, frame = top();
-            const isTagged = prevTok === ')' || prevTok === ']' || isIdStart(prevTok[0] || '');
+            const start = index;
+            const frame = top();
+            const isTagged = prevToken === ')' || prevToken === ']' || isIdentifierStart(prevToken[0] || '');
             const mayCollect = Boolean(!isTagged && frame && !frame.inSkippedSubtree && !(frame.type === 'ce' && frame.argIdx === 0));
-            const tpl = parseTpl(source, i, len, mayCollect);
+            const parsedTpl = parseTemplateLiteral(source, index, length, mayCollect);
             if (mayCollect) {
-                const nextTok = peekNextToken(source, tpl.end, len), nextCh = nextTok[0] || '';
-                if (tpl.exprs.length === 0) {
-                    const val = tpl.quasis[0] || '';
-                    if (/^(?:===?|!==?|case)$/.test(prevTok) || /^(?:===?|!==?)$/.test(nextTok)) comparedLiterals.add(val);
-                    const cls = val ? classifyStringSite(frame, prevTok, nextCh) : null;
-                    if (cls) pushLiteralSite(frame, cls, start, tpl.end, val);
+                const nextToken = peekNextToken(source, parsedTpl.end, length);
+                const nextCh = nextToken[0] || '';
+                if (parsedTpl.exprs.length === 0) {
+                    const val = parsedTpl.quasis[0] || '';
+                    if (/^(?:===?|!==?|case)$/.test(prevToken) || /^(?:===?|!==?)$/.test(nextToken)) comparedLiterals.add(val);
+                    const siteClass = val ? classifyStringSite(frame, prevToken, nextCh) : null;
+                    if (siteClass) pushLiteralSite(frame, siteClass, start, parsedTpl.end, val);
                 } else {
-                    const cls = classifyStringSite(frame, prevTok, nextCh);
-                    if (cls) {
-                        const tSite = { start, end: tpl.end, kind: cls.kind, key: cls.key, quasis: tpl.quasis, exprs: tpl.exprs };
-                        if (cls.kind === 'obj-prop') frame.pendingObjTpls.push(tSite);
-                        else {
-                            tplSites.push(tSite);
-                            if (cls.kind === 'ce-child' && cls.targetCe) {
-                                cls.targetCe.curArgHasSlot = true; cls.targetCe.hasExprSlot = true;
-                                cls.targetCe.childParts.push({ type: 'slot', text: tpl.quasis.join('1') || '1' });
+                    const siteClass = classifyStringSite(frame, prevToken, nextCh);
+                    if (siteClass) {
+                        const templateSite = {
+                            start,
+                            end: parsedTpl.end,
+                            kind: siteClass.kind,
+                            key: siteClass.key,
+                            quasis: parsedTpl.quasis,
+                            exprs: parsedTpl.exprs
+                        };
+                        if (siteClass.kind === 'obj-prop') {
+                            frame.pendingObjTpls.push(templateSite);
+                        } else {
+                            templateSites.push(templateSite);
+                            if (siteClass.kind === 'ce-child' && siteClass.targetCe) {
+                                siteClass.targetCe.curArgHasSlot = true;
+                                siteClass.targetCe.hasExprSlot = true;
+                                siteClass.targetCe.childParts.push({ type: 'slot', text: parsedTpl.quasis.join('1') || '1' });
                             }
                         }
                     }
                 }
             }
-            stepTok('STR', tpl.end); continue;
+            stepToken('STR', parsedTpl.end);
+            continue;
         }
-        if (ch === '/' && REGEX_PRECEDERS.has(prevTok)) { stepTok('REG', skipRe(source, i, len)); continue; }
-        if (isIdStart(ch)) {
-            const st = i++;
-            while (i < len && isIdChar(source[i])) i++;
-            const id = source.slice(st, i), frame = top();
-            if (frame && frame.type === 'brace' && (prevTok === '{' || prevTok === ',') && peekNextToken(source, i, len) === ':') {
-                frame.curKey = id; frame.siblingKeys?.add(id);
+        if (ch === '/' && REGEX_PRECEDERS.has(prevToken)) {
+            stepToken('REG', skipRegexLiteral(source, index, length));
+            continue;
+        }
+        if (isIdentifierStart(ch)) {
+            const tokenStart = index++;
+            while (index < length && isIdentifierChar(source[index])) index++;
+            const ident = source.slice(tokenStart, index);
+            const frame = top();
+            if (frame && frame.type === 'brace' && (prevToken === '{' || prevToken === ',') && peekNextToken(source, index, length) === ':') {
+                frame.curKey = ident;
+                frame.siblingKeys?.add(ident);
             }
-            stepTok(id, i, afterDot ? `${lastIdent}.${id}` : id); continue;
+            stepToken(ident, index, afterDot ? `${lastIdent}.${ident}` : ident);
+            continue;
         }
         if (ch >= '0' && ch <= '9') {
-            while (i < len && /[0-9a-zA-Z_.]/.test(source[i])) i++;
-            stepTok('NUM', i); continue;
+            while (index < length && /[0-9a-zA-Z_.]/.test(source[index])) index++;
+            stepToken('NUM', index);
+            continue;
         }
-        if (ch === '.') { afterDot = true; prevTok = '.'; i++; continue; }
+        if (ch === '.') {
+            afterDot = true;
+            prevToken = '.';
+            index++;
+            continue;
+        }
 
         if (ch === '(') {
-            const p = top(), pSkip = Boolean(p?.inSkippedSubtree);
+            const parentFrame = top();
+            const inSkippedSubtree = Boolean(parentFrame?.inSkippedSubtree);
             const isCe = Boolean(reactIdent && lastIdent === `${reactIdent}.createElement`);
             if (isCe) {
-                stack.push({ type: 'ce', argIdx: 0, tagSet: false, inSkippedSubtree: pSkip, collectFlatOnly: false, childParts: [], hasExprSlot: false, hasLiteral: false, curArgHasSlot: false, flatText: '' });
-            } else if (prevTok === ')' || prevTok === ']' || isIdStart(prevTok[0] || '')) {
-                stack.push({ type: 'call', inSkippedSubtree: pSkip, inCeChild: false, ceOwner: null });
+                stack.push({
+                    type: 'ce',
+                    argIdx: 0,
+                    tagSet: false,
+                    inSkippedSubtree,
+                    collectFlatOnly: false,
+                    childParts: [],
+                    hasExprSlot: false,
+                    hasLiteral: false,
+                    curArgHasSlot: false,
+                    flatText: ''
+                });
+            } else if (prevToken === ')' || prevToken === ']' || isIdentifierStart(prevToken[0] || '')) {
+                stack.push({ type: 'call', inSkippedSubtree, inCeChild: false, ceOwner: null });
             } else {
-                stack.push({ type: 'paren', inSkippedSubtree: pSkip, inCeChild: Boolean(p && ((p.type === 'ce' && p.argIdx >= 2) || p.inCeChild) && !pSkip), ceOwner: p?.type === 'ce' ? p : p?.ceOwner || null });
+                const inCeChild = Boolean(
+                    parentFrame && ((parentFrame.type === 'ce' && parentFrame.argIdx >= 2) || parentFrame.inCeChild) && !inSkippedSubtree
+                );
+                stack.push({
+                    type: 'paren',
+                    inSkippedSubtree,
+                    inCeChild,
+                    ceOwner: parentFrame?.type === 'ce' ? parentFrame : parentFrame?.ceOwner || null
+                });
             }
-            stepTok('(', i + 1); continue;
+            stepToken('(', index + 1);
+            continue;
         }
         if (ch === ')') {
-            const f = top();
-            if (f && (f.type === 'ce' || f.type === 'call' || f.type === 'paren')) {
-                if (f.type === 'ce') finalizeCeArg(f);
+            const frame = top();
+            if (frame && (frame.type === 'ce' || frame.type === 'call' || frame.type === 'paren')) {
+                if (frame.type === 'ce') finalizeCeArg(frame);
                 stack.pop();
-                if (f.type === 'ce') {
-                    f.flatText = f.childParts.map(p => (p.type === 'lit' ? p.site.val : p.text)).join('');
-                    if (f.hasExprSlot) f.childParts.forEach(p => { if (p.type === 'lit') p.site.inMultiChild = true; });
-                    if (!f.inSkippedSubtree && f.childParts.length >= 2 && f.hasExprSlot && f.hasLiteral) ceFrames.push(f);
+                if (frame.type === 'ce') {
+                    frame.flatText = frame.childParts.map(part => (part.type === 'lit' ? part.site.val : part.text)).join('');
+                    if (frame.hasExprSlot) {
+                        frame.childParts.forEach(part => {
+                            if (part.type === 'lit') part.site.inMultiChild = true;
+                        });
+                    }
+                    if (!frame.inSkippedSubtree && frame.childParts.length >= 2 && (frame.hasExprSlot || frame.argIdx >= 3) && frame.hasLiteral) {
+                        elementFrames.push(frame);
+                    }
                     const outer = top();
                     if (outer && outer.type === 'ce' && outer.argIdx >= 2 && !outer.curArgHasSlot) {
-                        outer.curArgHasSlot = true; outer.hasExprSlot = true;
-                        outer.childParts.push({ type: 'slot', text: f.flatText || '1' });
+                        outer.curArgHasSlot = true;
+                        outer.hasExprSlot = true;
+                        outer.childParts.push({ type: 'slot', text: frame.flatText || '1', childCe: frame });
                     }
                 }
             }
-            stepTok(')', i + 1); continue;
+            stepToken(')', index + 1);
+            continue;
         }
         if (ch === '{') {
-            const p = top(), isCeProps = Boolean(p && p.type === 'ce' && p.argIdx === 1 && !p.inSkippedSubtree);
+            const parentFrame = top();
+            const isCeProps = Boolean(parentFrame && parentFrame.type === 'ce' && parentFrame.argIdx === 1 && !parentFrame.inSkippedSubtree);
             stack.push({
-                type: 'brace', isCeProps, inSkippedSubtree: Boolean(p?.inSkippedSubtree), curKey: null,
-                siblingKeys: isCeProps ? null : new Set(), pendingObjProps: isCeProps ? null : [], pendingObjTpls: isCeProps ? null : []
+                type: 'brace',
+                isCeProps,
+                inSkippedSubtree: Boolean(parentFrame?.inSkippedSubtree),
+                curKey: null,
+                siblingKeys: isCeProps ? null : new Set(),
+                pendingObjProps: isCeProps ? null : [],
+                pendingObjTpls: isCeProps ? null : []
             });
-            stepTok('{', i + 1); continue;
+            stepToken('{', index + 1);
+            continue;
         }
         if (ch === '}') {
-            const f = top();
-            if (f && f.type === 'brace') {
+            const frame = top();
+            if (frame && frame.type === 'brace') {
                 stack.pop();
-                if (!f.isCeProps && (f.pendingObjProps.length > 0 || f.pendingObjTpls.length > 0)) {
-                    const isSchema = Array.from(SCHEMA_SIBLING_KEYS).some(k => f.siblingKeys.has(k));
-                    for (const site of f.pendingObjProps) if (!(isSchema && site.key === 'title')) objPropCandidates.push(site);
-                    for (const tSite of f.pendingObjTpls) if (!(isSchema && tSite.key === 'title')) objTplCandidates.push(tSite);
+                if (!frame.isCeProps && (frame.pendingObjProps.length > 0 || frame.pendingObjTpls.length > 0)) {
+                    const isSchema = Array.from(SCHEMA_SIBLING_KEYS).some(key => frame.siblingKeys.has(key));
+                    for (const site of frame.pendingObjProps) {
+                        if (!(isSchema && site.key === 'title')) objPropCandidates.push(site);
+                    }
+                    for (const templateSite of frame.pendingObjTpls) {
+                        if (!(isSchema && templateSite.key === 'title')) objTplCandidates.push(templateSite);
+                    }
                 }
             }
-            stepTok('}', i + 1); continue;
+            stepToken('}', index + 1);
+            continue;
         }
         if (ch === '[') {
-            const p = top(), pSkip = Boolean(p?.inSkippedSubtree);
-            stack.push({ type: 'bracket', inSkippedSubtree: pSkip, inCeChild: Boolean(p && ((p.type === 'ce' && p.argIdx >= 2) || p.inCeChild) && !pSkip), ceOwner: p?.type === 'ce' ? p : p?.ceOwner || null });
-            stepTok('[', i + 1); continue;
+            const parentFrame = top();
+            const inSkippedSubtree = Boolean(parentFrame?.inSkippedSubtree);
+            const inCeChild = Boolean(
+                parentFrame && ((parentFrame.type === 'ce' && parentFrame.argIdx >= 2) || parentFrame.inCeChild) && !inSkippedSubtree
+            );
+            stack.push({
+                type: 'bracket',
+                inSkippedSubtree,
+                inCeChild,
+                ceOwner: parentFrame?.type === 'ce' ? parentFrame : parentFrame?.ceOwner || null
+            });
+            stepToken('[', index + 1);
+            continue;
         }
         if (ch === ']') {
             if (top()?.type === 'bracket') stack.pop();
-            stepTok(']', i + 1); continue;
+            stepToken(']', index + 1);
+            continue;
         }
         if (ch === ',') {
-            const f = top();
-            if (f?.type === 'ce') { finalizeCeArg(f); f.argIdx++; f.curArgHasSlot = false; }
-            if (f?.type === 'brace') f.curKey = null;
-            stepTok(',', i + 1); continue;
+            const frame = top();
+            if (frame?.type === 'ce') {
+                finalizeCeArg(frame);
+                frame.argIdx++;
+                frame.curArgHasSlot = false;
+            }
+            if (frame?.type === 'brace') frame.curKey = null;
+            stepToken(',', index + 1);
+            continue;
         }
-        const [tok, nextI] = readOpOrPunct(source, i);
-        stepTok(tok, nextI);
+        const [token, nextIndex] = readOperatorOrPunctuator(source, index);
+        stepToken(token, nextIndex);
     }
 
-    for (const site of objPropCandidates) if (!comparedLiterals.has(site.val)) sites.push(site);
-    for (const tSite of objTplCandidates) tplSites.push(tSite);
+    for (const site of objPropCandidates) {
+        if (!comparedLiterals.has(site.val)) sites.push(site);
+    }
+    for (const templateSite of objTplCandidates) templateSites.push(templateSite);
     sites.sort((a, b) => a.start - b.start);
-    tplSites.sort((a, b) => a.start - b.start);
-    return { sites, tplSites, ceFrames, comparedLiterals };
+    templateSites.sort((a, b) => a.start - b.start);
+    return { sites, tplSites: templateSites, ceFrames: elementFrames, comparedLiterals };
 }
 
 function isTechnicalTemplate(quasis) {
@@ -369,161 +559,277 @@ function isTechnicalTemplate(quasis) {
     return false;
 }
 
-function rewriteTemplateSite(tSite, source, translator) {
-    if (isTechnicalTemplate(tSite.quasis)) return null;
-    const tryBuild = (mkTok, checkRaw) => {
-        const toks = tSite.exprs.map((_, idx) => mkTok(idx));
-        const key = tSite.quasis.map((q, idx) => (idx < toks.length ? `${q}${toks[idx]}` : q)).join('');
-        const t = translator.translateString(key);
-        if (!t || t === key) return null;
-        const placements = [];
-        for (let k = 0; k < toks.length; k++) {
-            const tok = toks[k];
-            const pos = t.indexOf(tok);
-            if (pos === -1 || t.indexOf(tok, pos + tok.length) !== -1) return null;
-            placements.push({ pos, len: tok.length, rawExpr: source.slice(tSite.exprs[k].start, tSite.exprs[k].end) });
-        }
-        placements.sort((a, b) => a.pos - b.pos);
-        for (let k = 1; k < placements.length; k++) {
-            if (placements[k].pos < placements[k - 1].pos + placements[k - 1].len) return null;
+function isEnglishPluralSuffixPair(pair) {
+    if (!pair) return false;
+    const [first, second] = pair;
+    return (first === '' && (second === 's' || second === 'es')) || (second === '' && (first === 's' || first === 'es'));
+}
+
+function countResidualAsciiWords(templateCode) {
+    if (typeof templateCode !== 'string') return Infinity;
+    const inner = templateCode.slice(1, -1).replace(/\$\{(?:[^{}]|\{[^{}]*\})*\}/g, ' ');
+    return (inner.match(/[A-Za-z]{2,}/g) || []).length;
+}
+
+function interpolateTranslatedTemplate(translated, slotTokens, exprSources) {
+    const placements = [];
+    for (let k = 0; k < slotTokens.length; k++) {
+        const token = slotTokens[k];
+        const pos = translated.indexOf(token);
+        if (pos === -1 || translated.indexOf(token, pos + token.length) !== -1) return null;
+        placements.push({ pos, len: token.length, rawExpr: exprSources[k] });
+    }
+    placements.sort((a, b) => a.pos - b.pos);
+    for (let k = 1; k < placements.length; k++) {
+        if (placements[k].pos < placements[k - 1].pos + placements[k - 1].len) return null;
+    }
+    let output = '`';
+    let cursor = 0;
+    for (const placement of placements) {
+        output += escapeTemplateQuasi(translated.slice(cursor, placement.pos)) + placement.rawExpr;
+        cursor = placement.pos + placement.len;
+    }
+    return output + escapeTemplateQuasi(translated.slice(cursor)) + '`';
+}
+
+function rewriteTemplateSite(templateSite, source, translator) {
+    if (isTechnicalTemplate(templateSite.quasis)) return null;
+    const exprSources = templateSite.exprs.map(expr => source.slice(expr.start, expr.end));
+    const canUseNumericProbe = !templateSite.quasis.some(quasi => quasi.includes(NUMERIC_PROBE_GUARD));
+
+    // 当 pluralPairs 非空时同时探测单复数两分支并要求译文一致，以安全折叠多余的英文复数后缀三元表达式
+    const probeTemplate = (keptIndices, pluralPairs, makeToken, checkRaw) => {
+        const tokens = keptIndices.map((_, j) => makeToken(j));
+        const tokenByOrigIdx = new Map();
+        keptIndices.forEach((origIdx, j) => tokenByOrigIdx.set(origIdx, tokens[j]));
+
+        const buildKey = (branchIdx, probePos = -1, probeVal = '') => {
+            let key = '';
+            for (let idx = 0; idx < templateSite.quasis.length; idx++) {
+                key += templateSite.quasis[idx];
+                if (idx < templateSite.exprs.length) {
+                    if (pluralPairs && pluralPairs[idx]) key += pluralPairs[idx][branchIdx];
+                    else if (probePos !== -1 && keptIndices[probePos] === idx) key += probeVal;
+                    else key += tokenByOrigIdx.get(idx);
+                }
+            }
+            return key;
+        };
+
+        const key0 = buildKey(0);
+        const trans0 = translator.translateString(key0);
+        if (!trans0 || trans0 === key0) return null;
+        if (pluralPairs) {
+            const key1 = buildKey(1);
+            const trans1 = translator.translateString(key1);
+            if (!trans1 || trans1 === key1 || trans0 !== trans1) return null;
         }
         if (checkRaw) {
-            for (let k = 0; k < toks.length; k++) {
-                for (const probe of ['Settings', 'Privacy Policy']) {
-                    const kProbe = tSite.quasis.map((q, idx) => (idx < toks.length ? `${q}${idx === k ? probe : toks[idx]}` : q)).join('');
-                    const tProbe = translator.translateString(kProbe);
-                    if (tProbe && tProbe !== kProbe && !tProbe.includes(probe)) return false;
+            for (let j = 0; j < keptIndices.length; j++) {
+                for (const probe of RAW_SLOT_PROBES) {
+                    const probeKey = buildKey(0, j, probe);
+                    const probeTrans = translator.translateString(probeKey);
+                    if (probeTrans && probeTrans !== probeKey && !probeTrans.includes(probe)) return false;
                 }
             }
         }
-        let out = '`', cur = 0;
-        for (const p of placements) {
-            out += escapeTplQuasi(t.slice(cur, p.pos)) + p.rawExpr;
-            cur = p.pos + p.len;
-        }
-        return out + escapeTplQuasi(t.slice(cur)) + '`';
+        return interpolateTranslatedTemplate(trans0, tokens, keptIndices.map(idx => exprSources[idx]));
     };
-    const lead = (tSite.quasis[0] || '').match(/^\s*/)[0];
-    const trail = (tSite.quasis[tSite.quasis.length - 1] || '').match(/\s*$/)[0];
-    const applyTrim = code => (code && (lead || trail) ? '`' + escapeTplQuasi(lead) + code.slice(1, -1) + escapeTplQuasi(trail) + '`' : code);
-    const agRes = tryBuild(i => `AGSLOT${i}`, true);
-    if (agRes === false) return null;
-    const hit = agRes || (!tSite.quasis.some(q => q.includes('9910')) ? tryBuild(i => String(99100 + i), false) : null);
-    return applyTrim(typeof hit === 'string' ? hit : null);
+
+    const lead = (templateSite.quasis[0] || '').match(/^\s*/)[0];
+    const trail = (templateSite.quasis[templateSite.quasis.length - 1] || '').match(/\s*$/)[0];
+    const applyTrim = code => (
+        code && (lead || trail)
+            ? '`' + escapeTemplateQuasi(lead) + code.slice(1, -1) + escapeTemplateQuasi(trail) + '`'
+            : code
+    );
+
+    const pluralPairs = exprSources.map(exprCode => {
+        const pair = expandStringTernaryExpr(exprCode);
+        return isEnglishPluralSuffixPair(pair) ? pair : null;
+    });
+    if (pluralPairs.some(Boolean)) {
+        const keptIndices = [];
+        for (let idx = 0; idx < templateSite.exprs.length; idx++) {
+            if (!pluralPairs[idx]) keptIndices.push(idx);
+        }
+        const numericFolded = canUseNumericProbe
+            ? probeTemplate(keptIndices, pluralPairs, j => String(NUMERIC_PROBE_BASE + j), false)
+            : null;
+        if (typeof numericFolded === 'string') return applyTrim(numericFolded);
+        const slotFolded = probeTemplate(keptIndices, pluralPairs, j => `${TEXT_SLOT_PREFIX}${j}`, true);
+        if (slotFolded === false) return null;
+        if (typeof slotFolded === 'string') return applyTrim(slotFolded);
+    }
+
+    const allIndices = templateSite.exprs.map((_, idx) => idx);
+    const slotResult = probeTemplate(allIndices, null, i => `${TEXT_SLOT_PREFIX}${i}`, true);
+    if (slotResult === false) return null;
+    const numericResult = canUseNumericProbe
+        ? probeTemplate(allIndices, null, i => String(NUMERIC_PROBE_BASE + i), false)
+        : null;
+
+    let hit = null;
+    if (typeof slotResult === 'string' && typeof numericResult === 'string') {
+        hit = countResidualAsciiWords(numericResult) < countResidualAsciiWords(slotResult) ? numericResult : slotResult;
+    } else {
+        hit = typeof slotResult === 'string' ? slotResult : (typeof numericResult === 'string' ? numericResult : null);
+    }
+    return applyTrim(hit);
 }
 
 function applyFragmentNodeReplacement(val, rule, translator) {
-    for (const rep of rule.replacements) {
-        const m = val.match(rep.matchRe);
-        if (!m) continue;
-        if (rep.normalizeEllipsis) return rep.replace.replace('$1', (val.includes('...') || val.includes('…')) ? '...' : '');
-        let out = rep.replace;
-        for (let g = m.length - 1; g >= 1; g--) {
-            let gVal = m[g] ?? '';
-            if (gVal && (rep.formatAll || rep.formatGroupSet?.has(g)) && typeof translator.formatDuration === 'function') {
-                gVal = translator.formatDuration(gVal) || gVal;
-            }
-            out = out.split('$' + g).join(gVal);
+    for (const replacement of rule.replacements) {
+        const match = val.match(replacement.matchRe);
+        if (!match) continue;
+        if (replacement.normalizeEllipsis) {
+            return replacement.replace.replace('$1', (val.includes('...') || val.includes('…')) ? '...' : '');
         }
-        return out;
+        let output = replacement.replace;
+        for (let groupIndex = match.length - 1; groupIndex >= 1; groupIndex--) {
+            let groupVal = match[groupIndex] ?? '';
+            if (groupVal && (replacement.formatAll || replacement.formatGroupSet?.has(groupIndex)) && typeof translator.formatDuration === 'function') {
+                groupVal = translator.formatDuration(groupVal) || groupVal;
+            }
+            output = output.split('$' + groupIndex).join(groupVal);
+        }
+        return output;
     }
     return null;
 }
 
+function collectElementLiteralSites(ceFrame, includeNested = false, out = []) {
+    for (const part of ceFrame.childParts) {
+        if (part.type === 'lit') {
+            out.push(part.site);
+        } else if (includeNested && part.childCe && !part.childCe.inSkippedSubtree) {
+            collectElementLiteralSites(part.childCe, true, out);
+        }
+    }
+    return out;
+}
+
 function rewriteBundleSource(source, translator, config = {}) {
-    const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const reactIdent = detectReactIdent(source);
     if (!reactIdent || !translator) {
-        return { code: source, stats: { reactIdent: reactIdent || null, rewrittenSites: 0, fragmentSites: 0, templateSites: 0, uniqueOriginals: 0, elapsedMs: 0 } };
+        return {
+            code: source,
+            stats: { reactIdent: reactIdent || null, rewrittenSites: 0, fragmentSites: 0, templateSites: 0, uniqueOriginals: 0, elapsedMs: 0 }
+        };
     }
 
-    const { sites, tplSites, ceFrames } = scanUiSites(source, reactIdent);
-    const normFn = typeof translator.norm === 'function' ? translator.norm : (s => String(s || '').replace(/[\s\u00A0\u2009\u202F]+/g, ' ').trim());
-    const lowerExclude = new Set((config?.lowerWordsExclude || []).map(w => String(w).toLowerCase()));
+    const { sites, tplSites: templateSites, ceFrames: elementFrames } = scanUiSites(source, reactIdent);
+    const normalize = typeof translator.norm === 'function'
+        ? translator.norm
+        : (str => String(str || '').replace(/[\s\u00A0\u2009\u202F]+/g, ' ').trim());
+    const lowerExclude = new Set((config?.lowerWordsExclude || []).map(word => String(word).toLowerCase()));
     const fragmentRules = (config?.fragmentPatterns || [])
-        .filter(fp => fp && !fp.containerSelector && fp.containerPattern)
-        .map(fp => ({
-            containerRe: new RegExp(fp.containerPattern, 'i'),
-            replacements: (fp.nodeReplacements || []).map(nr => ({
-                matchRe: new RegExp(nr.match, 'i'),
-                replace: nr.replace,
-                normalizeEllipsis: Boolean(nr.normalizeEllipsis),
-                formatAll: nr.formatGroups === true,
-                formatGroupSet: Array.isArray(nr.formatGroups) ? new Set(nr.formatGroups) : null
+        .filter(rule => rule && !rule.containerSelector && rule.containerPattern)
+        .map(rule => ({
+            containerRe: new RegExp(rule.containerPattern, 'i'),
+            matchNested: Boolean(rule.matchNested),
+            replacements: (rule.nodeReplacements || []).map(replacement => ({
+                matchRe: new RegExp(replacement.match, 'i'),
+                replace: replacement.replace,
+                normalizeEllipsis: Boolean(replacement.normalizeEllipsis),
+                formatAll: replacement.formatGroups === true,
+                formatGroupSet: Array.isArray(replacement.formatGroups) ? new Set(replacement.formatGroups) : null
             }))
         }));
 
-    let fragmentSites = 0, templateSites = 0;
+    let fragmentSites = 0;
+    let rewrittenTemplateSites = 0;
     if (fragmentRules.length > 0) {
-        for (const ce of ceFrames) {
-            const simText = normFn(ce.flatText);
-            const strippedSim = normFn(ce.flatText.replace(/^1+(?=[A-Za-z])/, ''));
-            const matching = simText ? fragmentRules.filter(r => r.containerRe.test(simText) || (strippedSim !== simText && r.containerRe.test(strippedSim))) : [];
-            if (matching.length === 0) continue;
-            for (const part of ce.childParts) {
-                if (part.type !== 'lit' || part.site.handledByFragment) continue;
-                for (const rule of matching) {
-                    const repVal = applyFragmentNodeReplacement(part.site.val, rule, translator);
-                    if (repVal !== null && repVal !== part.site.val) {
-                        part.site.fragmentReplacement = repVal;
-                        part.site.handledByFragment = true;
+        for (const ceFrame of elementFrames) {
+            const simText = normalize(ceFrame.flatText);
+            const strippedSim = normalize(ceFrame.flatText.replace(/^1+(?=[A-Za-z])/, ''));
+            const matchingRules = simText
+                ? fragmentRules.filter(rule => rule.containerRe.test(simText) || (strippedSim !== simText && rule.containerRe.test(strippedSim)))
+                : [];
+            if (matchingRules.length === 0) continue;
+
+            let directLiterals = null;
+            let nestedLiterals = null;
+            for (const rule of matchingRules) {
+                const targets = rule.matchNested
+                    ? (nestedLiterals || (nestedLiterals = collectElementLiteralSites(ceFrame, true)))
+                    : (directLiterals || (directLiterals = collectElementLiteralSites(ceFrame, false)));
+                for (const site of targets) {
+                    if (site.handledByFragment) continue;
+                    const replacedVal = applyFragmentNodeReplacement(site.val, rule, translator);
+                    if (replacedVal !== null && replacedVal !== site.val) {
+                        site.fragmentReplacement = replacedVal;
+                        site.handledByFragment = true;
                         fragmentSites++;
-                        break;
                     }
                 }
             }
         }
     }
 
-    const edits = [], uniqueOriginals = new Set();
+    const edits = [];
+    const uniqueOriginals = new Set();
     for (const site of sites) {
-        let repText = null;
+        let replacementText = null;
         if (site.handledByFragment) {
-            repText = site.fragmentReplacement;
+            replacementText = site.fragmentReplacement;
         } else if (/[a-zA-Z]/.test(site.val)) {
             if (site.kind === 'obj-prop') {
                 const trimmed = site.val.trim();
                 if (lowerExclude.has(trimmed.toLowerCase()) || (!OBJ_STRICT_KEYS.has(site.key) && /^[a-z0-9_-]+$/.test(trimmed))) continue;
             }
-            const trans = translator.translateString(site.val);
-            if (trans && trans !== site.val) repText = site.val.match(/^\s*/)[0] + trans + site.val.match(/\s*$/)[0];
+            const translated = translator.translateString(site.val);
+            if (translated && translated !== site.val) {
+                replacementText = site.val.match(/^\s*/)[0] + translated + site.val.match(/\s*$/)[0];
+            }
         }
-        if (repText !== null && repText !== site.val) {
-            edits.push([site.start, site.end, serializeJsString(repText)]);
+        if (replacementText !== null && replacementText !== site.val) {
+            edits.push([site.start, site.end, serializeJsString(replacementText)]);
             uniqueOriginals.add(site.val);
         }
     }
-    for (const tSite of tplSites) {
-        const repTpl = rewriteTemplateSite(tSite, source, translator);
-        if (repTpl) {
-            edits.push([tSite.start, tSite.end, repTpl]);
-            uniqueOriginals.add(tSite.quasis.join('${}'));
-            templateSites++;
+    for (const templateSite of templateSites) {
+        const rewrittenTemplate = rewriteTemplateSite(templateSite, source, translator);
+        if (rewrittenTemplate) {
+            edits.push([templateSite.start, templateSite.end, rewrittenTemplate]);
+            uniqueOriginals.add(templateSite.quasis.join('${}'));
+            rewrittenTemplateSites++;
         }
     }
     edits.sort((a, b) => a[0] - b[0]);
 
     const parts = [];
     let cursor = 0;
-    for (const [start, end, rep] of edits) {
+    for (const [start, end, replacement] of edits) {
         if (start < cursor) continue;
-        parts.push(source.slice(cursor, start), rep);
+        parts.push(source.slice(cursor, start), replacement);
         cursor = end;
     }
-    parts.push(source.slice(cursor), '\n;try{if(typeof document!=="undefined"&&document.documentElement)document.documentElement.dataset.agL10nBundle="1";}catch(e){}\n');
+    parts.push(
+        source.slice(cursor),
+        '\n;try{if(typeof document!=="undefined"&&document.documentElement)document.documentElement.dataset.agL10nBundle="1";}catch(e){}\n'
+    );
 
-    const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const endTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
     return {
         code: parts.join(''),
-        stats: { reactIdent, rewrittenSites: edits.length, fragmentSites, templateSites, uniqueOriginals: uniqueOriginals.size, elapsedMs: Math.round((t1 - t0) * 10) / 10 }
+        stats: {
+            reactIdent,
+            rewrittenSites: edits.length,
+            fragmentSites,
+            templateSites: rewrittenTemplateSites,
+            uniqueOriginals: uniqueOriginals.size,
+            elapsedMs: Math.round((endTime - startTime) * 10) / 10
+        }
     };
 }
 
-function isPartialMultiChildFragment(s) {
-    if (!s || /^[a-z.,?!;:—–·)\]]/.test(s) || /[(\-,]$/.test(s)) return true;
-    if (!/[:.?!)]$/.test(s)) {
-        if (s.split(/\s+/).length <= 2) return true;
-        if (/(?:\b(?:to|by|with|of|for|in|on|at|from|as|and|or|the|a|an|our|your|their|its|is|are|was|were)|#)$/i.test(s)) return true;
+function isPartialMultiChildFragment(str) {
+    if (!str || /^[a-z.,?!;:—–·)\]]/.test(str) || /[(\-,]$/.test(str)) return true;
+    if (!/[:.?!)]$/.test(str)) {
+        if (str.split(/\s+/).length <= 2) return true;
+        if (/(?:\b(?:to|by|with|of|for|in|on|at|from|as|and|or|the|a|an|our|your|their|its|is|are|was|were)|#)$/i.test(str)) return true;
     }
     return false;
 }
@@ -532,58 +838,63 @@ function extractReactUiStrings(source, normalizeFn, filterFn) {
     const out = new Map();
     const reactIdent = detectReactIdent(source);
     if (!reactIdent) return out;
-    const norm = typeof normalizeFn === 'function' ? normalizeFn : (s => String(s || '').trim());
+    const normalize = typeof normalizeFn === 'function' ? normalizeFn : (str => String(str || '').trim());
     for (const site of scanUiSites(source, reactIdent).sites) {
-        const s = norm(site.val);
-        if (!s || (site.kind === 'ce-child' && site.inMultiChild && isPartialMultiChildFragment(s))) continue;
-        if (typeof filterFn === 'function' && !filterFn(s)) continue;
-        let tags = out.get(s);
-        if (!tags) { tags = new Set(); out.set(s, tags); }
+        const norm = normalize(site.val);
+        if (!norm || (site.kind === 'ce-child' && site.inMultiChild && isPartialMultiChildFragment(norm))) continue;
+        if (typeof filterFn === 'function' && !filterFn(norm)) continue;
+        let tags = out.get(norm);
+        if (!tags) {
+            tags = new Set();
+            out.set(norm, tags);
+        }
         tags.add(site.kind === 'ce-child' ? 'ce:child' : (site.kind === 'ce-prop' ? `ce:prop:${site.key}` : `obj:prop:${site.key}`));
     }
     return out;
 }
 
 function expandStringTernaryExpr(exprCode) {
-    const m = exprCode.match(/^\$\{(?:[^?]|\?\.)+\?\s*(["'])((?:\\.|(?!\1)[^\\])*)\1\s*:\s*(["'])((?:\\.|(?!\3)[^\\])*)\3\s*\}$/);
-    if (!m) return null;
-    return [decodeJsBody(m[2]), decodeJsBody(m[4])];
+    const match = exprCode.match(/^\$\{(?:[^?]|\?\.)+\?\s*(["'])((?:\\.|(?!\1)[^\\])*)\1\s*:\s*(["'])((?:\\.|(?!\3)[^\\])*)\3\s*\}$/);
+    if (!match) return null;
+    return [decodeJsStringBody(match[2]), decodeJsStringBody(match[4])];
 }
 
 function extractReactUiTemplates(source, normalizeFn) {
     const out = new Map();
     const reactIdent = detectReactIdent(source);
     if (!reactIdent) return [];
-    const norm = typeof normalizeFn === 'function' ? normalizeFn : (s => String(s || '').trim());
-    for (const t of scanUiSites(source, reactIdent).tplSites) {
-        if (isTechnicalTemplate(t.quasis)) continue;
-        const exprSources = t.exprs.map(e => source.slice(e.start, e.end));
-        const raw = t.quasis.map((q, idx) => (idx < exprSources.length ? `${q}${exprSources[idx]}` : q)).join('');
-        const templateKey = norm(t.quasis.map((q, idx) => (idx < t.exprs.length ? `${q}\${${idx}}` : q)).join(''));
+    const normalize = typeof normalizeFn === 'function' ? normalizeFn : (str => String(str || '').trim());
+    for (const templateSite of scanUiSites(source, reactIdent).tplSites) {
+        if (isTechnicalTemplate(templateSite.quasis)) continue;
+        const exprSources = templateSite.exprs.map(expr => source.slice(expr.start, expr.end));
+        const raw = templateSite.quasis.map((quasi, idx) => (idx < exprSources.length ? `${quasi}${exprSources[idx]}` : quasi)).join('');
+        const templateKey = normalize(
+            templateSite.quasis.map((quasi, idx) => (idx < templateSite.exprs.length ? `${quasi}\${${idx}}` : quasi)).join('')
+        );
         if (!templateKey || out.has(templateKey)) continue;
 
         let variants = [''];
-        for (let idx = 0; idx < t.quasis.length; idx++) {
-            const q = t.quasis[idx];
+        for (let idx = 0; idx < templateSite.quasis.length; idx++) {
+            const quasi = templateSite.quasis[idx];
             if (idx < exprSources.length) {
-                const tern = expandStringTernaryExpr(exprSources[idx]);
-                const choices = tern || ['SampleName', '5'];
+                const ternaryChoices = expandStringTernaryExpr(exprSources[idx]);
+                const choices = ternaryChoices || ['SampleName', '5'];
                 const next = [];
                 for (const prefix of variants) {
-                    for (const ch of choices) next.push(prefix + q + ch);
+                    for (const choice of choices) next.push(prefix + quasi + choice);
                     if (next.length > 16) break;
                 }
                 variants = next;
             } else {
-                variants = variants.map(v => v + q);
+                variants = variants.map(variant => variant + quasi);
             }
         }
-        const sims = Array.from(new Set(variants.map(norm).filter(Boolean)));
+        const sims = Array.from(new Set(variants.map(normalize).filter(Boolean)));
         out.set(templateKey, {
             templateKey,
             sims,
-            kind: t.kind,
-            key: t.key || '',
+            kind: templateSite.kind,
+            key: templateSite.key || '',
             raw
         });
     }
@@ -593,19 +904,25 @@ function extractReactUiTemplates(source, normalizeFn) {
 function extractReactUiMultiChild(source, normalizeFn) {
     const reactIdent = detectReactIdent(source);
     if (!reactIdent) return [];
-    const norm = typeof normalizeFn === 'function' ? normalizeFn : (s => String(s || '').trim());
-    const out = [], seen = new Set();
-    for (const ce of scanUiSites(source, reactIdent).ceFrames) {
-        const flat = norm(ce.flatText);
+    const normalize = typeof normalizeFn === 'function' ? normalizeFn : (str => String(str || '').trim());
+    const out = [];
+    const seen = new Set();
+    for (const ceFrame of scanUiSites(source, reactIdent).ceFrames) {
+        const flat = normalize(ceFrame.flatText);
         if (!flat || !/[a-zA-Z]{2,}/.test(flat)) continue;
-        const lits = ce.childParts.filter(p => p.type === 'lit').map(p => p.site.val);
-        const alphaJoined = norm(lits.join(' '));
+        const lits = ceFrame.childParts.filter(part => part.type === 'lit').map(part => part.site.val);
+        const alphaJoined = normalize(lits.join(' '));
         const words = alphaJoined.split(/\s+/).filter(Boolean);
         if (words.length < 2 && lits.length === 1 && !/[()/:?!.]/.test(alphaJoined)) continue;
-        const slotView = norm(ce.childParts.map(p => (p.type === 'lit' ? p.site.val : '{x}')).join(''));
+        const slotView = normalize(ceFrame.childParts.map(part => (part.type === 'lit' ? part.site.val : '{x}')).join(''));
         if (seen.has(slotView)) continue;
         seen.add(slotView);
-        out.push({ flat, slotView, lits });
+        out.push({
+            flat,
+            slotView,
+            lits,
+            nestedLits: collectElementLiteralSites(ceFrame, true).map(site => site.val)
+        });
     }
     return out;
 }
