@@ -185,8 +185,9 @@ function buildNodeReplacements(enParsed, zhParsed) {
 
         let nextGroup = 1;
         const allocGroup = () => nextGroup++;
-        const lead = buildEdgeWhitespace(enLead, zhLead, isFirst, allocGroup);
-        const trail = buildEdgeWhitespace(enTrail, zhTrail, isLast, allocGroup);
+        const hasWordChar = /[a-zA-Z0-9]/.test(enCore);
+        const lead = buildEdgeWhitespace(enLead, zhLead, isFirst && hasWordChar, allocGroup);
+        const trail = buildEdgeWhitespace(enTrail, zhTrail, isLast && hasWordChar, allocGroup);
 
         replacements.push({
             match: `^${lead.regex}${coreRe}${trail.regex}$`,

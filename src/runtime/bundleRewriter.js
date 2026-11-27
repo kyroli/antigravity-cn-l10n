@@ -775,6 +775,7 @@ function rewriteBundleSource(source, translator, config = {}) {
         if (site.handledByFragment) {
             replacementText = site.fragmentReplacement;
         } else if (/[a-zA-Z]/.test(site.val)) {
+            if (site.key === 'aria-label' && site.val.trim() === 'Cancel') continue;
             if (site.kind === 'obj-prop') {
                 const trimmed = site.val.trim();
                 if (lowerExclude.has(trimmed.toLowerCase()) || (!OBJ_STRICT_KEYS.has(site.key) && /^[a-z0-9_-]+$/.test(trimmed))) continue;

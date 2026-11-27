@@ -3,7 +3,7 @@
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
   "targetVersion": "2.35.2",
-  "revision": "488bf70eb854",
+  "revision": "f44916ec86d7",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
@@ -50,8 +50,8 @@
       "size": 11065
     },
     "src/fragmentCompiler.js": {
-      "sha256": "f49bac7824afe31bd59360193f420bb3b94891e614303aa361f64af174c240ef",
-      "size": 10714
+      "sha256": "0ba5b79adb9052296523879a1c78eb7e7aa6c62683a42c2919da309c435bd4be",
+      "size": 10800
     },
     "src/patcher.js": {
       "sha256": "89f8fdea1f604e888217b5973264b20d054724d7bf8039cf42a0ff1bfcd09bab",
@@ -62,8 +62,8 @@
       "size": 8070
     },
     "src/runtime/bundleRewriter.js": {
-      "sha256": "3b9b668b93eea6d3cc32b20b2746c5af70a632c8f98448510e3b5330a393e4ac",
-      "size": 41405
+      "sha256": "00e6774f9a7c5576d18f73797436795b3cff88f410e7e1fd95f0e267a4451244",
+      "size": 41490
     },
     "src/runtime/dom.js": {
       "sha256": "8504c047278f4f934877901d3bbd5da777575d8bb6846c1b7f81f4e7d9bd175c",
