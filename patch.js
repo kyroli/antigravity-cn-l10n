@@ -6,19 +6,6 @@ const asar = require('./src/asar');
 const patcher = require('./src/patcher');
 const updater = require('./src/updater');
 
-function parseArgs(argv = process.argv.slice(2)) {
-    const options = { restore: false, installDir: '', noKill: false, noUpdate: false };
-    for (let i = 0; i < argv.length; i++) {
-        const arg = argv[i];
-        if (arg === '--restore') options.restore = true;
-        else if (arg === '--install-dir' && i + 1 < argv.length) options.installDir = argv[++i];
-        else if (arg === '--no-kill') options.noKill = true;
-        else if (arg === '--no-update') options.noUpdate = true;
-        else console.warn(`[提示] 忽略未识别的命令行参数: ${arg}`);
-    }
-    return options;
-}
-
 async function installPatch(resourcesDir, onBeforeWrite) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const currentDictsHash = utils.getDictsHash();
@@ -41,7 +28,7 @@ async function installPatch(resourcesDir, onBeforeWrite) {
     try {
         asar.writeAtomic(asarPath, patchedBuf);
     } catch (err) {
-        console.error(`[错误] 写入 app.asar 失败（文件被占用或权限不足）: ${err.message}`);
+        console.error(`[错误] 写入 app.asar 失败（请先彻底关闭 Antigravity，或右键以管理员身份运行）: ${err.message}`);
         return false;
     }
 
@@ -60,14 +47,17 @@ function restoreOfficial(resourcesDir, onBeforeWrite) {
 }
 
 async function main() {
-    const rawArgs = process.argv.slice(2);
-    if (!rawArgs.includes('--restore') && !rawArgs.includes('--no-update')) {
+    const args = new Set(process.argv.slice(2));
+    const isRestore = args.has('--restore');
+    const skipUpdate = args.has('--no-update');
+
+    if (!isRestore && !skipUpdate) {
         const updateRes = await updater.updateIfNeeded();
         if (updateRes && updateRes.updated) {
             console.log('[更新] 正在使用最新补丁代码继续执行...');
             const childRes = childProcess.spawnSync(
                 process.execPath,
-                [__filename, '--no-update', ...rawArgs],
+                [__filename, '--no-update'],
                 { stdio: 'inherit', cwd: process.cwd() }
             );
             if (childRes.error) {
@@ -78,40 +68,34 @@ async function main() {
         }
     }
 
-    const options = parseArgs(rawArgs);
-    let noKill = options.noKill;
-    const resourcesDir = utils.getResourcesDir(options.installDir);
+    const resourcesDir = utils.getResourcesDir();
     if (!resourcesDir || !fs.existsSync(resourcesDir)) {
-        console.error('[错误] 未找到有效的客户端资源目录 (resources)。');
+        console.error('[错误] 未找到 Antigravity 安装目录，请确认已正确安装 Antigravity 客户端。');
         process.exit(1);
     }
 
     const targetVersion = utils.getTargetVersion(null, resourcesDir) || '未知';
     const localVersion = asar.getAsarVersion(path.join(resourcesDir, 'app.asar')) || '未知';
     console.log(`[版本] 适配版本: v${targetVersion} | 客户端版本: v${localVersion}`);
-    if (!options.restore && targetVersion !== '未知' && localVersion !== '未知' && targetVersion !== localVersion) {
+    if (!isRestore && targetVersion !== '未知' && localVersion !== '未知' && targetVersion !== localVersion) {
         console.warn('[警告] 客户端版本与当前汉化适配版本不一致，部分新增界面可能未完全汉化。');
     }
 
     const invokedByClient = utils.isInvokedByClient();
     if (invokedByClient) {
-        noKill = true;
         console.log('[模式] 检测到在客户端内置终端中运行，已跳过进程关闭步骤（重启客户端后生效）。');
     }
 
     let didStopApp = false;
     const onBeforeWrite = () => {
-        if (noKill) {
-            if (!invokedByClient) console.log('[进程] 已启用 --no-kill 参数，保持当前运行进程不关闭。');
-            return true;
-        }
+        if (invokedByClient) return true;
         const stopRes = utils.closeAntigravityProcesses(resourcesDir);
         if (!stopRes) return false;
         if (stopRes === 'stopped') didStopApp = true;
         return true;
     };
 
-    const res = options.restore ? restoreOfficial(resourcesDir, onBeforeWrite) : await installPatch(resourcesDir, onBeforeWrite);
+    const res = isRestore ? restoreOfficial(resourcesDir, onBeforeWrite) : await installPatch(resourcesDir, onBeforeWrite);
     if (!res) process.exit(1);
 
     if (res === true && didStopApp && !invokedByClient) {
@@ -132,7 +116,6 @@ async function main() {
 if (require.main === module) main();
 
 module.exports = {
-    parseArgs,
     installPatch,
     restoreOfficial
 };

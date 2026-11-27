@@ -308,12 +308,7 @@ function closeAntigravityProcesses(targetDir) {
     return false;
 }
 
-function detectInstallationDir(manualDir) {
-    if (manualDir) {
-        if (!fs.existsSync(manualDir)) return null;
-        const resolved = path.resolve(manualDir);
-        return (fs.statSync(resolved).isFile() && resolved.endsWith('app.asar')) ? path.dirname(resolved) : resolved;
-    }
+function detectInstallationDir() {
     const candidates = [];
     const seen = new Set();
     const addCandidateDir = candidate => {
@@ -347,8 +342,8 @@ function detectInstallationDir(manualDir) {
     return candidates.find(dir => fs.existsSync(dir) && (fs.existsSync(path.join(dir, 'resources', 'app.asar')) || fs.existsSync(path.join(dir, 'app.asar')))) || null;
 }
 
-function getResourcesDir(manualDir) {
-    const installDir = detectInstallationDir(manualDir);
+function getResourcesDir() {
+    const installDir = detectInstallationDir();
     if (!installDir) return null;
     const resDir = path.join(installDir, 'resources');
     if (fs.existsSync(path.join(resDir, 'app.asar'))) return resDir;

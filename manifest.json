@@ -3,15 +3,15 @@
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
   "targetVersion": "2.35.2",
-  "revision": "f44916ec86d7",
+  "revision": "7952a1d1eb0a",
   "files": {
     "Antigravity-L10n.bat": {
-      "sha256": "3650fcc3c35819d3b6390c296feaed3943ddd5aa73c522727208fbe7448ddace",
-      "size": 2552
+      "sha256": "d02b19f7a3397c229f50835adb3420b490a5c9f074b7da0d5fb7168c3d99e8c9",
+      "size": 3010
     },
     "Antigravity-Restore.bat": {
-      "sha256": "8bd6ec36ae39fb1b103f5e022df21987187a75b8e5fcf9283461096f79df7979",
-      "size": 488
+      "sha256": "4a971fbf9ca2d341ed656844ce5679acfde788c77ad123d2608b422ccb581ea6",
+      "size": 745
     },
     "dicts/agents.json": {
       "sha256": "2bdd76dfb117a5c9d51dd06ffd8a5af212459d64066955cac3d330b32429235b",
@@ -38,16 +38,16 @@
       "size": 119948
     },
     "package.json": {
-      "sha256": "ace9aa21a121f6114d30a4e2122d6aed071de3f7011a74659108e84c829c433f",
-      "size": 591
+      "sha256": "f14a8653c1a5ea371b8d0421d61b0eb60a560f2a73d7443dc137c25e1c9903d5",
+      "size": 519
     },
     "patch.js": {
-      "sha256": "7d66a8ea480e9f518079f9f363b2afc772810cf095b26d1acdd93098966c51fe",
-      "size": 5705
+      "sha256": "43bcc28bd6bfa5c315e669b780075640010cbd86f8165e67a93ac037d2304b9c",
+      "size": 4937
     },
     "src/asar.js": {
-      "sha256": "366e6893ea684942156aca856d22d65dcc11e79d3bc601362a2aae3ae5e423f7",
-      "size": 11065
+      "sha256": "532b2331df221edcb85bdff2566e96ad478ab3504d1fa82a1e999c949f9813d7",
+      "size": 11663
     },
     "src/fragmentCompiler.js": {
       "sha256": "0ba5b79adb9052296523879a1c78eb7e7aa6c62683a42c2919da309c435bd4be",
@@ -58,8 +58,8 @@
       "size": 13891
     },
     "src/runtime/bundleProxy.js": {
-      "sha256": "cbcd398dc69d63011e543718cc08f22ef845f4c1c74a840b6dfc7a120e88a2ff",
-      "size": 8070
+      "sha256": "017533057670e652967d91387527b80bdb01d68be2fa9a975cb585a5f51287e4",
+      "size": 8671
     },
     "src/runtime/bundleRewriter.js": {
       "sha256": "00e6774f9a7c5576d18f73797436795b3cff88f410e7e1fd95f0e267a4451244",
@@ -82,8 +82,8 @@
       "size": 17123
     },
     "src/utils.js": {
-      "sha256": "fff60dca4a3a321a93044ec57327b6930f81a148f29bf922e78cd49c597f2891",
-      "size": 16546
+      "sha256": "1e011ff06ee4c84cf81be40da6e82e333b1406a00009e68f1e02ff997da8fd3a",
+      "size": 16272
     }
   }
 }

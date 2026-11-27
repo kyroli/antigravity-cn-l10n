@@ -34,6 +34,21 @@ function writeAtomic(filePath, content) {
     }
 }
 
+function pruneOldCacheFiles(cacheDir, keepKey) {
+    try {
+        const keepJs = `main.${keepKey}.js`;
+        const keepMeta = `main.${keepKey}.meta.json`;
+        for (const name of fs.readdirSync(cacheDir)) {
+            if (name === keepJs || name === keepMeta) continue;
+            if (/^main\.[a-zA-Z0-9_-]+\.(?:js|meta\.json)$/.test(name)) {
+                try {
+                    fs.rmSync(path.join(cacheDir, name), { force: true });
+                } catch {}
+            }
+        }
+    } catch {}
+}
+
 function fetchUpstreamBundle(targetUrl, etag, timeoutMs = 15000) {
     return new Promise((resolve, reject) => {
         const req = https.request({
@@ -97,6 +112,7 @@ function createBundleProxyServer(opts = {}) {
                 try {
                     writeAtomic(cacheJsPath, outBuf);
                     writeAtomic(cacheMetaPath, JSON.stringify({ etag: upstream.etag, dictsHash, stats: rewritten.stats, updatedAt: Date.now() }));
+                    pruneOldCacheFiles(cacheDir, cacheKey);
                 } catch {}
             }
             return outBuf;
@@ -212,6 +228,7 @@ function installBundleProxy(electron, opts = {}) {
 
 module.exports = {
     validateUpstreamBundleUrl,
+    pruneOldCacheFiles,
     createBundleProxyServer,
     installBundleProxy
 };

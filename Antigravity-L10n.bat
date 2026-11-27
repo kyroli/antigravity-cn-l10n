@@ -15,13 +15,13 @@ setlocal
     )
 
     if exist "%~dp0patch.js" (
-        node "%~dp0patch.js" %*
+        node "%~dp0patch.js"
     ) else (
         if not exist "%~dp0antigravity-cn\src\updater.js" (
             echo [初始化] 未检测到本地核心文件，正在从 GitHub 下载更新器到 antigravity-cn 目录...
             if not exist "%~dp0antigravity-cn\src" mkdir "%~dp0antigravity-cn\src"
             set "AG_UPDATER_OUT=%~dp0antigravity-cn\src\updater.js"
-            powershell.exe -NoProfile -NonInteractive -Command "try { [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $wc=New-Object System.Net.WebClient; $wc.Headers.Add('User-Agent','antigravity-cn-l10n'); $ref='main'; try { $s=$wc.DownloadString('https://github.com/kyroli/antigravity-cn-l10n.git/info/refs?service=git-upload-pack'); if($s -match '([0-9a-f]{40}) refs/heads/main(?=\r|\n|\0|$)'){ $ref=$matches[1] } } catch {}; $tmp=$env:AG_UPDATER_OUT+'.tmp'; $wc.DownloadFile('https://raw.githubusercontent.com/kyroli/antigravity-cn-l10n/'+$ref+'/src/updater.js',$tmp); Move-Item -Force $tmp $env:AG_UPDATER_OUT } catch { Write-Host $_.Exception.Message; exit 1 }"
+            powershell.exe -NoProfile -NonInteractive -Command "try { [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12; Add-Type -AssemblyName System.Net.Http; $c=New-Object System.Net.Http.HttpClient; $c.Timeout=[TimeSpan]::FromSeconds(15); $c.DefaultRequestHeaders.TryAddWithoutValidation('User-Agent','antigravity-cn-l10n')|Out-Null; $c.DefaultRequestHeaders.TryAddWithoutValidation('Cache-Control','no-cache')|Out-Null; $ref='main'; try { $s=$c.GetStringAsync('https://github.com/kyroli/antigravity-cn-l10n.git/info/refs?service=git-upload-pack').GetAwaiter().GetResult(); if($s -match '([0-9a-f]{40}) refs/heads/main(?=\r|\n|\0|$)'){ $ref=$matches[1] } } catch {}; $r=$c.GetAsync('https://raw.githubusercontent.com/kyroli/antigravity-cn-l10n/'+$ref+'/src/updater.js').GetAwaiter().GetResult(); if(-not $r.IsSuccessStatusCode){ throw ('HTTP '+[int]$r.StatusCode) }; $tmp=$env:AG_UPDATER_OUT+'.tmp'; [IO.File]::WriteAllBytes($tmp,$r.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult()); Move-Item -Force $tmp $env:AG_UPDATER_OUT } catch { Write-Host $_.Exception.Message; exit 1 }"
             if errorlevel 1 (
                 rmdir "%~dp0antigravity-cn\src" >nul 2>nul
                 rmdir "%~dp0antigravity-cn" >nul 2>nul
@@ -41,9 +41,9 @@ setlocal
                 pause >nul
                 exit /b 1
             )
-            node "%~dp0antigravity-cn\patch.js" --no-update %*
+            node "%~dp0antigravity-cn\patch.js" --no-update
         ) else (
-            node "%~dp0antigravity-cn\patch.js" %*
+            node "%~dp0antigravity-cn\patch.js"
         )
     )
     if errorlevel 1 (

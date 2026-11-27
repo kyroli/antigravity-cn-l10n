@@ -230,7 +230,7 @@ function prepareOfficialAsar(resourcesDir, state) {
     }
 
     if (isAlreadyPatched) {
-        console.error('[错误] 缺少官方备份文件 app.asar.bak，且当前 app.asar 已包含补丁，无法建立初始基线。');
+        console.error('[错误] 缺少官方备份文件 app.asar.bak，且当前客户端已包含汉化补丁。请覆盖安装一次 Antigravity 官方安装包后重试。');
         return null;
     }
     writeAtomic(bakPath, asarBuffer);
@@ -244,7 +244,16 @@ function restoreOfficialAsar(resourcesDir, state, onBeforeWrite) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
     if (!fs.existsSync(bakPath)) {
-        console.error('[错误] 未找到官方备份文件 app.asar.bak，无法执行还原。');
+        if (fs.existsSync(asarPath) && !fs.readFileSync(asarPath).includes(SIGNATURE_START)) {
+            if (state && (state.patchedHash || state.dictsHash)) {
+                state.patchedHash = '';
+                state.dictsHash = '';
+                utils.saveState(state);
+            }
+            console.log('[完成] 当前已是官方原始版本，无需还原。');
+            return 'skipped';
+        }
+        console.error('[错误] 未找到官方备份文件 app.asar.bak，无法自动还原。请重新运行一次 Antigravity 官方安装包以恢复原版。');
         return false;
     }
     const bakBuffer = readCleanBackup(bakPath, '已中止还原。');
@@ -260,7 +269,7 @@ function restoreOfficialAsar(resourcesDir, state, onBeforeWrite) {
         console.log('[完成] 已恢复为官方原始版本。');
         return true;
     } catch (err) {
-        console.error(`[错误] 恢复官方文件失败: ${err.message}`);
+        console.error(`[错误] 恢复官方文件失败（请先彻底关闭 Antigravity，或右键以管理员身份运行）: ${err.message}`);
         return false;
     }
 }

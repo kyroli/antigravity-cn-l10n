@@ -5,8 +5,6 @@
   "description": "Antigravity (Windows) 简体中文汉化补丁",
   "main": "patch.js",
   "scripts": {
-    "patch": "node patch.js",
-    "restore": "node patch.js --restore",
     "sync": "node sync.js",
     "audit": "node sync.js --audit",
     "prune-dead": "node sync.js --prune-dead",

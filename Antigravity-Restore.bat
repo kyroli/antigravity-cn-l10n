@@ -9,7 +9,15 @@ if %errorlevel% neq 0 (
     goto :fail
 )
 
-node "%~dp0patch.js" --restore %*
+if exist "%~dp0patch.js" (
+    node "%~dp0patch.js" --restore
+) else if exist "%~dp0antigravity-cn\patch.js" (
+    node "%~dp0antigravity-cn\patch.js" --restore
+) else (
+    echo.
+    echo [错误] 未找到核心脚本 patch.js，请在汉化目录中运行还原脚本。
+    goto :fail
+)
 if %errorlevel% neq 0 goto :fail
 
 echo.
