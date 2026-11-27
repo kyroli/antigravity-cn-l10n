@@ -827,10 +827,10 @@
         ]
     },
     {
-        "pattern": "^No plugins found for \"(.+)\"\\.$",
-        "replacement": "未找到匹配 \"$1\" 的插件。",
+        "pattern": "^No (plugins|apps) found for \"(.+)\"\\.$",
+        "replacement": "未找到匹配 \"$2\" 的$1。",
         "rawGroups": [
-            1
+            2
         ]
     },
     {
@@ -894,13 +894,6 @@
     {
         "pattern": "^(\\d+) calls? · (.+ MB)$",
         "replacement": "$1 次通话 · $2"
-    },
-    {
-        "pattern": "^No apps found for \"(.+)\"\\.$",
-        "replacement": "未找到匹配 \"$1\" 的应用。",
-        "rawGroups": [
-            1
-        ]
     },
     {
         "pattern": "^Managed by the (.+) automation$",
@@ -3230,29 +3223,15 @@
         ]
     },
     {
-        "pattern": "^Failed to save project settings: (.+)$",
-        "replacement": "保存项目设置失败：$1",
+        "pattern": "^Failed to save (project settings|project|settings): (.+)$",
+        "replacement": "保存$1失败：$2",
         "rawGroups": [
-            1
+            2
         ]
     },
     {
         "pattern": "^Failed to save project permissions: (.+)$",
         "replacement": "保存项目权限失败：$1",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^Failed to save project: (.+)$",
-        "replacement": "保存项目失败：$1",
-        "rawGroups": [
-            1
-        ]
-    },
-    {
-        "pattern": "^Failed to save settings: (.+)$",
-        "replacement": "保存设置失败：$1",
         "rawGroups": [
             1
         ]
@@ -4127,6 +4106,13 @@
         "replacement": "新建$1..."
     },
     {
+        "pattern": "^([^.!?\\n]{1,40}) \\((Esc|Enter|←|→|Shift\\+Enter|Shift\\+Delete)\\)$",
+        "replacement": "$1 ($2)",
+        "rawGroups": [
+            2
+        ]
+    },
+    {
         "pattern": "^Remove from ([^.!?\\n]{1,30})$",
         "replacement": "从$1中移除"
     },
@@ -4166,6 +4152,290 @@
     {
         "pattern": "^(.+?) \\(excluded by current filter\\)$",
         "replacement": "$1（已被当前筛选条件排除）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Show in Sidebar \\((\\d+)/(\\d+)\\)$",
+        "replacement": "在侧边栏中显示 ($1/$2)",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Uploading (.+?)(?:\\.{3}|…)$",
+        "replacement": "正在上传 $1...",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Uploading (.+)$",
+        "replacement": "正在上传 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Retry uploading (.+)$",
+        "replacement": "重试上传 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Upload failed for (.+)$",
+        "replacement": "$1 上传失败",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Project: (.+)$",
+        "replacement": "项目：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Plugin: (.+)$",
+        "replacement": "插件：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Copied link to (.+)$",
+        "replacement": "已复制指向 $1 的链接",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Copy link to (.+)$",
+        "replacement": "复制指向 $1 的链接",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) replies$",
+        "replacement": "$1 条回复",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Reply in thread to (.+)$",
+        "replacement": "在话题中回复 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Thread: (.+)$",
+        "replacement": "话题：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Couldn't load plugin configuration: (.+)$",
+        "replacement": "无法加载插件配置：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) \\(Disabled\\)$",
+        "replacement": "$1（已禁用）",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Create plugin, (.+)$",
+        "replacement": "创建插件，$1"
+    },
+    {
+        "pattern": "^View (.+?) full screen$",
+        "replacement": "全屏查看 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Permission: (.+)$",
+        "replacement": "权限：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) of (\\d+) steps? done$",
+        "replacement": "已完成 $1 / $2 步",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^· \\+(\\d+) more$",
+        "replacement": "· 另有 $1 项",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) agents? (?:is|are) working quietly in the background\\. Anything that needs your input will show up here\\.$",
+        "replacement": "$1 个 Agent 正在后台静默运行。任何需要您输入的内容都会显示在此处。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+) needing your input$",
+        "replacement": "$1 项需要您的输入",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) — restore split view$",
+        "replacement": "$1 — 恢复分屏视图",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(\\d+\\+?) match(?:es)?$",
+        "replacement": "$1 条匹配",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^No settings match (.+)$",
+        "replacement": "没有设置匹配 $1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by an Environment Variable \\((\"[^\"]+\")\\) in this scope\\. Choose a different (?:key|name) or delete the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被环境变量 ($2) 使用。请选择其他名称，或删除现有凭据。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by an Environment Variable in this scope\\. Choose a different (?:key|name) or delete the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被其他环境变量使用。请选择其他名称，或删除现有凭据。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by a Network Secret \\((\"[^\"]+\")\\) in this scope\\. Choose a different (?:key|name) or delete the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被网络密钥 ($2) 使用。请选择其他名称，或删除现有凭据。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by a Network Secret in this scope\\. Choose a different (?:key|name) or delete the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被网络密钥使用。请选择其他名称，或删除现有凭据。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by another credential in this scope\\. Choose a different (?:key|name) or replace the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被其他凭据使用。请选择其他名称，或替换现有凭据。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by another credential in this scope\\. Choose a different (?:key|name) or update the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被其他凭据使用。请选择其他名称，或更新现有凭据。",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment variable \"(.+?)\" is already used by \"(.+?)\" in this scope\\. Choose a different (?:key|name) or replace the existing credential\\.$",
+        "replacement": "环境变量“$1”在此作用域中已被“$2”使用。请选择其他名称，或替换现有凭据。",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Retry loading (.+?) configuration$",
+        "replacement": "重试加载 $1 配置",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Environment paused\\. Click to resume it and load the (?:image)\\.$",
+        "replacement": "环境已暂停。点击以恢复并加载该图片。"
+    },
+    {
+        "pattern": "^Environment paused\\. Click to resume it and load the (?:video)\\.$",
+        "replacement": "环境已暂停。点击以恢复并加载该视频。"
+    },
+    {
+        "pattern": "^Delete side question: (.+)$",
+        "replacement": "删除旁支问题：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Connect GitHub: (.+)$",
+        "replacement": "连接 GitHub：$1",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Comment on page (\\d+)$",
+        "replacement": "第 $1 页上的评论",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Search match on page (\\d+)$",
+        "replacement": "第 $1 页上的搜索匹配项",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^Bounding box on page (\\d+)$",
+        "replacement": "第 $1 页上的边界框",
+        "rawGroups": [
+            1
+        ]
+    },
+    {
+        "pattern": "^(.+?) annotation on page (\\d+)$",
+        "replacement": "第 $2 页上的 $1 批注",
+        "rawGroups": [
+            1,
+            2
+        ]
+    },
+    {
+        "pattern": "^Select Sidebar Item (\\d+)$",
+        "replacement": "选择侧边栏第 $1 项",
         "rawGroups": [
             1
         ]

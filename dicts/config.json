@@ -195,7 +195,26 @@
         "started",
         "time",
         "variables",
-        "you"
+        "you",
+        "alert",
+        "attached",
+        "bolt",
+        "bug",
+        "credentials",
+        "deliverable",
+        "document",
+        "earlier",
+        "feeds",
+        "idea",
+        "inspect",
+        "link",
+        "package",
+        "respond",
+        "rocket",
+        "topic",
+        "value",
+        "worker",
+        "diff"
     ],
     "protectedFiles": [
         "LICENSE",
@@ -565,6 +584,52 @@
                     "replace": "新对话将按工作区进行分组归类。"
                 }
             ]
+        },
+        {
+            "containerPattern": "^(?:Searching\\s+\\d+\\s+loaded\\s+(?:messages?|messagemessages)\\s+—\\s+older history available|正在搜索已加载的\\s+\\d+\\s*条消息\\s+—\\s+可加载更早历史记录)$",
+            "nodeReplacements": [
+                {
+                    "match": "^Searching\\s+$",
+                    "replace": "正在搜索已加载的 "
+                },
+                {
+                    "match": "^\\s+loaded$",
+                    "replace": " 条"
+                },
+                {
+                    "match": "^\\s+$",
+                    "replace": ""
+                },
+                {
+                    "match": "^messages?$",
+                    "replace": "消息"
+                },
+                {
+                    "match": "^\\s+—\\s+older history available$",
+                    "replace": " — 可加载更早历史记录"
+                }
+            ]
+        },
+        {
+            "containerPattern": "^(?:No messages matching [“\"].+?[”\"](?:\\s+in loaded messages\\.\\.?|\\.)|未找到匹配[“\"].+?[”\"]的消息(?:（在已加载消息中）)?。)$",
+            "nodeReplacements": [
+                {
+                    "match": "^No messages matching [“\"]$",
+                    "replace": "未找到匹配“"
+                },
+                {
+                    "match": "^[”\"]$",
+                    "replace": "”的消息"
+                },
+                {
+                    "match": "^\\s+in loaded messages\\.$",
+                    "replace": "（在已加载消息中）。"
+                },
+                {
+                    "match": "^\\.$",
+                    "replace": "。"
+                }
+            ]
         }
     ],
     "frame": {
@@ -782,19 +847,27 @@
             "[data-step-list] > :not([data-step-rows]):not(:has([data-step-rows])):not([role=\"separator\"]), [data-step-rows] > :not([role=\"separator\"])",
             "@all 2",
             "~/.ssh/config (default)",
+            "1 1 auto",
+            "a Network Secret",
             "actuator-wide fence lifted at subscribe",
             "ADEX",
             "Adspirer Marketing Analytics",
             "Agent",
             "already canceling",
             "Amend",
+            "an Environment Variable",
             "Antigravity",
             "Any.do",
+            "api.example.com, *.example.com",
             "Artifact",
             "Artifacts",
             "AudioContext closed before fallback capture could start",
             "AudioWorklet and ScriptProcessorNode are unavailable",
+            "Authorization",
             "Bahasa Indonesia",
+            "BASH_ENV CDPATH ENV FPATH GIT_EXEC_PATH GIT_SSH GIT_SSH_COMMAND HOME HTTPS_PROXY HTTP_PROXY IFS LANG LANGUAGE LC_ALL LD_AUDIT LD_LIBRARY_PATH LD_PRELOAD LOGNAME NODE_OPTIONS NO_PROXY OLDPWD PATH PERL5OPT PROMPT_COMMAND PWD PYTHONPATH RUBYOPT SHELL SSL_CERT_DIR SSL_CERT_FILE TERM TMPDIR USER XDG_CACHE_HOME XDG_CONFIG_HOME XDG_DATA_HOME",
+            "Basic",
+            "Bearer",
             "Better Stack",
             "Branch",
             "Buganizer",
@@ -807,6 +880,7 @@
             "Command Shift A",
             "Commit",
             "Critique",
+            "cubic-bezier(0.23, 1, 0.32, 1)",
             "Dansk",
             "Descrybe Legal Engine",
             "Desktop",
@@ -819,6 +893,8 @@
             "ELMO Composite",
             "Enter",
             "Escape",
+            "Failed to post voice frame",
+            "Failed to post voice open request",
             "Fig share",
             "Flash",
             "Flash Lite",
@@ -830,12 +906,14 @@
             "GitHub",
             "Google",
             "Google (internal)",
+            "google ai plan",
             "Google Chat",
             "Google Chrome",
             "Google Drive",
             "Google Workspace",
             "Google3",
             "Google3 Configuration",
+            "Host error while listing voice chats",
             "incident.io",
             "Italiano",
             "Jetski",
@@ -844,13 +922,18 @@
             "Levels.fyi",
             "Linux",
             "MacOS",
+            "Malformed voice chats response",
+            "Malformed voice message payload",
+            "Malformed VoiceChat entry in chats response",
             "MCP",
+            "menu bar",
             "Meshy",
             "mumo",
             "n8n",
             "Nederlands",
             "New",
             "Norsk",
+            "OAuth poll cancelled",
             "Orca Security",
             "Orchestrator",
             "Passim AI",
@@ -874,7 +957,10 @@
             "Tavily",
             "TestMu AI",
             "tieng viet",
+            "Transport disposed",
             "Turbo",
+            "upgrade your subscription",
+            "Voice transport disposed",
             "VS Code",
             "Web (desktop)",
             "Web (mobile)",
@@ -898,8 +984,7 @@
             "this workspace",
             "this worktree",
             "Weekly Limit Remaining",
-            "Within each group, models share a weekly limit and a 5-hour limit. Quota is consumed proportionally to the cost of the tokens. Thus, limits will last longer with shorter tasks or using more cost-effective models. The 5-hour limit smooths out aggregate demand to fairly distribute global capacity across all users, while your weekly limit is tied directly to your individual tier.",
-            "You have hit your 5-hour limit, so the weekly limit does not currently apply."
+            "Within each group, models share a weekly limit and a 5-hour limit. Quota is consumed proportionally to the cost of the tokens. Thus, limits will last longer with shorter tasks or using more cost-effective models. The 5-hour limit smooths out aggregate demand to fairly distribute global capacity across all users, while your weekly limit is tied directly to your individual tier."
         ],
         "cloudRulePatterns": [
             "^You have used some of your (\\d+)-hour limit, it will fully refresh in ([^.]+?)\\.?$",
@@ -965,7 +1050,10 @@
             "Disable Word Wrap${0}",
             "Enable Word Wrap${0}",
             "from ${0}",
-            "Move ${0} ${1}"
+            "Move ${0} ${1}",
+            "Preview ${0}",
+            "Replace ${0}",
+            "${0} tab, ${1}"
         ],
         "ignoredMultiChild": [
             "{x} See {x}.",

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "repo": "kyroli/antigravity-cn-l10n",
   "branch": "main",
-  "targetVersion": "2.35.2",
-  "revision": "7952a1d1eb0a",
+  "targetVersion": "2.36.0",
+  "revision": "51dc0e677588",
   "files": {
     "Antigravity-L10n.bat": {
       "sha256": "d02b19f7a3397c229f50835adb3420b490a5c9f074b7da0d5fb7168c3d99e8c9",
@@ -14,31 +14,31 @@
       "size": 745
     },
     "dicts/agents.json": {
-      "sha256": "2bdd76dfb117a5c9d51dd06ffd8a5af212459d64066955cac3d330b32429235b",
-      "size": 43014
+      "sha256": "1e9f81b736931839d93dfa95aac711371bdbb811c7f8e660342713a38727f7ac",
+      "size": 45352
     },
     "dicts/common.json": {
-      "sha256": "61a1679223c58a4b8e7c5f6e354ffb0d8bcfb561ddfd8c3b73705301657e3774",
-      "size": 294622
+      "sha256": "b588755cfdfd5c4855c2fe1ab8c968ba4ff2fa9691f8347f9f8748d5dda05df4",
+      "size": 305285
     },
     "dicts/config.json": {
-      "sha256": "0b306392ca458770c0e4543c96cc4feaff0f205aff7ec88bdaaf45266857dcb3",
-      "size": 32523
+      "sha256": "6b84f1d2bcc2fc3874dae2e0b01bcc3ede37f78b63a695c80b6aedd7225b7c29",
+      "size": 35739
     },
     "dicts/fragments.json": {
-      "sha256": "99bd95b39d1832a0ee24a8a439a51eed7d6ec328af2e35ebe08f65ae3f573d5a",
-      "size": 13943
+      "sha256": "d17960d54369a15fd8d5a0cef8e10c5174e8bce06a5c55d12e24fb471d161e84",
+      "size": 14307
     },
     "dicts/menus.json": {
-      "sha256": "be146fbadd879840e3f2db029c23bb7f1f08ab288dcbfaec04dc0e55bea71080",
-      "size": 20856
+      "sha256": "383743dde63cc0735f7cd8d9e77ed7a2ef713add5c7358e4f23b3a69fca7fec6",
+      "size": 20727
     },
     "dicts/rules.json": {
-      "sha256": "22ac766ac60ab5d87f2e7737b9d0be49078e238a1b930587c6af8684e510d819",
-      "size": 119948
+      "sha256": "699929d59772d18a6e666833e94cb2f77fe7390a0ad66ac3d89364c9a10326fd",
+      "size": 127867
     },
     "package.json": {
-      "sha256": "f14a8653c1a5ea371b8d0421d61b0eb60a560f2a73d7443dc137c25e1c9903d5",
+      "sha256": "108a21c9a77374778ac0817a555012732d21b5fd57c17e95704e92e73600edbe",
       "size": 519
     },
     "patch.js": {
